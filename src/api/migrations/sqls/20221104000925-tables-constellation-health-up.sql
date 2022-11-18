@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS public.constellation_health
     family_physician character varying(255) COLLATE pg_catalog."default",
     current_family_physician character varying(255) COLLATE pg_catalog."default",
     accessing_health_care character varying(255) COLLATE pg_catalog."default",
-    diagnosis character varying(100) COLLATE pg_catalog."default",
+    /*diagnosis character varying(100) COLLATE pg_catalog."default",*/
+    diagnosis TEXT [] COLLATE pg_catalog."default",
     demographics_groups character varying(100) COLLATE pg_catalog."default",
     include_family_members character varying(255) COLLATE pg_catalog."default",
 
@@ -83,7 +84,8 @@ CREATE TABLE IF NOT EXISTS public.constellation_health_family_members
     family_physician_family_member character varying(255) COLLATE pg_catalog."default",
     current_family_physician_family_member character varying(255) COLLATE pg_catalog."default",
     accessing_health_care_family_member character varying(255) COLLATE pg_catalog."default",
-    diagnosis_family_member character varying(100) COLLATE pg_catalog."default",
+    /*diagnosis_family_member character varying(100) COLLATE pg_catalog."default",*/
+    diagnosis_family_member TEXT [] COLLATE pg_catalog."default",
     demographics_groups_family_member character varying(100) COLLATE pg_catalog."default",
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

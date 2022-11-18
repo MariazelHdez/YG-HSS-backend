@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS public.midwifery_services
     physician_s_name character varying(255) COLLATE pg_catalog."default",
     major_medical_conditions int COLLATE pg_catalog."default",
     provide_details3 text COLLATE pg_catalog."default",
-    do_you_identify_with_one_or_more_of_these_groups_and_communities character varying(100) COLLATE pg_catalog."default",
-    how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ character varying(100) COLLATE pg_catalog."default",
+    do_you_identify_with_one_or_more_of_these_groups_and_communities TEXT [] COLLATE pg_catalog."default",
+    how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ TEXT [] COLLATE pg_catalog."default",
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

@@ -44,7 +44,7 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
 app.use("/api/user", userRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/employees", employeesRouter);
-app.use("/api/constellationHealth", constellationRouter);
+app.use("/api/constellation", constellationRouter);
 
 let baseWebPath = "/web";
 
