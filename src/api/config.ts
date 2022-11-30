@@ -42,6 +42,7 @@ export const DB_CONFIG_CONSTELLATION = {
     password: DB_PASS,
     database: DB_NAME_CONSTELLATION,
     port: parseInt(DB_PORT),
+    schema: DB_NAME_CONSTELLATION,
   },
 };
 
@@ -53,6 +54,7 @@ export const DB_CONFIG_MIDWIFERY = {
     password: DB_PASS,
     database: DB_NAME_MIDWIFERY,
     port: parseInt(DB_PORT),
+    schema: DB_NAME_MIDWIFERY,
   },
 };
 
@@ -64,5 +66,6 @@ export const DB_CONFIG_HIPMA = {
     password: DB_PASS,
     database: DB_NAME_HIPMA,
     port: parseInt(DB_PORT),
+    schema: DB_NAME_HIPMA,
   },
 };

@@ -71,6 +71,12 @@ const routes = [
       requiresAuth: true
     }
   },
+  {
+    path: "/constellation",
+    meta: {
+      requiresAuth: true
+    }
+  },
 ];
 
 const router = new VueRouter({

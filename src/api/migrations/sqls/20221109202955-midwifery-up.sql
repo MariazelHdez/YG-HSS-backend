@@ -1,47 +1,47 @@
 /* Replace with your SQL commands */
 
 /**************************************************************/
-/*************** midwifery_services *************************/
+/*************** midwifery_services ***************************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_services
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
 (
     id bigint NOT NULL,
-    confirmation_number character varying(10) COLLATE pg_catalog."default",
-    status character varying(100) COLLATE pg_catalog."default",
-    first_name character varying(255) COLLATE pg_catalog."default",
-    last_name character varying(255) COLLATE pg_catalog."default",
-    preferred_name character varying(255) COLLATE pg_catalog."default",
-    pronouns character varying(255) COLLATE pg_catalog."default",
-    date_of_birth DATE COLLATE pg_catalog."default",
-    yukon_health_insurance int COLLATE pg_catalog."default",
-    community_located character varying(100) COLLATE pg_catalog."default",
-    preferred_language character varying(100) COLLATE pg_catalog."default",
-    need_interpretation int COLLATE pg_catalog."default",
-    preferred_phone character varying(255) COLLATE pg_catalog."default",
-    preferred_email character varying(255) COLLATE pg_catalog."default",
-    okay_to_leave_message int COLLATE pg_catalog."default",
-    prefer_to_be_contacted int COLLATE pg_catalog."default",
-    when_was_the_first_day_of_your_last_period_ DATE COLLATE pg_catalog."default",
-    due_date DATE COLLATE pg_catalog."default",
-    date_confirmed int COLLATE pg_catalog."default",
-    first_pregnancy int COLLATE pg_catalog."default",
-    how_many_vaginal_births character varying(255) COLLATE pg_catalog."default",
-    how_many_c_section_births character varying(255) COLLATE pg_catalog."default",
-    complications_with_previous int COLLATE pg_catalog."default",
-    provide_details text COLLATE pg_catalog."default",
-    midwife_before int COLLATE pg_catalog."default",
-    where_to_give_birth int COLLATE pg_catalog."default",
-    medical_concerns int COLLATE pg_catalog."default",
-    provide_details2 text COLLATE pg_catalog."default",
-    have_you_had_primary_health_care int COLLATE pg_catalog."default",
-    menstrual_cycle_length character varying(255) COLLATE pg_catalog."default",
-    family_physician int COLLATE pg_catalog."default",
-    physician_s_name character varying(255) COLLATE pg_catalog."default",
-    major_medical_conditions int COLLATE pg_catalog."default",
-    provide_details3 text COLLATE pg_catalog."default",
-    do_you_identify_with_one_or_more_of_these_groups_and_communities TEXT [] COLLATE pg_catalog."default",
-    how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ TEXT [] COLLATE pg_catalog."default",
+    confirmation_number character varying(10),
+    status character varying(100),
+    first_name character varying(255),
+    last_name character varying(255),
+    preferred_name character varying(255),
+    pronouns character varying(255),
+    date_of_birth DATE,
+    yukon_health_insurance int,
+    community_located character varying(100),
+    preferred_language character varying(100),
+    need_interpretation int,
+    preferred_phone character varying(255),
+    preferred_email character varying(255),
+    okay_to_leave_message int,
+    prefer_to_be_contacted int,
+    when_was_the_first_day_of_your_last_period_ DATE,
+    due_date DATE,
+    date_confirmed int,
+    first_pregnancy int,
+    how_many_vaginal_births character varying(255),
+    how_many_c_section_births character varying(255),
+    complications_with_previous int,
+    provide_details text,
+    midwife_before int,
+    where_to_give_birth int,
+    medical_concerns int,
+    provide_details2 text,
+    have_you_had_primary_health_care int,
+    menstrual_cycle_length character varying(255),
+    family_physician int,
+    physician_s_name character varying(255),
+    major_medical_conditions int,
+    provide_details3 text,
+    do_you_identify_with_one_or_more_of_these_groups_and_communities TEXT [],
+    how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ TEXT [],
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
@@ -50,12 +50,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_services
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_services
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_services
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_services_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_services_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_services_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_services_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -63,7 +63,7 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_services_id_seq
     CACHE 1
     OWNED BY midwifery_services.id;
 
-ALTER SEQUENCE public.midwifery_services_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_services_id_seq
     OWNER TO postgres;
 
 
@@ -71,12 +71,12 @@ ALTER SEQUENCE public.midwifery_services_id_seq
 /******************* midwifery_options ************************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_options
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_options
 (
     id bigint NOT NULL,
-    field_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    field_value bool COLLATE pg_catalog."default" NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    field_name character varying(100) NOT NULL,
+    field_value BOOLEAN NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_options_id PRIMARY KEY (id)
@@ -84,12 +84,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_options
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_options
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_options
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_options_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_options_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_options_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_options_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -97,17 +97,17 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_options_id_seq
     CACHE 1
     OWNED BY midwifery_options.id;
 
-ALTER SEQUENCE public.midwifery_options_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_options_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /*************** midwifery_community_locations ****************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_community_locations
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_community_locations
 (
     id bigint NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_community_locations_id PRIMARY KEY (id)
@@ -115,12 +115,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_community_locations
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_community_locations
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_community_locations
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_community_locations_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_community_locations_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_community_locations_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_community_locations_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -128,18 +128,18 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_community_locations_id_seq
     CACHE 1
     OWNED BY midwifery_community_locations.id;
 
-ALTER SEQUENCE public.midwifery_community_locations_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_community_locations_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /****************** midwifery_birth_locations *****************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_birth_locations
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_birth_locations
 (
     id bigint NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(255) NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_birth_locations_id PRIMARY KEY (id)
@@ -147,12 +147,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_birth_locations
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_birth_locations
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_birth_locations
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_birth_locations_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_birth_locations_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_birth_locations_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_birth_locations_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -160,18 +160,18 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_birth_locations_id_seq
     CACHE 1
     OWNED BY midwifery_birth_locations.id;
 
-ALTER SEQUENCE public.midwifery_birth_locations_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_birth_locations_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /****************** midwifery_groups_communities **************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_groups_communities
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_groups_communities
 (
     id bigint NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(255) NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_groups_communities_id PRIMARY KEY (id)
@@ -179,12 +179,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_groups_communities
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_groups_communities
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_groups_communities
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_groups_communities_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_groups_communities_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_groups_communities_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_groups_communities_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -192,18 +192,18 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_groups_communities_id_seq
     CACHE 1
     OWNED BY midwifery_groups_communities.id;
 
-ALTER SEQUENCE public.midwifery_groups_communities_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_groups_communities_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /*************** midwifery_clinic_contact_types ***************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_clinic_contact_types
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types
 (
     id bigint NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(255) NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_clinic_contact_types_id PRIMARY KEY (id)
@@ -211,12 +211,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_clinic_contact_types
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_clinic_contact_types
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_clinic_contact_types_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_clinic_contact_types_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -224,17 +224,17 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_clinic_contact_types_id_seq
     CACHE 1
     OWNED BY midwifery_clinic_contact_types.id;
 
-ALTER SEQUENCE public.midwifery_clinic_contact_types_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /********************* midwifery_languages ********************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_languages
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_languages
 (
     id bigint NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_languages_id PRIMARY KEY (id)
@@ -242,12 +242,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_languages
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_languages
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_languages
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_languages_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_languages_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_languages_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_languages_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -255,18 +255,18 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_languages_id_seq
     CACHE 1
     OWNED BY midwifery_languages.id;
 
-ALTER SEQUENCE public.midwifery_languages_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_languages_id_seq
     OWNER TO postgres;
 
 /**************************************************************/
 /************** midwifery_preferred_contact_types *************/
 /**************************************************************/
 
-CREATE TABLE IF NOT EXISTS public.midwifery_preferred_contact_types
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
 (
     id bigint NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    description character varying(500) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(255) NOT NULL,
+    description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT midwifery_preferred_contact_types_id PRIMARY KEY (id)
@@ -274,12 +274,12 @@ CREATE TABLE IF NOT EXISTS public.midwifery_preferred_contact_types
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.midwifery_preferred_contact_types
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS public.midwifery_preferred_contact_types_id_seq;
+-- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq;
 
-CREATE SEQUENCE IF NOT EXISTS public.midwifery_preferred_contact_types_id_seq
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -287,5 +287,128 @@ CREATE SEQUENCE IF NOT EXISTS public.midwifery_preferred_contact_types_id_seq
     CACHE 1
     OWNED BY midwifery_preferred_contact_types.id;
 
-ALTER SEQUENCE public.midwifery_preferred_contact_types_id_seq
+ALTER SEQUENCE bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq
     OWNER TO postgres;
+
+/**************************************************************/
+/******************* midwifery_options ************************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_options(id, field_name, field_value, description)
+VALUES (1, 'yukon_health_insurance', TRUE, 'Yes, I have Yukon health insurance.'),
+        (2, 'yukon_health_insurance', FALSE, 'No, I do not have Yukon health insurance.'),
+
+        (3, 'need_interpretation', TRUE, 'Yes, I will need interpretation support.'),
+        (4, 'need_interpretation', FALSE, 'No, I will not need interpretation support.'),
+
+        (5, 'okay_to_leave_message', TRUE, 'Yes, it is okay to leave a message.'),
+        (6, 'okay_to_leave_message', FALSE, 'No, do not leave a message.'),
+
+        (7, 'date_confirmed', TRUE, 'Yes, this date is confirmed.'),
+        (8, 'date_confirmed', FALSE, 'No, this date is not confirmed.'),
+
+        (9, 'first_pregnancy', TRUE, 'Yes, this is my first pregnancy.'),
+        (10, 'first_pregnancy', FALSE, 'No, this is not my first pregnancy.'),
+
+        (11, 'complications_with_previous', TRUE, 'Yes, I have had previous complications.'),
+        (12, 'complications_with_previous', FALSE, 'No, I haven''t had any previous complications.'),
+
+        (13, 'midwife_before', TRUE, 'Yes, I have had a midwife before.'),
+        (14, 'midwife_before', FALSE, 'No, I have never had a midwife.'),
+
+        (15, 'medical_concerns', TRUE, 'Yes, there are known medical concerns with this pregnancy.'),
+        (16, 'medical_concerns', FALSE, 'No, I don''t know of any medical concerns with this pregnancy.'),
+
+        (17, 'have_you_had_primary_health_care', TRUE, 'Yes, I have received health care for this pregnancy.'),
+        (18, 'have_you_had_primary_health_care', FALSE, 'No, I haven''t received any health care yet for this pregnancy.'),
+
+        (19, 'family_physician', TRUE, 'Yes, I have a family physician.'),
+        (20, 'family_physician', FALSE, 'No, I don''t have a family physician at this time.'),
+
+        (21, 'major_medical_conditions', TRUE, 'Yes, I have some medical conditions.'),
+        (22, 'major_medical_conditions', FALSE, 'No, I don''t have any medical conditions.');
+
+
+/**************************************************************/
+/*************** midwifery_community_locations ****************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_community_locations(
+id, description)
+VALUES  (1, 'Beaver Creek'),
+        (2, 'Burwash Landing'),
+        (3, 'Carcross'),
+        (4, 'Carmacks'),
+        (5, 'Dawson City'),
+        (6, 'Destruction Bay'),
+        (7, 'Faro'),
+        (8, 'Haines Junction'),
+        (9, 'Ibex Valley'),
+        (10, 'Marsh Lake'),
+        (11, 'Mayo'),
+        (12, 'Mount Lorne'),
+        (13, 'Old Crow'),
+        (14, 'Pelly Crossing'),
+        (15, 'Ross River'),
+        (16, 'Tagish'),
+        (17, 'Teslin'),
+        (18, 'Watson Lake'),
+        (19, 'Whitehorse');
+
+
+/**************************************************************/
+/****************** midwifery_birth_locations *****************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_birth_locations(
+id, name, description)
+VALUES  (1, 'home', 'I would prefer to give birth at home.'),
+        (2, 'hospital', 'I would prefer to give birth at a hospital.'),
+        (3, 'undecided', 'I am undecided at the moment.');
+
+
+/**************************************************************/
+/****************** midwifery_groups_communities **************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_groups_communities(
+id, name, description)
+VALUES  (1, 'YFN', 'Yukon First Nations'),
+        (2, 'FN', 'Non-Yukon First Nations, Metis or Inuit'),
+        (3, 'New', 'Newcomer to Canada'),
+        (4, 'LGBTQ', 'LGBTQ2S+'),
+        (5, 'Race', 'Racialized person or person of colour'),
+        (6, 'mental_wellness', 'Person with mental wellness or substance use concerns'),
+        (7, 'disability', 'Person with a disability'),
+        (8, 'single', 'Person who is or will be a single parent'),
+        (9, 'not_say', 'I prefer not to specify at this time'),
+        (10, 'not_identify', 'I do not identify with any of these groups');
+
+
+/**************************************************************/
+/*************** midwifery_clinic_contact_types ***************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_clinic_contact_types(
+id, name, description)
+VALUES  (1, 'Website', 'Yukon.ca'),
+        (2, 'other_health', 'Another health or social care provider'),
+        (3, 'friend', 'Friend or family member'),
+        (4, 'poster', 'Poster or pamphlet'),
+        (5, 'social', 'Social media');
+
+
+/**************************************************************/
+/********************* midwifery_languages ********************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_languages(
+id, description)
+VALUES  (1, 'english'),
+        (2, 'french');
+
+
+/**************************************************************/
+/************** midwifery_preferred_contact_types *************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_preferred_contact_types(
+id, name, description)
+VALUES  (1, 'email', 'Email communication is preferred'),
+        (2, 'phone', 'Phone communication is preferred'),
+        (3, 'friend', 'Friend or family member'),
+        (4, 'poster', 'Poster or pamphlet'),
+        (5, 'social', 'Social media');
