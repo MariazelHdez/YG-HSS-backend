@@ -24,7 +24,7 @@ hipmaRouter.get("/", EnsureAuthenticated, async (req: Request, res: Response) =>
                 'hipma_request_access_personal_health_information.description as HipmaRequestAccessPersonalHealthInformation',
                 'hipma_copy_health_information.description as HipmaCopyHealthInformation',
                 'hipma_situations.description as HipmaSituations')
-        .selectRaw('CONCAT(health_information.first_name, " ", health_information.last_name) as applicantFullName')
+        //.selectRaw('CONCAT(health_information.first_name, " ", health_information.last_name) as applicantFullName')
         .where('health_information.status', 'open')
         .orderBy('health_information.created_at', 'asc');
 
@@ -102,7 +102,7 @@ hipmaRouter.post("/store", EnsureAuthenticated, async (req: Request, res: Respon
         hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range = data['date_range_is_unknown_or_i_need_help_identifying_the_date_range'];
         hipma.i_affirm_the_information_above_to_be_true_and_accurate_ = data['i_affirm_the_information_above_to_be_true_and_accurate_'];
 
-        const healthInfoId = await knex('bizont_edms_hipma.health_information').returning('id').insert(hipma);
+        const healthInfoId = knex('bizont_edms_hipma.health_information').returning('id').insert(hipma);
 
         if(filesHipma.length > 0){
             _.forEach(filesHipma, function(value: any, key: any) {
@@ -115,7 +115,7 @@ hipmaRouter.post("/store", EnsureAuthenticated, async (req: Request, res: Respon
                 hipmaFiles.file_size = value['file_size'];
                 hipmaFiles.file_data = value['file_data'];
 
-                await knex('bizont_edms_hipma.hipma_files').insert(hipmaFiles);
+                knex('bizont_edms_hipma.hipma_files').insert(hipmaFiles);
 
             });
 
@@ -143,7 +143,6 @@ function uniqid(prefix = "", random = false) {
 }
 
 hipmaRouter.get("/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req: Request, res: Response) => {
-{
 
     let { hipma_id } = req.params;
 
@@ -213,23 +212,26 @@ hipmaRouter.get("/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req:
         files[value["description"]]["file_name"] = value["file_name"];
         files[value["description"]]["file_type"] = value["file_type"];
         files[value["description"]]["file_size"] = value["file_size"];
+        files[value["description"]]["file_data"] = value["filee_size"];
         files[value["description"]]["file_data"] = value["file_data"];
     });
 
     res.json({ hipma: hipma, hipmaFiles: files });
 });
 
-function changeRequestStatus(id: any){
-
-    var hipma = db("bizont_edms_hipma.health_information").where({ id: id });
+hipmaRouter.get("/changeRequestStatus/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+//function changeRequestStatus(id: any){
+    let { hipma_id } = req.params;
+    var hipma = Object();
+    hipma = db("bizont_edms_hipma.health_information").where({ id: hipma_id });
     hipma.status = 'closed';
     hipma.save();
 
     res.json({ data: hipma });
 
-}
+});
 
-public function saveFile(field_name: any, data: any){
+function saveFile(field_name: any, data: any){
     var path = "";
     var fs = require("fs");
 
@@ -244,7 +246,7 @@ public function saveFile(field_name: any, data: any){
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
 
         //let success = file_put_contents(public_path().'/HipmaFiles/'.safeName, file);
-        let path = public_path()+'/HipmaFiles/'+safeName;
+        let path = __dirname+'/HipmaFiles/'+safeName;
 
         var stats = fs.statSync(path);
         // Convert the file size to megabytes (optional)
@@ -268,72 +270,78 @@ function getDataByModel(model: string, id: any, type: string){
     if(type == "single"){
         switch (model) {
             case 'HipmaRequestType':
-                data = HipmaRequestType::where('id', id)->first();
+                data = db("bizont_edms_hipma.hipma_request_type").where({ id: id }).first();//HipmaRequestType::where('id', id)->first();
                 break;
 
             case 'HipmaRequestAccessPersonalHealthInformation':
-                data = HipmaRequestAccessPersonalHealthInformation::where('id', id)->first();
+                data = db("bizont_edms_hipma.hipma_request_access_personal_health_information").where({ id: id }).first();
                 break;
 
             case 'HipmaCopyHealthInformation':
-                data = HipmaCopyHealthInformation::where('id', id)->first();
+                data = db("bizont_edms_hipma.hipma_copy_health_information").where({ id: id }).first();
                 break;
 
             case 'HipmaSituations':
-                data = HipmaSituations::where('id', id)->first();
+                data = db("bizont_edms_hipma.hipma_situations").where({ id: id }).first();
                 break;
 
             case 'HipmaCopyActivityRequest':
-                data = HipmaCopyActivityRequest::where('id', id)->first();
+                data = db("bizont_edms_hipma.hipma_copy_activity_request").where({ id: id }).first();
                 break;
         }
         if((data)){
-            return data->id;
+            return data.id;
         }else{
             return null;
         }
 
     }else if(type == "multi"){
-        others = "";
-        res_arr = [];
-        modelValues = "";
+        var others = "";
+        var res_arr = Array();
+        var modelValues = "";
+
         switch (model) {
             case 'HipmaHealthSocialServicesProgram':
-                data = HipmaHealthSocialServicesProgram::whereIn('id', id)->get();
+                data = db("bizont_edms_hipma.hipma_health_social_services_program").where({ id: id }).select();
                 break;
 
             case 'HipmaHssSystems':
-                data = HipmaHssSystems::whereIn('id', id)->get();
+                data = db("bizont_edms_hipma.hipma_hss_systems").where({ id: id }).select();
                 break;
         }
-        
-        if(is_object(data)){
-          res_arr = json_decode(data, true);
-        }
-        foreach(id as position => values){
-          if(!in_array(values, array_column(res_arr, 'id'))){
-            others = values;
-          }
+
+        if(data.length > 1){
+          res_arr = JSON.parse(data);
         }
 
-        if(count(data)){
-            max = count(data);
-            count = 1;
+        _.forEach(id, function(values: any, position: any) {
+            const arrayColumn = (arr: any, n: any) => arr.map((x: any) => x[n]);
+            //foreach(id as position => values){
+          if(!values.includes(arrayColumn(res_arr, 'id'))){
+            others = values;
+          }
+        });
+
+        if(data.length){
+            var max = data.length;
+            var count = 1;
+            var modelValues = '';
+
             if(max == 1){
-                modelValues = strval(data[0]->id);
+                modelValues = String(data[0].id);
             }else{
-                foreach (data as key => value) {
+                _.forEach(data, function(value: any, key: any) {//foreach (data as key => value) {
                     if(count == max){
-                        modelValues .= strval(value->id);
+                        modelValues += String(value.id);
                     }else{
-                        modelValues .= strval(value->id).",";
+                        modelValues += String(value.id)+",";
                     }
                     count++;
-                }
+                });
             }
         }
         if((modelValues) && (others)){
-              return modelValues.",".others;
+              return modelValues+","+others;
         }else if((modelValues)){
               return modelValues;
         }else if((others)){

@@ -13,17 +13,20 @@ export const midwiferyRouter = express.Router();
 
 midwiferyRouter.get("/", EnsureAuthenticated, async (req: Request, res: Response) => {
 
-        var midwifery = db("bizont_edms_midwifery.midwifery_services")
+        var midwifery = Object();
+        var midwiferyOptions = Object();
+
+        midwifery = db("bizont_edms_midwifery.midwifery_services")
                 .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
                 .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
                 .select('midwifery_services.*',
                         'midwifery_birth_locations.description as birth_locations',
                         'midwifery_preferred_contact_types.description as preferred_contact')
-                .selectRaw('CONCAT(midwifery_services.first_name, " ", midwifery_services.last_name) as fullName')
+                //.selectRaw('CONCAT(midwifery_services.first_name, " ", midwifery_services.last_name) as fullName')
                 .where('midwifery_services.status', 'open')
                 .orderBy('midwifery_services.id', 'asc');
 
-        var midwiferyOptions = db("bizont_edms_midwifery.midwifery_options").select('midwifery_options.*').pluck("field_value", "id");
+        midwiferyOptions = db("bizont_edms_midwifery.midwifery_options").select('midwifery_options.*').pluck("field_value");
 
         _.forEach(midwifery, function(value: any, key: any) {
                 value.first_pregnancy = !value.first_pregnancy ? ( midwiferyOptions[value.first_pregnancy] == 1 ? 'Yes' : 'No'): '' ;
@@ -35,7 +38,7 @@ midwiferyRouter.get("/", EnsureAuthenticated, async (req: Request, res: Response
                 }
 
                 if(value.preferred_name == "") {
-                        value.preferred_name = value.fullName;
+                        value.preferred_name = value.preferred_name;//fullName;
                 }
 
                 if(value.do_you_identify_with_one_or_more_of_these_groups_and_communities.lenght){
@@ -63,10 +66,9 @@ midwiferyRouter.get("/", EnsureAuthenticated, async (req: Request, res: Response
 });
 
 midwiferyRouter.get("/:midwifery_id",[param("midwifery_id").isInt().notEmpty()], async (req: Request, res: Response) => {
-{
         let { midwifery_id } = req.params;
         var midwifery = Object();
-        var midwiferyOptions = Array();
+        var midwiferyOptions = Object();
 
         midwifery = db("bizont_edms_midwifery.midwifery_services")
                 .leftJoin('midwifery_community_locations', 'midwifery_services.community_located', '=', 'midwifery_community_locations.id')
@@ -78,11 +80,11 @@ midwiferyRouter.get("/:midwifery_id",[param("midwifery_id").isInt().notEmpty()],
                         'midwifery_languages.description as language',
                         'midwifery_birth_locations.description as birth_locations',
                         'midwifery_preferred_contact_types.description as preferred_contact')
-                .selectRaw('CONCAT(midwifery_services.first_name, " ", midwifery_services.last_name) as fullName')
+                //.selectRaw('CONCAT(midwifery_services.first_name, " ", midwifery_services.last_name) as fullName')
                 .where({ id: midwifery_id })
                 .first();
 
-        midwiferyOptions = db("bizont_edms_midwifery.midwifery_options").select().pluck("description", "id");
+        midwiferyOptions = db("bizont_edms_midwifery.midwifery_options").select().pluck("description");
 
         if(midwifery.community == null) {
                 midwifery.community = midwifery.community_located;
@@ -105,7 +107,7 @@ midwiferyRouter.get("/:midwifery_id",[param("midwifery_id").isInt().notEmpty()],
         }
 
         if(!midwifery.preferred_name || midwifery.preferred_name == "") {
-                midwifery.preferred_name = midwifery.fullName;
+                midwifery.preferred_name = midwifery.preferred_name;//.fullName;
         }
 
         if(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communities.lenght){
@@ -167,12 +169,12 @@ midwiferyRouter.get("/:midwifery_id",[param("midwifery_id").isInt().notEmpty()],
         }
 
         res.json({ midwifery: midwifery, options: midwiferyOptions });
-}
+});
 
 midwiferyRouter.post("/store", EnsureAuthenticated, async (req: Request, res: Response) => {
-{
 
-        let { data } = req.data;
+        let data = Object();
+        data = req;
         var midwifery = Object();
         var midwiferyCommunityLocations = Object();
         var midwiferyLanguages = Object();
@@ -182,7 +184,7 @@ midwiferyRouter.post("/store", EnsureAuthenticated, async (req: Request, res: Re
         midwifery.confirmation_number = getConfirmationNumber();
         midwifery.first_name = data['first_name'];
         midwifery.last_name = data['last_name'];
-        midwifery.preferred_name = (!data['preferred_name'] || data['preferred_name'] == "") ? data['first_name']." ".data['last_name'] : data['preferred_name'];
+        midwifery.preferred_name = (!data['preferred_name'] || data['preferred_name'] == "") ? data['first_name']+" "+data['last_name'] : data['preferred_name'];
         midwifery.pronouns = data['pronouns'];
         midwifery.date_of_birth = data['date_of_birth'];
         midwifery.preferred_phone = data['preferred_phone'];
@@ -252,14 +254,14 @@ function uniqid(prefix = "", random = false) {
 function getMultipleIdsByModel(model: any, names: any) {
         var others = "";
         var auxNames = names;
-        var groups = Array();
-        var contact = Array();
+        var groups = Object();
+        var contact = Object();
         var data = Object();
 
         if(model == "MidwiferyGroupsCommunities") {
             groups = db("bizont_edms_midwifery.midwifery_groups_communities")
                             .select()
-                            .pluck('description', 'name');
+                            .pluck('description');
 
             _.forEach(names, function(value: any, key: any) {
                     var info_find = Object();
@@ -271,9 +273,9 @@ function getMultipleIdsByModel(model: any, names: any) {
                     }
             });
 
-            data = db("bizont_edms_midwifery.midwifery_groups_communities").whereIn({ name: names });
+            data = db("bizont_edms_midwifery.midwifery_groups_communities").whereIn('name', names );
         }else if(model == "MidwiferyClinicContactTypes") {
-            contact = db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().pluck('description', 'name');
+            contact = db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().pluck('description');
 
             _.forEach(names, function(value: any, key: any) {
                 if(typeof contact[value] == 'undefined'){
@@ -282,7 +284,7 @@ function getMultipleIdsByModel(model: any, names: any) {
                 }
             });
 
-            data = db("bizont_edms_midwifery.midwifery_clinic_contact_types").whereIn({ name: names });
+            data = db("bizont_edms_midwifery.midwifery_clinic_contact_types").whereIn('name', names);
         }
 
         if(data.lenght){
@@ -332,12 +334,14 @@ function getMidwiferyOptions(field: any, data: string) {
         return db("midwifery.midwifery_options").where({ field_name: field }).where({ field_value: bool }).first('id');
 }
 
-function changeRequestStatus(id: any){
+midwiferyRouter.get("/changeRequestStatus/:midwifery_id",[param("midwifery_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 
-        var mid = db("midwifery.midwifery_services").where({ id: id });
+        let midwifery_id = req.param;
+        var mid = Object();
+        mid = db("midwifery.midwifery_services").where({ id: midwifery_id });
         mid.status = 'closed';
         mid.save();
 
         res.json({ data: mid });
 
-}
+});

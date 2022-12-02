@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.health_information
 (
     id bigint NOT NULL,
     confirmation_number character varying(10),
-    status character varying(100),
+    status character varying(25) DEFAULT 'open',
     what_type_of_request_do_you_want_to_make_ int,
     are_you_requesting_access_to_your_own_personal_health_informatio int,
     select_the_situation_that_applies_ int,
@@ -61,6 +61,10 @@ CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.health_information_id_seq
 ALTER SEQUENCE bizont_edms_hipma.health_information_id_seq
     OWNER TO postgres;
 
+CREATE INDEX health_information_status_idx ON bizont_edms_hipma.health_information (status);
+CREATE INDEX health_information_creation_date_idx ON bizont_edms_hipma.health_information (created_at);
+CREATE INDEX health_information_name_idx ON bizont_edms_hipma.health_information (first_name, last_name);
+
 
 /**************************************************************/
 /********************** hipma_files ***************************/
@@ -98,6 +102,9 @@ CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_files_id_seq
 
 ALTER SEQUENCE bizont_edms_hipma.hipma_files_id_seq
     OWNER TO postgres;
+
+CREATE INDEX hipma_id_idx ON bizont_edms_hipma.hipma_files (hipma_id);
+
 
 /**************************************************************/
 /**** hipma_request_access_personal_health_information ********/
@@ -288,6 +295,38 @@ ALTER SEQUENCE bizont_edms_hipma.hipma_hss_systems_id_seq
 
 
 /**************************************************************/
+/******************** hipma_request_type **********************/
+/**************************************************************/
+
+CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_request_type
+(
+    id bigint NOT NULL,
+    description character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT hipma_request_type_id PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_request_type
+    OWNER to postgres;
+
+-- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_request_type_id_seq;
+
+CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_request_type_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 2147483647
+    CACHE 1
+    OWNED BY hipma_request_type.id;
+
+ALTER SEQUENCE bizont_edms_hipma.hipma_request_type_id_seq
+    OWNER TO postgres;
+
+
+/**************************************************************/
 /**** hipma_request_access_personal_health_information ********/
 /**************************************************************/
 INSERT INTO bizont_edms_hipma.hipma_request_access_personal_health_information(
@@ -350,3 +389,11 @@ VALUES  (1, 'Panorama (immunization records)'),
         (4, 'Drug Information system (prescriptions)'),
         (5, 'Lab Information System (lab tests)'),
         (6, 'HSS system is unknown');
+
+/**************************************************************/
+/******************** hipma_request_type **********************/
+/**************************************************************/
+INSERT INTO bizont_edms_hipma.hipma_request_type(
+id, description)
+VALUES  (1, "A request for your personal health information."),
+        (2, "A request for a record of user activity.");

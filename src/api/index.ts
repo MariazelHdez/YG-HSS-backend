@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { userRouter, dataRouter, employeesRouter, constellationRouter } from "./routes";
+import { userRouter, dataRouter, employeesRouter, constellationRouter, midwiferyRouter, hipmaRouter} from "./routes";
 import * as config from './config';
 import { doHealthCheck } from "./utils/healthCheck";
 import { configureAuthentication } from "./routes/auth"
@@ -45,6 +45,8 @@ app.use("/api/user", userRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/employees", employeesRouter);
 app.use("/api/constellation", constellationRouter);
+app.use("/api/midwifery", midwiferyRouter);
+app.use("/api/hipma", hipmaRouter);
 
 let baseWebPath = "/api";
 

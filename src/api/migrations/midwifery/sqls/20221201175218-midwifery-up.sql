@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
 (
     id bigint NOT NULL,
     confirmation_number character varying(10),
-    status character varying(100),
+    status character varying(25) DEFAULT 'open',
     first_name character varying(255),
     last_name character varying(255),
     preferred_name character varying(255),
@@ -66,6 +66,9 @@ CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_services_id_seq
 ALTER SEQUENCE bizont_edms_midwifery.midwifery_services_id_seq
     OWNER TO postgres;
 
+CREATE INDEX midwifery_services_status_idx ON bizont_edms_midwifery.midwifery_services (status);
+CREATE INDEX midwifery_services_creation_date_idx ON bizont_edms_midwifery.midwifery_services (created_at);
+CREATE INDEX midwifery_services_name_idx ON bizont_edms_midwifery.midwifery_services (first_name, last_name);
 
 /**************************************************************/
 /******************* midwifery_options ************************/

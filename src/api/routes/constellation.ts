@@ -227,9 +227,9 @@ function storeFamilyMembers(idConstellationHealth:any, arrayMembers:any){
         let legal_name = "";
         if(typeof arrayMembers['your_legal_name_family_member'] !== 'undefined'){
             legal_name = arrayMembers['first_name_family_member']+" "+arrayMembers['last_name_family_member'];
-        }else{
+        }/*else{
             legal_name = arrayMembers['your_legal_name_family_member'];
-        }
+        }*/
 
         constellationFamilyMembers[i]["your_legal_name_family_member"] = legal_name;
         constellationFamilyMembers[i]["pronouns_family_member"] = arrayMembers['pronouns_family_member'];
@@ -266,16 +266,16 @@ function storeFamilyMembers(idConstellationHealth:any, arrayMembers:any){
         }
     });
 
-    await knex('constellation_health.constellation_health_family_members').insert(constellationFamilyMembers);
+    knex('constellation_health.constellation_health_family_members').insert(constellationFamilyMembers);
 
 }
 
 function getMultipleIdsByModel(model: string, names: any) {
     var others = "";
     var auxNames = names;
-    var data = Array();
-    var diagnosisHistory = Array();
-    var demographics = Array();
+    var data = Object();
+    var diagnosisHistory = Object();
+    var demographics = Object();
 
     if(model == "ConstellationHealthDiagnosisHistory") {
         diagnosisHistory = db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select();
@@ -296,7 +296,7 @@ function getMultipleIdsByModel(model: string, names: any) {
         //var demographics = ConstellationHealthDemographics::all()->pluck('description', 'value');
         demographics = db("bizont_edms_constellation_health.constellation_health_demographics")
                                 .select()
-                                .pluck('description', 'value');
+                                .pluck('description');
 
         names.forEach(function (value: any, key: any) {
             if(!(demographics[value])){

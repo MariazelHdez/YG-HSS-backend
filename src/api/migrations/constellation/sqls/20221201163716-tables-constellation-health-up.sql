@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
 (
     id bigint NOT NULL,
-    status character varying(100),
+    status character varying(25) DEFAULT 'open',
     first_name character varying(255),
     last_name character varying(255),
     is_this_your_legal_name_ character varying(255),
@@ -57,6 +57,10 @@ CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_hea
 ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_id_seq
     OWNER TO postgres;
 
+CREATE INDEX constellation_health_status_idx ON bizont_edms_constellation_health.constellation_health (status);
+CREATE INDEX constellation_health_creation_date_idx ON bizont_edms_constellation_health.constellation_health (created_at);
+CREATE INDEX constellation_health_name_idx ON bizont_edms_constellation_health.constellation_health (first_name, last_name);
+
 /**************************************************************/
 /********** constellation_health_family_members ***************/
 /**************************************************************/
@@ -65,7 +69,6 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
 (
     id bigint NOT NULL,
     constellation_health_id int,
-
     first_name_family_member character varying(255) NULL,
     last_name_family_member character varying(255),
     is_this_your_legal_name__family_member character varying(255),
@@ -77,7 +80,6 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     province_family_member character varying(255),
     yhcip_family_member character varying(25),
     relationship_family_member character varying(255),
-
     language_prefer_to_receive_services_family_member int,
     preferred_language_family_member character varying(100),
     interpretation_support_family_member character varying(255),
@@ -111,6 +113,10 @@ CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_hea
 
 ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_family_members_id_seq
     OWNER TO postgres;
+
+CREATE INDEX constellation_health_id_idx ON bizont_edms_constellation_health.constellation_health_family_members (constellation_health_id);
+CREATE INDEX constellation_health_family_member_creation_date_idx ON bizont_edms_constellation_health.constellation_health_family_members (created_at);
+CREATE INDEX constellation_health_family_member_name_idx ON bizont_edms_constellation_health.constellation_health_family_members (first_name_family_member, last_name_family_member);
 
 /**************************************************************/
 /********** constellation_health_language *********************/
