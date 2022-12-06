@@ -43,6 +43,7 @@ export const DB_CONFIG_CONSTELLATION = {
     database: DB_NAME_CONSTELLATION,
     port: parseInt(DB_PORT),
     schema: DB_NAME_CONSTELLATION,
+    useNullAsDefault: true,
   },
 };
 

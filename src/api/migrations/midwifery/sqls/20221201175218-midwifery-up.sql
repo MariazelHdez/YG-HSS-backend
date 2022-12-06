@@ -6,7 +6,7 @@
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     confirmation_number character varying(10),
     status character varying(25) DEFAULT 'open',
     first_name character varying(255),
@@ -44,27 +44,13 @@ CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
     how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ TEXT [],
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_services_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_services
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_services_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_services_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_services.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_services_id_seq
-    OWNER TO postgres;
 
 CREATE INDEX midwifery_services_status_idx ON bizont_edms_midwifery.midwifery_services (status);
 CREATE INDEX midwifery_services_creation_date_idx ON bizont_edms_midwifery.midwifery_services (created_at);
@@ -76,13 +62,12 @@ CREATE INDEX midwifery_services_name_idx ON bizont_edms_midwifery.midwifery_serv
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_options
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     field_name character varying(100) NOT NULL,
     field_value BOOLEAN NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_options_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -90,30 +75,16 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_options
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_options_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_options_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_options.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_options_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /*************** midwifery_community_locations ****************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_community_locations
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_community_locations_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -121,31 +92,17 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_community_locations
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_community_locations_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_community_locations_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_community_locations.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_community_locations_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /****************** midwifery_birth_locations *****************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_birth_locations
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     name character varying(255) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_birth_locations_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -153,31 +110,17 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_birth_locations
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_birth_locations_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_birth_locations_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_birth_locations.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_birth_locations_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /****************** midwifery_groups_communities **************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_groups_communities
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     name character varying(255) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_groups_communities_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -185,31 +128,17 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_groups_communities
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_groups_communities_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_groups_communities_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_groups_communities.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_groups_communities_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /*************** midwifery_clinic_contact_types ***************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     name character varying(255) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_clinic_contact_types_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -217,30 +146,16 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_clinic_contact_types.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_clinic_contact_types_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /********************* midwifery_languages ********************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_languages
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_languages_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -248,50 +163,23 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_languages
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_languages_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_languages_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_languages.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_languages_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /************** midwifery_preferred_contact_types *************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     name character varying(255) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT midwifery_preferred_contact_types_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY midwifery_preferred_contact_types.id;
-
-ALTER SEQUENCE bizont_edms_midwifery.midwifery_preferred_contact_types_id_seq
-    OWNER TO postgres;
 
 /**************************************************************/
 /******************* midwifery_options ************************/

@@ -30,3 +30,17 @@ docker build -t vue-template .
 By default, the container will run in development mode, but following the step above, you can create the appropriate environment files for the instance you are targetting. Depending, the application will look for either `src/api/.env.test` or `src/api/.env.production`. To tell the API which instance to use, add the environment variable `NODE_ENV` to the docker run command like below.
 
 `docker run -p 8222:3000 -e NODE_ENV=production --restart=on-failure vue-template`
+
+## Running backend
+
+Database creation:
+
+- Constellation: `db-migrate db:create bizont_edms_constellation_health`
+- Midwifery: `db-migrate db:create bizont_edms_midwifery`
+- Constellation: `db-migrate db:create bizont_edms_hipma`
+
+Schemas, tables and inserts:
+
+- Constellation: `db-migrate up:constellation -e constellation`
+- Midwifery: `db-migrate up:midwifery -e midwifery`
+- Constellation: `db-migrate up:hipma -e hipma`

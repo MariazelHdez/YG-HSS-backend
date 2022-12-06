@@ -6,7 +6,7 @@
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.health_information
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     confirmation_number character varying(10),
     status character varying(25) DEFAULT 'open',
     what_type_of_request_do_you_want_to_make_ int,
@@ -39,27 +39,13 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.health_information
     i_affirm_the_information_above_to_be_true_and_accurate_ character varying(50),
     issued_identification character varying(255),
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT health_information_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.health_information
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.health_information_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.health_information_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY health_information.id;
-
-ALTER SEQUENCE bizont_edms_hipma.health_information_id_seq
-    OWNER TO postgres;
 
 CREATE INDEX health_information_status_idx ON bizont_edms_hipma.health_information (status);
 CREATE INDEX health_information_creation_date_idx ON bizont_edms_hipma.health_information (created_at);
@@ -72,7 +58,7 @@ CREATE INDEX health_information_name_idx ON bizont_edms_hipma.health_information
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_files
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     hipma_id int,
     description character varying(255) NOT NULL,
     file_name character varying(500) NOT NULL,
@@ -81,7 +67,6 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_files
     file_data TEXT NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_files_id PRIMARY KEY (id),
     CONSTRAINT hipma_id_fk FOREIGN KEY(hipma_id) REFERENCES health_information(id)
 )
 
@@ -89,19 +74,6 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_files
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_files_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_files_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_files.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_files_id_seq
-    OWNER TO postgres;
 
 CREATE INDEX hipma_id_idx ON bizont_edms_hipma.hipma_files (hipma_id);
 
@@ -112,11 +84,10 @@ CREATE INDEX hipma_id_idx ON bizont_edms_hipma.hipma_files (hipma_id);
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_request_access_personal_health_information
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_request_access_personal_health_information_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -124,30 +95,16 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_request_access_personal_health_information
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_request_access_personal_health_information_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_request_access_personal_health_information_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_request_access_personal_health_information.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_request_access_personal_health_information_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /**************** hipma_situations ****************************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_situations
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_situations_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -155,30 +112,16 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_situations
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_situations_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_situations_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_situations.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_situations_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /************ hipma_copy_health_information *******************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_copy_health_information
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_copy_health_information_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -186,30 +129,16 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_copy_health_information
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_copy_health_information_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_copy_health_information_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_copy_health_information.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_copy_health_information_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /************** hipma_copy_activity_request *******************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_copy_activity_request
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_copy_activity_request_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -217,49 +146,22 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_copy_activity_request
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_copy_activity_request_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_copy_activity_request_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_copy_activity_request.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_copy_activity_request_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /********* hipma_health_social_services_program ***************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_health_social_services_program
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_health_social_services_program_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_health_social_services_program
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_health_social_services_program_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_health_social_services_program_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_health_social_services_program.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_health_social_services_program_id_seq
-    OWNER TO postgres;
 
 
 /**************************************************************/
@@ -268,30 +170,16 @@ ALTER SEQUENCE bizont_edms_hipma.hipma_health_social_services_program_id_seq
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_hss_systems
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_hss_systems_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_hss_systems
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_hss_systems_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_hss_systems_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_hss_systems.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_hss_systems_id_seq
-    OWNER TO postgres;
 
 
 /**************************************************************/
@@ -300,30 +188,16 @@ ALTER SEQUENCE bizont_edms_hipma.hipma_hss_systems_id_seq
 
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_request_type
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     description character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_request_type_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_request_type
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_hipma.hipma_request_type_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_hipma.hipma_request_type_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY hipma_request_type.id;
-
-ALTER SEQUENCE bizont_edms_hipma.hipma_request_type_id_seq
-    OWNER TO postgres;
 
 
 /**************************************************************/

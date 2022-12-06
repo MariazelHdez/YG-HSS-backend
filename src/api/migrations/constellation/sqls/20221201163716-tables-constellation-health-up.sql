@@ -6,7 +6,7 @@
 
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     status character varying(25) DEFAULT 'open',
     first_name character varying(255),
     last_name character varying(255),
@@ -35,27 +35,14 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     include_family_members character varying(255),
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT constellation_health_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_constellation_health.constellation_health_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY constellation_health.id;
-
-ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_id_seq
-    OWNER TO postgres;
 
 CREATE INDEX constellation_health_status_idx ON bizont_edms_constellation_health.constellation_health (status);
 CREATE INDEX constellation_health_creation_date_idx ON bizont_edms_constellation_health.constellation_health (created_at);
@@ -67,7 +54,7 @@ CREATE INDEX constellation_health_name_idx ON bizont_edms_constellation_health.c
 
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_family_members
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     constellation_health_id int,
     first_name_family_member character varying(255) NULL,
     last_name_family_member character varying(255),
@@ -92,7 +79,6 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT constellation_health_family_members_id PRIMARY KEY (id),
     CONSTRAINT constellation_health_id_fk FOREIGN KEY(constellation_health_id) REFERENCES constellation_health(id)
 )
 
@@ -100,19 +86,6 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health_family_members
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_constellation_health.constellation_health_family_members_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_family_members_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY constellation_health_family_members.id;
-
-ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_family_members_id_seq
-    OWNER TO postgres;
 
 CREATE INDEX constellation_health_id_idx ON bizont_edms_constellation_health.constellation_health_family_members (constellation_health_id);
 CREATE INDEX constellation_health_family_member_creation_date_idx ON bizont_edms_constellation_health.constellation_health_family_members (created_at);
@@ -124,12 +97,11 @@ CREATE INDEX constellation_health_family_member_name_idx ON bizont_edms_constell
 
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_language
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     value character varying(100) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT language_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -137,31 +109,17 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health_language
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_constellation_health.constellation_health_language_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_language_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY constellation_health_language.id;
-
-ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_language_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /******* constellation_health_diagnosis_history ***************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_diagnosis_history
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     value character varying(100) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT diagnosis_history_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
@@ -169,50 +127,23 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health_diagnosis_history
     OWNER to postgres;
 
--- DROP SEQUENCE IF EXISTS bizont_edms_constellation_health.constellation_health_diagnosis_history_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_diagnosis_history_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY constellation_health_diagnosis_history.id;
-
-ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_diagnosis_history_id_seq
-    OWNER TO postgres;
-
 /**************************************************************/
 /********** constellation_health_demographics *****************/
 /**************************************************************/
 
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_demographics
 (
-    id bigint NOT NULL,
+    id SERIAL PRIMARY KEY,
     value character varying(100) NOT NULL,
     description character varying(500) NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT demographics_id PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health_demographics
     OWNER to postgres;
-
--- DROP SEQUENCE IF EXISTS bizont_edms_constellation_health.constellation_health_demographics_id_seq;
-
-CREATE SEQUENCE IF NOT EXISTS bizont_edms_constellation_health.constellation_health_demographics_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 2147483647
-    CACHE 1
-    OWNED BY constellation_health_demographics.id;
-
-ALTER SEQUENCE bizont_edms_constellation_health.constellation_health_demographics_id_seq
-    OWNER TO postgres;
 
 
 /**************************************************************/
