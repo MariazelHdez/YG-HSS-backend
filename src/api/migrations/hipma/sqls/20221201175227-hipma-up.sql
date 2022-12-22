@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_files
     file_data TEXT NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_id_fk FOREIGN KEY(hipma_id) REFERENCES health_information(id)
+    CONSTRAINT hipma_id_fk FOREIGN KEY(hipma_id) REFERENCES bizont_edms_hipma.health_information(id)
 )
 
 TABLESPACE pg_default;

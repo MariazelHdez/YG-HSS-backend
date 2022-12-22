@@ -316,7 +316,7 @@ function getDataByModel(model: string, id: any, type: string){
 
         _.forEach(id, function(values: any, position: any) {
             const arrayColumn = (arr: any, n: any) => arr.map((x: any) => x[n]);
-            //foreach(id as position => values){
+
           if(!values.includes(arrayColumn(res_arr, 'id'))){
             others = values;
           }
@@ -330,7 +330,7 @@ function getDataByModel(model: string, id: any, type: string){
             if(max == 1){
                 modelValues = String(data[0].id);
             }else{
-                _.forEach(data, function(value: any, key: any) {//foreach (data as key => value) {
+                _.forEach(data, function(value: any, key: any) {
                     if(count == max){
                         modelValues += String(value.id);
                     }else{
@@ -344,9 +344,9 @@ function getDataByModel(model: string, id: any, type: string){
               return modelValues+","+others;
         }else if((modelValues)){
               return modelValues;
-        }else if((others)){
+        }/*else if((others)){
               return others;
-        }
+        }*/
 
     }
 }

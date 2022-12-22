@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     family_physician character varying(255),
     current_family_physician character varying(255),
     accessing_health_care character varying(255),
-    /*diagnosis character varying(100),*/
     diagnosis TEXT [],
     demographics_groups character varying(100),
     include_family_members character varying(255),
@@ -73,13 +72,12 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     family_physician_family_member character varying(255),
     current_family_physician_family_member character varying(255),
     accessing_health_care_family_member character varying(255),
-    /*diagnosis_family_member character varying(100),*/
     diagnosis_family_member TEXT [],
     demographics_groups_family_member character varying(100),
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT constellation_health_id_fk FOREIGN KEY(constellation_health_id) REFERENCES constellation_health(id)
+    CONSTRAINT constellation_health_id_fk FOREIGN KEY(constellation_health_id) REFERENCES bizont_edms_constellation_health.constellation_health(id)
 )
 
 TABLESPACE pg_default;
