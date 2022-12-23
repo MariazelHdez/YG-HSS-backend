@@ -73,6 +73,8 @@ const routes = [
   },
   {
     path: "/constellation",
+    name: "Constellation Health",
+    component: Constellation,
     meta: {
       requiresAuth: true
     }

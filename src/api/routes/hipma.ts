@@ -344,9 +344,9 @@ function getDataByModel(model: string, id: any, type: string){
               return modelValues+","+others;
         }else if((modelValues)){
               return modelValues;
-        }/*else if((others)){
+        }else if((others)){
               return others;
-        }*/
+        }
 
     }
 }

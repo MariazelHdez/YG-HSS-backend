@@ -24,6 +24,11 @@ export const sections = [
         name: "Employees",
         url: "/employees",
         icon: "mdi-account-group"
+    },
+    {
+        name: "Constellation Health",
+        url: "/constellarion",
+        icon: "mdi-account-group"
     }
 ];
 export const environment = process.env.NODE_ENV;
