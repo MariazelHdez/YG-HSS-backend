@@ -27,7 +27,7 @@ export const sections = [
     },
     {
         name: "Constellation Health",
-        url: "/constellarion",
+        url: "/constellation",
         icon: "mdi-account-group"
     }
 ];

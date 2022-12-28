@@ -10,6 +10,8 @@ import LoginComplete from "../components/LoginComplete";
 import Profile from "../components/Profile";
 import store from "../store";
 import Employees from "../components/Employees";
+import Constellation from "../components/Constellation";
+import ConstellationDetails from "../components/ConstellationDetails";
 
 Vue.use(VueRouter);
 
@@ -75,6 +77,14 @@ const routes = [
     path: "/constellation",
     name: "Constellation Health",
     component: Constellation,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/constellation/show:id",
+    name: "Constellation Health",
+    component: ConstellationDetails,
     meta: {
       requiresAuth: true
     }

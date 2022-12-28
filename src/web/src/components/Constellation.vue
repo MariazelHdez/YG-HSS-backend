@@ -10,7 +10,6 @@
       :headers="headers"
       :options.sync="options"
       :loading="loading"
-      :server-items-length="totalLength"
       :search="search"
     ></v-data-table>
   </div>
@@ -26,14 +25,15 @@ export default {
     items: [],
     search: "",
     options: {},
-    totalLength: 0,
+
     headers: [
-        { text: "Legal Name", value: "your_legal_name" },
-        { text: "Date of Birth", value: "date_of_birth" },
-        { text: "Do you have a family physician?", value: "family_physician" },
-        { text: "Diagnosis/History", value: "diagnosis" },
-        { text: "Created", value: "created_at" },
-        { text: "", value: "View" },
+        { text: "Legal Name", value: "your_legal_name", sortable: true},
+        { text: "Date of Birth", value: "date_of_birth", sortable: true},
+        { text: "Do you have a family physician?", value: "family_physician", sortable: true},
+        { text: "Diagnosis/History", value: "diagnosis", sortable: true},
+        { text: "Created", value: "created_at", sortable: true},
+        { text: "", value: "status", sortable: true},
+        { text: "View", value: "<v-icon>mdi-eye-outline</v-icon>", sortable: false},
     ],
     page: 1,
     pageCount: 0,
@@ -61,18 +61,20 @@ export default {
       this.loading = true;
 
       axios
-        .post(
-          "http://localhost:3000/api/constellation",
-          this.options
-        )
+        .get("http://localhost:3000/api/constellation/")
         .then((resp) => {
-          console.log(resp.data);
-          this.items = resp.data.data;
-          this.loading = false;
+
+            this.items = resp.data.data;
+            //this.pagination.totalLength = resp.data.meta.count;
+            //this.totalLength = resp.data.meta.count;
+
+            //console.log(this.totalLength);
+
+            this.loading = false;
         })
         .catch((err) => console.error(err))
         .finally(() => {
-          this.loading = false;
+            this.loading = false;
         });
     },
   },

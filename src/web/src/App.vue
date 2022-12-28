@@ -5,7 +5,7 @@
       permanent
       :expand-on-hover="hasSidebarClosable"
       clipped
-      color="#f1f1f1"
+      color="#fff"
       v-bind:class="{ 'd-none': !hasSidebar }"
     >
       <v-list dense nav style="" class="mt-4">
@@ -102,10 +102,6 @@
         </v-row>
       </v-container>
     </v-main>
-
-    <div class="container text-center">
-      <img src="/Aurora-mini.svg" style="margin: 5% 0px 3% 0px" height="44" />
-    </div>
 
       <v-footer
         flat
