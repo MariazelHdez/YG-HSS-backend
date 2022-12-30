@@ -6,29 +6,31 @@ export const hasSidebarClosable = false;
 
 export const sections = [
     {
-        name: "Dashboard",
-        url: "/",
-        icon: "mdi-view-dashboard"
+        header: "Dashboard",
+        data:[{
+            name: "Dashboard",
+            url: "/",
+            icon: "mdi-view-dashboard"
+        },
+        {
+            name: "Basic Form",
+            url: "/form",
+            icon: "mdi-book-open-variant"
+        },
+        {
+            name: "Data grid",
+            url: "/grid",
+            icon: "mdi-table-large"
+        }]
     },
+
     {
-        name: "Basic Form",
-        url: "/form",
-        icon: "mdi-book-open-variant"
-    },
-    {
-        name: "Data grid",
-        url: "/grid",
-        icon: "mdi-table-large"
-    },
-    {
-        name: "Employees",
-        url: "/employees",
-        icon: "mdi-account-group"
-    },
-    {
-        name: "Constellation Health",
-        url: "/constellation",
-        icon: "mdi-account-group"
+        header: "Constellation Health",
+        data:[{
+            name: "Submissions",
+            url: "/constellation",
+            icon: "mdi-account-group"
+        }]
     }
 ];
 export const environment = process.env.NODE_ENV;

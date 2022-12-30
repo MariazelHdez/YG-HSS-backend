@@ -76,55 +76,50 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
     }
 });
 
-constellationRouter.get("/show:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+constellationRouter.get("/show/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 try {
-    let { constellationHealth_id } = req.params;
+    var constellationHealth_id = Number(req.params.constellationHealth_id);
     var constellationHealth = Object();
     var constellationFamily = Object();
 
     constellationHealth = await db("bizont_edms_constellation_health.constellation_health")
         .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-        .leftJoin('bizont_edms_constellation_health.constellation_health_diagnosis_history', 'constellation_health.diagnosis', 'constellation_health_diagnosis_history.id')
         .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-        .select('constellation_health.*',
-                'constellation_health_language.description as language_prefer_description',
-                'constellation_health_demographics.description as demographic_description')
-        .where({ id: constellationHealth_id });
+        .where('constellation_health.id', constellationHealth_id)
+        .select('bizont_edms_constellation_health.constellation_health.*',
+                'bizont_edms_constellation_health.constellation_health_language.description as language_prefer_description',
+                'bizont_edms_constellation_health.constellation_health_demographics.description as demographic_description')
+        .first();
 
     constellationFamily = await db("bizont_edms_constellation_health.constellation_health_family_members")
         .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-        .leftJoin('bizont_edms_constellation_health.constellation_health_diagnosis_history', 'constellation_health_family_members.diagnosis_family_member', 'constellation_health_diagnosis_history.id')
         .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
         .select('constellation_health_family_members.*',
                 'constellation_health_language.description as language_prefer_description_family_member',
                 'constellation_health_demographics.description as demographic_description_family_member')
-        .where({ id: constellationHealth_id });
+        .where('constellation_health_family_members.constellation_health_id', constellationHealth_id)
+
 
     if(constellationHealth.date_of_birth == 0) {
         constellationHealth.date_of_birth =  "N/A";
     }
 
     let dataString = "";
-    var info_find = Object();
-
     var diagnosis = Object();
 
     diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
         let arrayResult = Object();
 
         for (let row of rows) {
-            arrayResult[row['value']] = row['description'];
+            arrayResult[row['id']] = row['description'];
         }
 
         return arrayResult;
     });
 
     _.forEach(constellationHealth.diagnosis, function(valueDiagnosis: any, key: any) {
-        //info_find = db("bizont_edms_constellation_health.constellation_health_diagnosis_history").where({ id: valueDiagnosis });
-
-        //if(!isNaN(valueDiagnosis) && !info_find && typeof info_find.description !== 'undefined'){
         if(valueDiagnosis in diagnosis){
-            dataString += info_find.description+",";
+            dataString += diagnosis[valueDiagnosis]+",";
         }else{
             dataString += valueDiagnosis+",";
         }
@@ -134,12 +129,13 @@ try {
         dataString = dataString.slice(0, -1);
     }
 
-    constellationHealth.diagnosis = dataString.replace(",",", ");
+    constellationHealth.diagnosis = dataString.replace(/,/g, ', ');
 
     constellationHealth.flagFamilyMembers = false;
 
     if(constellationFamily.length){
         constellationHealth.flagFamilyMembers = true;
+
         constellationFamily.forEach(function (value: any, key: any) {
 
             if(value.date_of_birth_family_member == 0) {
@@ -147,21 +143,18 @@ try {
             }
 
             let dataString = "";
-            var info_find = Object();
 
-            _.forEach(constellationHealth.diagnosis, function(valueDiagnosis: any, key: any) {
-                //info_find = db("bizont_edms_constellation_health.constellation_health_diagnosis_history").where({ id: valueDiagnosis });
+            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
 
-                //if(!isNaN(valueDiagnosis) && !info_find && typeof info_find.description !== 'undefined'){
-                if(valueDiagnosis in diagnosis){
-                    dataString += info_find.description+",";
+                if(valueDiagnosisFm in diagnosis){
+                    dataString += diagnosis[valueDiagnosisFm]+",";
                 }else{
-                    dataString += valueDiagnosis+",";
+                    dataString += valueDiagnosisFm+",";
                 }
             });
 
             if(dataString.substr(-1) == ","){
-                dataString = dataString.substr(0, -1);
+                dataString = dataString.slice(0, -1);
             }
 
             constellationFamily[key].diagnosis_family_member = dataString.replace(/,/g, ', ');
@@ -186,7 +179,6 @@ try {
     var constellationHealth = Object();
     var demographics = Object();
     var languages = Object();
-    var demographics = Object();
     let constellationSaved = Object();
 
     data = req.body;
@@ -233,11 +225,11 @@ try {
 
     demographics = await db("bizont_edms_constellation_health.constellation_health_demographics").where({ value: data.demographics_groups }).select().first();
 
-    if(_.isEmpty(demographics)){
+    if(demographics){
         constellationHealth.demographics_groups = demographics.id;
-    }else{
+    }/*else{
         constellationHealth.demographics_groups = data.demographics_groups;
-    }
+    }*/
 
     constellationHealth.include_family_members = data.include_family_members;
 
@@ -264,7 +256,7 @@ try {
     }
 
 } catch(e) {
-    // console.log(e);  // debug if needed
+    console.log(e);  // debug if needed
     res.send( {
         status: 400,
         message: 'Request could not be processed'
@@ -342,9 +334,9 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
 
         if(dataMember['demographics_groups_family_member'] in demographics){
             constellationFamilyMembers.demographics_groups_family_member = demographics[dataMember['demographics_groups_family_member']];
-        }else{
+        }/*else{
             constellationFamilyMembers.demographics_groups_family_member = dataMember['demographics_groups_family_member'];
-        }
+        }*/
 
         familyMembersInsert.push(constellationFamilyMembers);
     }

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     current_family_physician character varying(255),
     accessing_health_care character varying(255),
     diagnosis TEXT [],
-    demographics_groups character varying(100),
+    demographics_groups int,
     include_family_members character varying(255),
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
     current_family_physician_family_member character varying(255),
     accessing_health_care_family_member character varying(255),
     diagnosis_family_member TEXT [],
-    demographics_groups_family_member character varying(100),
+    demographics_groups_family_member int,
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

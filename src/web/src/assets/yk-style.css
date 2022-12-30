@@ -202,3 +202,25 @@ a {
         margin-left: 0%;
     }
 }
+
+.theme--light.v-data-table tbody tr:nth-of-type(even) {
+    background-color: #EDEDED;
+}
+
+.v-navigation-drawer__border,
+.theme--light.v-navigation-drawer:not(.v-navigation-drawer--floating) .v-navigation-drawer__border {
+    background-color: #ffffff;
+}
+
+.v-navigation-drawer .v-list-item--active{
+    background-color: #244C5A;
+}
+
+.v-data-table-header{
+    background-color: #DC4405;
+}
+
+.theme--light.v-data-table>.v-data-table__wrapper>table>thead>tr>th{
+    color: #ffffff;
+    line-height: 23px;
+}

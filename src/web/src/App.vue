@@ -8,20 +8,23 @@
       color="#fff"
       v-bind:class="{ 'd-none': !hasSidebar }"
     >
-      <v-list dense nav style="" class="mt-4">
+      <v-list dense nav style="" class="mt-4"
+        v-for='(section, index) in sections'>
+          <v-subheader>{{ section.header }}</v-subheader>
         <v-list-item
           link
           nav
-          v-bind:title="section.name"
-          v-bind:to="section.url"
-          v-for="section in sections"
-          v-bind:key="section.name"
+          v-bind:title="detail.name"
+          v-bind:to="detail.url"
+          v-for="detail in section.data"
+          v-bind:key="detail.name"
+          color= "white"
         >
           <v-list-item-icon>
-            <v-icon>{{ section.icon }}</v-icon>
+            <v-icon>{{ detail.icon }}</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>{{ section.name }}</v-list-item-title>
+            <v-list-item-title>{{ detail.name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>

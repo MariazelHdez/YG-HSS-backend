@@ -122,7 +122,7 @@ export default {
       this.loading = true;
 
       axios
-        .get("http://localhost:3000/api/constellation/show")
+        .get("http://localhost:3000/api/constellation/show/")
         .then((resp) => {
 
             this.itemsConstellation = resp.data.dataConstellation;

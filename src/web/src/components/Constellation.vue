@@ -1,3 +1,4 @@
+
 <template>
   <div class="books">
     <h1>Constellation Health Requests</h1>
@@ -11,7 +12,7 @@
       :options.sync="options"
       :loading="loading"
       :search="search"
-    ></v-data-table>
+    ><slot name="first" /></v-data-table>
   </div>
 </template>
 
@@ -33,7 +34,7 @@ export default {
         { text: "Diagnosis/History", value: "diagnosis", sortable: true},
         { text: "Created", value: "created_at", sortable: true},
         { text: "", value: "status", sortable: true},
-        { text: "View", value: "<v-icon>mdi-eye-outline</v-icon>", sortable: false},
+        { text: "", value: "actions", sortable: false},
     ],
     page: 1,
     pageCount: 0,

@@ -9,7 +9,6 @@ import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
 import Profile from "../components/Profile";
 import store from "../store";
-import Employees from "../components/Employees";
 import Constellation from "../components/Constellation";
 import ConstellationDetails from "../components/ConstellationDetails";
 
@@ -66,14 +65,6 @@ const routes = [
     component: NotFound
   },
   {
-    path: "/employees",
-    name: "Employees",
-    component: Employees,
-    meta: {
-      requiresAuth: true
-    }
-  },
-  {
     path: "/constellation",
     name: "Constellation Health",
     component: Constellation,
@@ -82,7 +73,7 @@ const routes = [
     }
   },
   {
-    path: "/constellation/show:id",
+    path: "/constellation/show/:constellationHealth_id",
     name: "Constellation Health",
     component: ConstellationDetails,
     meta: {
