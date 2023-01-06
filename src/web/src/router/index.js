@@ -9,8 +9,8 @@ import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
 import Profile from "../components/Profile";
 import store from "../store";
-import Constellation from "../components/Constellation";
-import ConstellationDetails from "../components/ConstellationDetails";
+import Constellation from "../components/Constellation/Constellation";
+import ConstellationDetails from "../components/Constellation/ConstellationDetails";
 
 Vue.use(VueRouter);
 

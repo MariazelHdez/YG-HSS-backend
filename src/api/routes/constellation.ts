@@ -24,7 +24,8 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
                     'constellation_health.family_physician',
                     'constellation_health.diagnosis',
                     'constellation_health.created_at',
-                    'constellation_health.status')
+                    'constellation_health.status',
+                    'constellation_health.id as constellation_health_id')
             .where('constellation_health.status', 'open')
             .orderBy('constellation_health.id', 'asc');
 
@@ -41,6 +42,14 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
         });
 
         constellationHealth.forEach(function (value: any) {
+
+            if(value.date_of_birth == 0) {
+                value.date_of_birth =  "N/A";
+            }else{
+                value.date_of_birth =  value.date_of_birth.toLocaleDateString("en-CA");
+            }
+
+            value.created_at =  value.created_at.toLocaleString("en-CA");
 
             if(value.language_prefer_to_receive_services){
                 value.language_prefer_to_receive_services = value.preferred_language;
@@ -64,9 +73,39 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
             }
 
             value.diagnosis = dataString.replace(/,/g, ', ');
+
+            value.showUrl = "constellation/show/"+value.constellation_health_id;
         });
 
         res.send({data: constellationHealth});
+    } catch(e) {
+        // console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+constellationRouter.get("/validateRecord/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+        var constellationHealth_id = Number(req.params.constellationHealth_id);
+        var constellationHealth = Object();
+        var flagExists= true;
+        var message= "";
+        var type= "error";
+
+        constellationHealth = await db("bizont_edms_constellation_health.constellation_health")
+            .where('constellation_health.id', constellationHealth_id)
+            .select('bizont_edms_constellation_health.constellation_health.*')
+            .first();
+
+        if(!constellationHealth || constellationHealth.status == "closed"){
+            flagExists= false;
+            message= "The request you are consulting is closed or non existant, please choose a valid request.";
+        }
+
+        res.json({ status: 200, flagConstellation: flagExists, message: message, type: type});
     } catch(e) {
         // console.log(e);  // debug if needed
         res.send( {
@@ -97,11 +136,12 @@ try {
         .select('constellation_health_family_members.*',
                 'constellation_health_language.description as language_prefer_description_family_member',
                 'constellation_health_demographics.description as demographic_description_family_member')
-        .where('constellation_health_family_members.constellation_health_id', constellationHealth_id)
-
+        .where('constellation_health_family_members.constellation_health_id', constellationHealth_id);
 
     if(constellationHealth.date_of_birth == 0) {
         constellationHealth.date_of_birth =  "N/A";
+    }else{
+        constellationHealth.date_of_birth =  constellationHealth.date_of_birth.toLocaleDateString("en-CA");
     }
 
     let dataString = "";
@@ -162,9 +202,10 @@ try {
         });
     }
 
-    res.json({ status: 200, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily });
+    res.json({ status: 200, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily});
 } catch(e) {
     // console.log(e);  // debug if needed
+
     res.send( {
         status: 400,
         message: 'Request could not be processed'

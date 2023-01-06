@@ -4,10 +4,10 @@
         <v-expansion-panel>
           <v-expansion-panel-header>Family Members Information</v-expansion-panel-header>
           <v-expansion-panel-content>
-              <v-expansion-panels v-for="(items, index) in familyMembers">
+              <v-expansion-panels v-for="(items, index) in familyMembers" :key="index">
                 <v-expansion-panel>
                   <v-expansion-panel-header class="panel-header-familyMember">{{items.first_name_family_member}}</v-expansion-panel-header>
-                    <v-expansion-panel-content>
+                    <v-expansion-panel-content class="panel-content-familyMember">
 
                     <v-expansion-panels
                       multiple
@@ -181,9 +181,6 @@
 export default {
     name: 'Test',
     props: ['familyMembers'],
-    data() {
-        console.log(this.familyMembers);
-        var listaCategorias = this.familyMembers;
-    },
-}   
-</script> 
+
+}
+</script>

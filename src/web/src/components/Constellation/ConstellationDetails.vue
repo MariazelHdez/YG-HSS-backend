@@ -118,7 +118,7 @@
                 </v-simple-table>
           </v-expansion-panel-content>
         </v-expansion-panel>
-  
+
         <v-expansion-panel>
           <v-expansion-panel-header>Other Information</v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -160,6 +160,7 @@
                 </v-simple-table>
           </v-expansion-panel-content>
         </v-expansion-panel>
+
       </v-expansion-panels>
 
       <ConstellationFamilyMembers v-bind:familyMembers="itemsConstellationFamily"/>
@@ -181,27 +182,29 @@ export default {
   components: {
     ConstellationFamilyMembers
   },
-  watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
-    },
-    search: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
-    },
+  created(){
+    this.validateRecord();
   },
   mounted() {
     this.getDataFromApi();
   },
   methods: {
+    validateRecord() {
+      axios
+        .get("http://localhost:3000/api/constellation/validateRecord/"+this.$route.params.constellationHealth_id)
+        .then((resp) => {
+            if(!resp.data.flagConstellation){
+              this.$router.push({
+                path: '/constellation',
+                query: { message: resp.data.message, type: resp.data.type}
+              });
+            }
+        })
+        .catch((err) => console.error(err))
+        .finally(() => {
+        });
+    },
     getDataFromApi() {
-      this.loading = true;
-
       axios
         .get("http://localhost:3000/api/constellation/show/"+this.$route.params.constellationHealth_id)
         .then((resp) => {
@@ -211,11 +214,9 @@ export default {
             //this.pagination.totalLength = resp.data.meta.count;
             //this.totalLength = resp.data.meta.count;
 
-            this.loading = false;
         })
         .catch((err) => console.error(err))
         .finally(() => {
-            this.loading = false;
         });
     },
   },

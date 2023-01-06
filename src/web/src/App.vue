@@ -100,7 +100,7 @@
       <v-container fluid id="container-main">
         <v-row id="container-row">
           <v-col>
-            <router-view></router-view>
+            <router-view :key="componentKey"></router-view>
           </v-col>
         </v-row>
       </v-container>
@@ -160,7 +160,8 @@ export default {
     applicationIcon: config.applicationIcon,
     sections: config.sections,
     hasSidebar: false, //config.hasSidebar,
-    hasSidebarClosable: config.hasSidebarClosable
+    hasSidebarClosable: config.hasSidebarClosable,
+    componentKey: 0,
   }),
   created: async function() {
     await store.dispatch("checkAuthentication");
@@ -174,12 +175,14 @@ export default {
     isAuthenticated: function(val) {
       if (!val) this.hasSidebar = false;
       else this.hasSidebar = config.hasSidebar;
+    },
+    '$route'(to, from) {
+      this.forceRerender();
     }
   },
   methods: {
     nav: function(location) {
       router.push(location);
-      console.log(location);
     },
     toggleHeader: function() {
       this.headerShow = !this.headerShow;
@@ -190,7 +193,10 @@ export default {
     signOut: function() {
       store.dispatch("signOut");
       router.push("/");
-    }
+    },
+    forceRerender() {
+      this.componentKey += 1;
+    },
   }
 };
 </script>
