@@ -25,6 +25,7 @@
 <script>
 const axios = require("axios");
 import ConstellationAlert from './ConstellationAlert.vue';
+import { CONSTELLATION_URL } from "../../urls.js";
 
 export default {
   name: "Grid",
@@ -81,7 +82,7 @@ export default {
       this.loading = true;
 
       axios
-        .get("http://localhost:3000/api/constellation/")
+        .get(CONSTELLATION_URL)
         .then((resp) => {
 
             this.items = resp.data.data;

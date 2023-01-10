@@ -171,6 +171,8 @@
 <script>
 const axios = require("axios");
 import ConstellationFamilyMembers from './ConstellationFamilyMembers.vue';
+import { CONSTELLATION_SHOW_URL } from "../../urls.js";
+import { CONSTELLATION_VALIDATE_URL } from "../../urls.js";
 
 export default {
   name: "Grid",
@@ -191,7 +193,7 @@ export default {
   methods: {
     validateRecord() {
       axios
-        .get("http://localhost:3000/api/constellation/validateRecord/"+this.$route.params.constellationHealth_id)
+        .get(CONSTELLATION_VALIDATE_URL+this.$route.params.constellationHealth_id)
         .then((resp) => {
             if(!resp.data.flagConstellation){
               this.$router.push({
@@ -206,13 +208,11 @@ export default {
     },
     getDataFromApi() {
       axios
-        .get("http://localhost:3000/api/constellation/show/"+this.$route.params.constellationHealth_id)
+        .get(CONSTELLATION_SHOW_URL+this.$route.params.constellationHealth_id)
         .then((resp) => {
 
             this.itemsConstellation = resp.data.dataConstellation;
             this.itemsConstellationFamily = resp.data.dataConstellationFamily;
-            //this.pagination.totalLength = resp.data.meta.count;
-            //this.totalLength = resp.data.meta.count;
 
         })
         .catch((err) => console.error(err))
