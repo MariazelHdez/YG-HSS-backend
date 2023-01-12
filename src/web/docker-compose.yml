@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+    node_hss_backend_web:
+        build: 
+            context: "./"
+            dockerfile: Dockerfile
+        # command: ["nodemon", "server.js"]
+        volumes:
+            - "./:/usr/src/app"
+            - "./.env:/.env"
+        ports:
+            - 8080:8080
