@@ -1,13 +1,12 @@
-# YG vue-template
-A template to for Vuejs based web apps for internal services.  
 
-## Development from this template
+# YG Health and social services Backend
+Health and social services Backend for Vuejs-based web apps for internal services.  
 
-The intent of this template is to evolve over time, so projects should fork this code into a new repository. That will allow the project files to evolve over time and be able to update the child repositories.
+## Development
+Before starting the API server, you need to create the appropriate .env file, which can be done by running `cp src/api/.env src/api/.env.development`. You must then set the appropriate values.
 
-Before starting the API server, you need to create the appropriate .env file which can be done by running `cp src/api/.env src/api/.env.development`. You must then set the appropriate values
+To develop within this environment, you must have Node.js and NPM installed on your development machine. Open two terminal windows and open one to `/src/api` and `src/web`, respectively. The API back-end and the web front-end can be started with: `npm run start:dev`.
 
-To develop within this environment, you must have Node.js and NPM installed on your development machine. Open two terminal windows and open one to `/src/api` and `src/web` respectively. Both the API back-end and the web front-end can be started with: `npm run start:dev`.
 
 Once both are running, open your browser and navigate to http://localhost:8080 to view the application.
 
@@ -20,27 +19,26 @@ Environment variables should never be checked into the repository!
 - AUTH_REDIRECT=(FRONTEND_URL from above)/login-complete
 - VIVVO_CLIENT_ID=(the client id provided for the service)
 - VIVVO_CLIENT_SECRET=(the client secret provided for the service)
-- VIVVO_CALLBACK_URL=(the fully qualified url of the API, must match setup in Vivvo)/authorization-code/callback
 
-## Building the container image
-docker build -t vue-template .
+- BASE_URL=(the url of the service, from API)
+- CLIENT_SECRET= (Client secret is generated from https://auth0.com/docs)
+- CLIENT_ID= (Client id is generated from https://auth0.com/docs)
+- ISSUER_BASE_URL= (Base url is generated from https://auth0.com/docs)
+- SECRET= (Secret is generated from https://auth0.com/docs)
+- DB_NAME_CONSTELLATION=(Constellation database name)
+- DB_NAME_MIDWIFERY=(Midwifery database name)
+- DB_NAME_HIPMA=(HIPMA database name)
+- DB_HOST=(the host address of the database.)
+- DB_USER=(Specifies the name of the user to connect as database)
+- DB_PASS=(Specifies the database password of the user to connect as database)
+- DB_PORT=(Specifies the database port )
 
-## Running the container in test or production
 
-By default, the container will run in development mode, but following the step above, you can create the appropriate environment files for the instance you are targetting. Depending, the application will look for either `src/api/.env.test` or `src/api/.env.production`. To tell the API which instance to use, add the environment variable `NODE_ENV` to the docker run command like below.
+## Database migration
 
-`docker run -p 8222:3000 -e NODE_ENV=production --restart=on-failure vue-template`
+- Go to `src/api`
+- Update the `.env` file with the database values before running the following commands.
+- Run the following commands 
+  - Create Constellation database: `db-migrate db:create bizont_edms_constellation_health`
+  - Create schemas, tables and inserts in Constellation: `db-migrate up:constellation -e constellation`
 
-## Running backend
-
-Database creation:
-
-- Constellation: `db-migrate db:create bizont_edms_constellation_health`
-- Midwifery: `db-migrate db:create bizont_edms_midwifery`
-- Constellation: `db-migrate db:create bizont_edms_hipma`
-
-Schemas, tables and inserts:
-
-- Constellation: `db-migrate up:constellation -e constellation`
-- Midwifery: `db-migrate up:midwifery -e midwifery`
-- Constellation: `db-migrate up:hipma -e hipma`

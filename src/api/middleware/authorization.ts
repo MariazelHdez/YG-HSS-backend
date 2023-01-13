@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../models";
 
+
 const USER_ACTIVE_STATUS = "Active";
 
 export const UserRoles = {

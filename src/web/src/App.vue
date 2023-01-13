@@ -100,7 +100,7 @@
       <v-container fluid id="container-main">
         <v-row id="container-row">
           <v-col>
-            <router-view></router-view>
+            <router-view :key="componentKey"></router-view>
           </v-col>
         </v-row>
       </v-container>
@@ -136,7 +136,6 @@ import router from "./router";
 import store from "./store";
 import * as config from "./config";
 import { mapState } from "vuex";
-
 export default {
   name: "App",
   components: {},
@@ -160,13 +159,13 @@ export default {
     applicationIcon: config.applicationIcon,
     sections: config.sections,
     hasSidebar: false, //config.hasSidebar,
-    hasSidebarClosable: config.hasSidebarClosable
+    hasSidebarClosable: config.hasSidebarClosable,
+    componentKey: 0,
   }),
   created: async function() {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
     console.log(this.isAuthenticated);
-
     if (!this.isAuthenticated) this.hasSidebar = false;
     else this.hasSidebar = config.hasSidebar;
   },
@@ -174,12 +173,14 @@ export default {
     isAuthenticated: function(val) {
       if (!val) this.hasSidebar = false;
       else this.hasSidebar = config.hasSidebar;
+    },
+    '$route'(to, from) {
+      this.forceRerender();
     }
   },
   methods: {
     nav: function(location) {
       router.push(location);
-      console.log(location);
     },
     toggleHeader: function() {
       this.headerShow = !this.headerShow;
@@ -190,7 +191,10 @@ export default {
     signOut: function() {
       store.dispatch("signOut");
       router.push("/");
-    }
+    },
+    forceRerender() {
+      this.componentKey += 1;
+    },
   }
 };
 </script>
