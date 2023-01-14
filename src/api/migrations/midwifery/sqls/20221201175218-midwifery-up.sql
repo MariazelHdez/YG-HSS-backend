@@ -8,15 +8,15 @@ CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
 (
     id SERIAL PRIMARY KEY,
     confirmation_number character varying(10),
-    status character varying(25) DEFAULT 'open',
+    status int DEFAULT 1 NOT NULL,
     first_name character varying(255),
     last_name character varying(255),
     preferred_name character varying(255),
     pronouns character varying(255),
     date_of_birth DATE,
     yukon_health_insurance int,
-    community_located character varying(100),
-    preferred_language character varying(100),
+    community_located int,
+    preferred_language int,
     need_interpretation int,
     preferred_phone character varying(255),
     preferred_email character varying(255),
@@ -55,6 +55,18 @@ ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_services
 CREATE INDEX midwifery_services_status_idx ON bizont_edms_midwifery.midwifery_services (status);
 CREATE INDEX midwifery_services_creation_date_idx ON bizont_edms_midwifery.midwifery_services (created_at);
 CREATE INDEX midwifery_services_name_idx ON bizont_edms_midwifery.midwifery_services (first_name, last_name);
+
+/**************************************************************/
+/********************* midwifery_status ***********************/
+/**************************************************************/
+
+CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_status
+(
+    id SERIAL PRIMARY KEY,
+    description character varying(500) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+)
 
 /**************************************************************/
 /******************* midwifery_options ************************/
@@ -180,6 +192,17 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
     OWNER to postgres;
+
+
+/**************************************************************/
+/********************* midwifery_status ********************/
+/**************************************************************/
+INSERT INTO bizont_edms_midwifery.midwifery_status(
+id, description)
+VALUES  (1, 'New/Unread'),
+        (2, 'Entered'),
+        (3, 'Declined'),
+        (4, 'Closed');
 
 /**************************************************************/
 /******************* midwifery_options ************************/
