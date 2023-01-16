@@ -249,3 +249,7 @@ a {
 .theme--light.v-expansion-panels .v-expansion-panel-header.panel-header-familyMember{
     background-color: #e36937;
 }
+
+.theme--light.v-expansion-panels .v-expansion-panel-content.panel-content-familyMember{
+    margin: 10px;
+}

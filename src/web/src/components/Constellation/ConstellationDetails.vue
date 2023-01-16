@@ -118,7 +118,7 @@
                 </v-simple-table>
           </v-expansion-panel-content>
         </v-expansion-panel>
-  
+
         <v-expansion-panel>
           <v-expansion-panel-header>Other Information</v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -160,6 +160,7 @@
                 </v-simple-table>
           </v-expansion-panel-content>
         </v-expansion-panel>
+
       </v-expansion-panels>
 
       <ConstellationFamilyMembers v-bind:familyMembers="itemsConstellationFamily"/>
@@ -170,6 +171,8 @@
 <script>
 const axios = require("axios");
 import ConstellationFamilyMembers from './ConstellationFamilyMembers.vue';
+import { CONSTELLATION_SHOW_URL } from "../../urls.js";
+import { CONSTELLATION_VALIDATE_URL } from "../../urls.js";
 
 export default {
   name: "Grid",
@@ -181,41 +184,39 @@ export default {
   components: {
     ConstellationFamilyMembers
   },
-  watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
-    },
-    search: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
-    },
+  created(){
+    this.validateRecord();
   },
   mounted() {
     this.getDataFromApi();
   },
   methods: {
-    getDataFromApi() {
-      this.loading = true;
-
+    validateRecord() {
       axios
-        .get("http://localhost:3000/api/constellation/show/"+this.$route.params.constellationHealth_id)
+        .get(CONSTELLATION_VALIDATE_URL+this.$route.params.constellationHealth_id)
+        .then((resp) => {
+            if(!resp.data.flagConstellation){
+              this.$router.push({
+                path: '/constellation',
+                query: { message: resp.data.message, type: resp.data.type}
+              });
+            }
+        })
+        .catch((err) => console.error(err))
+        .finally(() => {
+        });
+    },
+    getDataFromApi() {
+      axios
+        .get(CONSTELLATION_SHOW_URL+this.$route.params.constellationHealth_id)
         .then((resp) => {
 
             this.itemsConstellation = resp.data.dataConstellation;
             this.itemsConstellationFamily = resp.data.dataConstellationFamily;
-            //this.pagination.totalLength = resp.data.meta.count;
-            //this.totalLength = resp.data.meta.count;
 
-            this.loading = false;
         })
         .catch((err) => console.error(err))
         .finally(() => {
-            this.loading = false;
         });
     },
   },
