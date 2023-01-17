@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_health
 (
     id SERIAL PRIMARY KEY,
-    status character varying(25) DEFAULT 'open',
+    status int DEFAULT 1 NOT NULL,
     first_name character varying(255),
     last_name character varying(255),
     is_this_your_legal_name_ character varying(255),
@@ -90,6 +90,24 @@ CREATE INDEX constellation_health_family_member_creation_date_idx ON bizont_edms
 CREATE INDEX constellation_health_family_member_name_idx ON bizont_edms_constellation_health.constellation_health_family_members (first_name_family_member, last_name_family_member);
 
 /**************************************************************/
+/******************** constellation_status ********************/
+/**************************************************************/
+
+CREATE TABLE IF NOT EXISTS bizont_edms_constellation_health.constellation_status
+(
+    id SERIAL PRIMARY KEY,
+    description character varying(500) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_status
+    OWNER to postgres;
+
+
+/**************************************************************/
 /********** constellation_health_language *********************/
 /**************************************************************/
 
@@ -143,6 +161,15 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS bizont_edms_constellation_health.constellation_health_demographics
     OWNER to postgres;
 
+
+/**************************************************************/
+/******************** constellation_status ********************/
+/**************************************************************/
+INSERT INTO bizont_edms_constellation_health.constellation_status(id, description)
+VALUES  (1, 'New/Unread'),
+        (2, 'Entered'),
+        (3, 'Declined'),
+        (4, 'Closed');
 
 /**************************************************************/
 /********** constellation_health_language *********************/

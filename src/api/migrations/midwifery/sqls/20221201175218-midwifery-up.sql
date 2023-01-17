@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_services
     physician_s_name character varying(255),
     major_medical_conditions int,
     provide_details3 text,
-    do_you_identify_with_one_or_more_of_these_groups_and_communities TEXT [],
-    how_did_you_find_out_about_the_midwifery_clinic_select_all_that_ TEXT [],
+    do_you_identify_with_one_or_more_of_these_groups_and_communitie TEXT [],
+    how_did_you_find_out_about_the_midwifery_clinic_select_all_that TEXT [],
 
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
@@ -67,6 +67,11 @@ CREATE TABLE IF NOT EXISTS bizont_edms_midwifery.midwifery_status
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_status
+    OWNER to postgres;
 
 /**************************************************************/
 /******************* midwifery_options ************************/
@@ -197,8 +202,7 @@ ALTER TABLE IF EXISTS bizont_edms_midwifery.midwifery_preferred_contact_types
 /**************************************************************/
 /********************* midwifery_status ********************/
 /**************************************************************/
-INSERT INTO bizont_edms_midwifery.midwifery_status(
-id, description)
+INSERT INTO bizont_edms_midwifery.midwifery_status(id, description)
 VALUES  (1, 'New/Unread'),
         (2, 'Entered'),
         (3, 'Declined'),
