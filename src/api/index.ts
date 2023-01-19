@@ -8,8 +8,9 @@ import { configureAuthentication } from "./routes/auth"
 
 const app = express();
 
-app.use(express.json()) // for parsing application/json
-app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+const maxRequestBodySize = '10mb';
+app.use(express.json({limit: maxRequestBodySize})) // for parsing application/json
+app.use(express.urlencoded({ extended: true, limit: maxRequestBodySize})) // for parsing application/x-www-form-urlencoded
 //app.use(helmet());
 app.use(
     helmet.contentSecurityPolicy({

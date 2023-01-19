@@ -37,10 +37,10 @@ Database creation:
 
 - Constellation: `db-migrate db:create bizont_edms_constellation_health`
 - Midwifery: `db-migrate db:create bizont_edms_midwifery`
-- Constellation: `db-migrate db:create bizont_edms_hipma`
+- Hipma: `db-migrate db:create bizont_edms_hipma`
 
 Schemas, tables and inserts:
 
 - Constellation: `db-migrate up:constellation -e constellation`
 - Midwifery: `db-migrate up:midwifery -e midwifery`
-- Constellation: `db-migrate up:hipma -e hipma`
+- Hipma: `db-migrate up:hipma -e hipma`
