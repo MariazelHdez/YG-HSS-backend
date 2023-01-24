@@ -9,7 +9,7 @@
       v-bind:class="{ 'd-none': !hasSidebar }"
     >
       <v-list dense nav style="" class="mt-4"
-        v-for='(section, index) in sections'>
+        v-for='(section) in sections' :key="section.header">
           <v-subheader>{{ section.header }}</v-subheader>
         <v-list-item
           link
@@ -176,7 +176,7 @@ export default {
       if (!val) this.hasSidebar = false;
       else this.hasSidebar = config.hasSidebar;
     },
-    '$route'(to, from) {
+    '$route'() {
       this.forceRerender();
     }
   },

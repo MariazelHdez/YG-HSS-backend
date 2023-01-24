@@ -105,7 +105,10 @@
                         </tr>
 
                         <tr v-if="itemsConstellation.interpretation_support">
-                            <td>If accepted, would you prefer interpretation support to attend appointments with an English provider?</td>
+                            <td>
+                              If accepted, would you prefer interpretation support to attend
+                              appointments with an English provider?
+                            </td>
                             <td>{{ itemsConstellation.interpretation_support }}</td>
                         </tr>
 

@@ -6,7 +6,9 @@
           <v-expansion-panel-content>
               <v-expansion-panels v-for="(items, index) in familyMembers" :key="index">
                 <v-expansion-panel>
-                  <v-expansion-panel-header class="panel-header-familyMember">{{items.first_name_family_member}}</v-expansion-panel-header>
+                  <v-expansion-panel-header class="panel-header-familyMember">
+                    {{items.first_name_family_member}}
+                  </v-expansion-panel-header>
                     <v-expansion-panel-content class="panel-content-familyMember">
 
                     <v-expansion-panels
@@ -112,7 +114,10 @@
                                       </tr>
 
                                       <tr v-if="items.interpretation_support_family_member">
-                                          <td>If accepted, would you prefer interpretation support to attend appointments with an English provider?</td>
+                                            <td>
+                                                If accepted, would you prefer interpretation support to attend
+                                                appointments with an English provider?
+                                            </td>
                                           <td>{{ items.interpretation_support_family_member }}</td>
                                       </tr>
 
@@ -159,7 +164,10 @@
                                       </tr>
 
                                       <tr v-if="items.diagnosis_family_member">
-                                          <td>We want to ensure that all types of families and people have access to the CSCHC.</td>
+                                          <td>
+                                            We want to ensure that all types of families and people have access
+                                            to the CSCHC.
+                                          </td>
                                           <td>{{ items.diagnosis_family_member }}</td>
                                       </tr>
                                       </tbody>
@@ -179,7 +187,7 @@
 </template>
 <script>
 export default {
-    name: 'Test',
+    name: 'ConstellationFamilyMembers',
     props: ['familyMembers'],
 
 }
