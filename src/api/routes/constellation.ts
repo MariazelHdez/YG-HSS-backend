@@ -31,7 +31,7 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
                     'constellation_health.created_at',
                     'constellation_health.status',
                     'constellation_health.id as constellation_health_id')
-            .whereNot('constellation_health.description', 'closed')
+            .whereNot('constellation_status.description', 'closed')
             .orderBy('constellation_health.id', 'asc');
 
         var diagnosis = Object();

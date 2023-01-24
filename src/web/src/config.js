@@ -26,6 +26,14 @@ export const sections = [
             url: "/constellation",
             icon: "mdi-account-group"
         }]
+    },
+    {
+        header: "Health Information",
+        data:[{
+            name: "Submissions",
+            url: "/hipma",
+            icon: "mdi-account-group"
+        }]
     }
 ];
 export const environment = process.env.NODE_ENV;

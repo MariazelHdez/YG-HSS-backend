@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.health_information
     postal_code character varying(50),
     email_address character varying(255),
     phone_number character varying(25),
-    get_a_copy_of_your_health_information_ TEXT [],
-    get_a_copy_of_your_activity_request TEXT [],
+    get_a_copy_of_your_health_information_ int,
+    get_a_copy_of_your_activity_request int,
     name_of_health_and_social_services_program_area_optional_ TEXT [],
-    indicate_the_hss_system_s_you_would_like_a_record_of_user_activi TEXT [],
+    indicate_the_hss_system_s_you_would_like_a_record_of_user_activ TEXT [],
     provide_details_about_your_request_ text,
     date_from_ DATE,
     date_to_ DATE,
@@ -267,7 +267,6 @@ VALUES  (1, 'Panorama (immunization records)'),
 /**************************************************************/
 /******************** hipma_request_type **********************/
 /**************************************************************/
-INSERT INTO bizont_edms_hipma.hipma_request_type(
-id, description)
-VALUES  (1, "A request for your personal health information."),
-        (2, "A request for a record of user activity.");
+INSERT INTO bizont_edms_hipma.hipma_request_type(id, description)
+VALUES  (1, 'A request for your personal health information.'),
+        (2, 'A request for a record of user activity.');

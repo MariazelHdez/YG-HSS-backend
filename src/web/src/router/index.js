@@ -10,6 +10,8 @@ import Profile from "../components/Profile";
 import store from "../store";
 import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
+import Hipma from "../components/Hipma/Hipma";
+import HipmaDetails from "../components/Hipma/HipmaDetails";
 
 Vue.use(VueRouter);
 
@@ -68,6 +70,22 @@ const routes = [
     path: "/constellation/show/:constellationHealth_id",
     name: "Constellation Health",
     component: ConstellationDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/hipma",
+    name: "Health Information",
+    component: Hipma,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/hipma/show/:hipma_id",
+    name: "Health Information Details",
+    component: HipmaDetails,
     meta: {
       requiresAuth: true
     }
