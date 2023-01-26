@@ -95,7 +95,6 @@ export default {
         });
     },
     showDetails (route) {
-      console.log(route);
       this.$router.push({ path: route });
     },
   },

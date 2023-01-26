@@ -14,7 +14,8 @@
     "vue": "2.6.11",
     "vue-router": "3.5.3",
     "vuetify": "^2.6.14",
-    "vuex": "3.4.0"
+    "vuex": "3.4.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -65,9 +66,12 @@
           "ignoreUrls": true
         }
       ],
-      "vue/valid-v-slot": ["error", {
-        "allowModifiers": true
-      }]
+      "vue/valid-v-slot": [
+        "error",
+        {
+          "allowModifiers": true
+        }
+      ]
     }
   },
   "browserslist": [
