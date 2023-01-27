@@ -1,9 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../components/Home.vue";
-import Dashboard from "../components/Dashboard.vue";
 import NotFound from "../views/NotFound.vue";
-import Grid from "../components/Grid";
 import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
 import Profile from "../components/Profile";
@@ -21,19 +19,6 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home
-  },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    component: Dashboard
-  },
-  {
-    path: "/grid",
-    name: "Data grid",
-    component: Grid,
-    meta: {
-      requiresAuth: true
-    }
   },
   {
     path: "/sign-in",

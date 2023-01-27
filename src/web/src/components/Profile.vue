@@ -59,7 +59,6 @@
 <script>
 import { mapState } from "vuex";
 import store from "../store";
-//import router from "../router";
 
 export default {
   name: "Profile",
