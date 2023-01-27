@@ -220,6 +220,7 @@ a {
 .v-navigation-drawer .v-list-item--active,
 .theme--light.v-data-table>.v-data-table__wrapper>table>thead.table-details-header{
     background-color: #244C5A;
+    border-radius: 0px;
 }
 
 .v-data-table-header,
@@ -256,4 +257,47 @@ a {
 
 .pull-right{
     float: right;
+}
+
+#menu-services .v-list-item__icon svg{
+    font-size: 20px;
+}
+.v-data-table-header tr th span{
+    color: #FFFFFF;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 23px;
+    font-weight: normal;
+}
+.v-data-table>.v-data-table__wrapper>table>tbody>tr>td.text-start{
+    font-size: 12px;
+}
+.v-data-table__wrapper .v-data-table__checkbox div i {
+    font-size: 17px;
+    color: #999999;
+}
+.title-service{
+    color: #000000;
+    font-size: 18px;
+    letter-spacing: 0;
+    line-height: 21px;
+}
+.hipma-service{
+    margin-top: 15px;
+}
+.hipma-service button#mark-closed{
+    font-size: 12px;
+}
+
+.hipma-service #apply-btn, #export-btn{
+    font-size: 15px;
+    border-radius: 0px;
+}
+.hipma-service .v-label[for=bulk-accion-select]{
+    font-size: 14px;
+}
+.hipma-service  .v-input__control >  .v-input__slot,
+.v-menu__content  {
+    border-radius: 0px;
+    min-height: 30px;
 }

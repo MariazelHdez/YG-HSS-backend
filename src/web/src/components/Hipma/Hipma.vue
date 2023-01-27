@@ -1,7 +1,7 @@
 
 <template>
-    <div class="books">
-        <h1>Health Information Requests</h1>
+    <div class="hipma-service">
+        <h1>HIPMA Requests</h1>
 
         <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
@@ -9,19 +9,22 @@
             <v-col
                 class="d-flex"
                 cols="12"
-                sm="4"
+                sm="3"
             >
                 <v-select
                     :items="itemsBulk"
                     label="Bulk actions"
                     prepend-icon="mdi-animation"
+                    filled
                     @change="changeSelect"
+                    id="bulk-accion-select"
                 ></v-select>
                 <v-btn
                     color="#F3A901"
                     class="pull-right ma-2 white--text"
                     :disabled="applyDisabled"
                     @click="changeStatus"
+                    id="apply-btn"
                 >
                     Apply
                 </v-btn>

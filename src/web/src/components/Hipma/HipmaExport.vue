@@ -1,13 +1,13 @@
 
 <template>
-	<div class="books">
-		<h1>Health Information Export</h1>
+	<div class="hipma-service">
+		<span class="title-service">Health Information Export</span>
 
 		<v-row>
 			<v-col
 				cols="6"
 				sm="6"
-				md="6"
+				md="4"
 			>
 				<v-menu
 					ref="menu"
@@ -55,7 +55,7 @@
 			<v-col
 				cols="6"
 				sm="6"
-				md="6"
+				md="4"
 			>
 				<v-menu
 					ref="menuEnd"
@@ -99,24 +99,29 @@
 					</v-date-picker>
 				</v-menu>
 			</v-col>
-		</v-row>
-
-		<v-row>
-			<v-btn
-				:loading="loadingExport"
-				:disabled="loadingExport"
-				color="#F3A901"
-				class="pull-right ma-2 white--text"
-				@click="exportFile()"
-			>
-				Export
-				<v-icon
-					right
-					dark
+			<v-col
+				class="d-flex"
+				cols="6"
+				sm="12"
+				md="4">
+				<v-btn
+					:loading="loadingExport"
+					:disabled="loadingExport"
+					color="#F3A901"
+					class="pull-right white--text"
+					@click="exportFile()"
+					id="export-btn"
 				>
-					mdi-cloud-download
-				</v-icon>
-			</v-btn>
+					Export
+					<v-icon
+						right
+						dark
+					>
+						mdi-cloud-download
+					</v-icon>
+				</v-btn>
+			</v-col>
+
 		</v-row>
 		<br>
 		<v-data-table
