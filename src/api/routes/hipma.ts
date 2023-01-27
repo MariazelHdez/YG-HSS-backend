@@ -115,13 +115,21 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
         .where("health_information.id", hipma_id)
         .first();
 
+        if(!_.isEmpty(hipma.date_from_)) {
+            hipma.date_from_ =   hipma.date_from_.toLocaleString("en-CA");
+        }
+
+        if(!_.isEmpty(hipma.date_to_)) {
+            hipma.date_to_ =   hipma.date_to_.toLocaleString("en-CA");
+        }
+
+        if(!_.isEmpty(hipma.date_of_birth)) {
+            hipma.date_of_birth =   hipma.date_of_birth.toLocaleString("en-CA");
+        }
+
         if(!_.isEmpty(hipma.name_of_health_and_social_services_program_area_optional_)) {
             var dataString = "";
             var socialServices = Object();
-
-            hipma.date_from_ =  hipma.date_from_.toLocaleString("en-CA");
-            hipma.date_to_ =  hipma.date_to_.toLocaleString("en-CA");
-            hipma.date_of_birth =  hipma.date_of_birth.toLocaleString("en-CA");
 
             socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
                 let arrayResult = Object();
@@ -382,7 +390,10 @@ hipmaRouter.get("/changeStatus/:hipma_id",[param("hipma_id").isInt().notEmpty()]
         var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "closed"}).where("id", hipma_id);
 
         if(updateStatus) {
-            res.json({ status:200, message: 'Status changed' });
+            let type = "success";
+            let message = "Request status changed successfully.";
+
+            res.json({ status:200, message: message, type: type });
         }
 
     } catch(e) {
@@ -404,7 +415,6 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
 
     try {
         var path = "";
-        var fs = require("fs");
         var hipmaFile_id = Number(req.params.hipmaFile_id);
         var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("id", hipmaFile_id).select().first();
         var buffer = Buffer.from(hipmaFiles.file_data, 'base64')
@@ -413,13 +423,160 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
         path = __dirname+'/'+safeName+"."+hipmaFiles.file_type;
 
-        fs.writeFileSync(path, file);
-
         if(hipmaFiles) {
-            res.download(path);
-            //fs.unlinkSync(path);
-            //res.json({ status:200, data: path });
+            res.json({ fileData: file , fileName: safeName+"."+hipmaFiles.file_type});
         }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Export file
+ *
+ * @param {request}
+ * @return file
+ */
+hipmaRouter.post("/export", async (req: Request, res: Response) => {
+
+    try {
+
+        var requests = req.body.params.requests;
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        var hipma = Object();
+        var sqlFilter = "health_information.status = 'open'";
+
+        if(requests.length > 0){
+            sqlFilter += " AND health_information.id IN ("+requests+")";
+        }else if(dateFrom !== null && dateTo !== null){
+            sqlFilter += " AND health_information.created_at >= '"+dateFrom+"' AND health_information.created_at <= '"+dateTo+"'";
+        }
+
+        hipma = await db("bizont_edms_hipma.health_information")
+                .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+                .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
+                .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
+                .leftJoin('bizont_edms_hipma.hipma_situations', 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+                .leftJoin('bizont_edms_hipma.hipma_copy_activity_request', 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
+                .select('bizont_edms_hipma.health_information.*',
+                        'bizont_edms_hipma.hipma_request_type.description as HipmaRequestType',
+                        'bizont_edms_hipma.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
+                        'bizont_edms_hipma.hipma_copy_health_information.description as CopyHealthInformation',
+                        'bizont_edms_hipma.hipma_situations.description as HipmaSituations',
+                        'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest')
+                .whereRaw(sqlFilter);
+
+        var socialServices = Object();
+        var hssSystems = Object();
+
+        socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        hssSystems = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        hipma.forEach(function (value: any) {
+
+            if(!_.isEmpty(value.date_from_)) {
+                value.date_from_ =   value.date_from_.toLocaleString("en-CA");
+            }
+
+            if(!_.isEmpty(value.date_to_)) {
+                value.date_to_ =   value.date_to_.toLocaleString("en-CA");
+            }
+
+            if(!_.isEmpty(value.date_of_birth)) {
+                value.date_of_birth =   value.date_of_birth.toLocaleString("en-CA");
+            }
+
+            if(value.date_range_is_unknown_or_i_need_help_identifying_the_date_range == 1){
+                value.needHelpIdentifyingDataRange = "YES";
+            }else{
+                value.needHelpIdentifyingDataRange = "NO";
+            }
+
+            if(value.i_affirm_the_information_above_to_be_true_and_accurate_ == 1){
+                value.affirmInformationAccurate = "YES";
+            }else{
+                value.affirmInformationAccurate = "NO";
+            }
+
+            if(!_.isEmpty(value.name_of_health_and_social_services_program_area_optional_)) {
+                var dataString = "";
+
+                _.forEach(value.name_of_health_and_social_services_program_area_optional_, function(value: any, key: any) {
+                    if(socialServices.hasOwnProperty(value)) {
+                        dataString += socialServices[value]+",";
+                    }else{
+                        dataString += value+",";
+                    }
+                });
+
+                if(dataString.substr(-1) == ",") {
+                    dataString = dataString.slice(0, -1);
+                }
+
+                value.name_of_health_and_social_services_program_area_optional_ = dataString.replace(/,/g, ', ');
+            }
+
+            if(!_.isEmpty(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ)) {
+                var dataString = "";
+
+                _.forEach(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ, function(value: any, key: any) {
+                    if(hssSystems.hasOwnProperty(value)) {
+                        dataString += hssSystems[value]+",";
+                    }else{
+                        dataString += value+",";
+                    }
+                });
+
+                if(dataString.substr(-1) == ",") {
+                    dataString = dataString.slice(0, -1);
+                }
+
+                value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
+            }
+
+            delete value.id;
+            delete value.what_type_of_request_do_you_want_to_make_;
+            delete value.status;
+            delete value.are_you_requesting_access_to_your_own_personal_health_informati;
+            delete value.select_the_situation_that_applies_;
+            delete value.get_a_copy_of_your_activity_request;
+            delete value.i_affirm_the_information_above_to_be_true_and_accurate_;
+            delete value.date_range_is_unknown_or_i_need_help_identifying_the_date_range;
+
+        });
+
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2, '0');
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let yyyy = today.getFullYear();
+        let todayDate = mm+'-'+dd+'-'+yyyy;
+        let random = (Math.random() + 1).toString(36).substring(7);
+        let fileName = 'hipma_'+random+'_requests_'+todayDate+".xlsx";
+
+        res.json({ data:hipma, fileName:fileName });
 
     } catch(e) {
         console.log(e);  // debug if needed

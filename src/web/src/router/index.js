@@ -12,6 +12,7 @@ import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
+import HipmaExport from "../components/Hipma/HipmaExport";
 
 Vue.use(VueRouter);
 
@@ -86,6 +87,14 @@ const routes = [
     path: "/hipma/show/:hipma_id",
     name: "Health Information Details",
     component: HipmaDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/hipmaExport",
+    name: "Health Information Export",
+    component: HipmaExport,
     meta: {
       requiresAuth: true
     }

@@ -29,11 +29,18 @@ export const sections = [
     },
     {
         header: "Health Information",
-        data:[{
-            name: "Submissions",
-            url: "/hipma",
-            icon: "mdi-account-group"
-        }]
+        data:[
+            {
+                name: "Submissions",
+                url: "/hipma",
+                icon: "mdi-format-list-bulleted"
+            },
+            {
+                name: "Export",
+                url: "/hipmaExport",
+                icon: "mdi-file-move"
+            }
+        ]
     }
 ];
 export const environment = process.env.NODE_ENV;
