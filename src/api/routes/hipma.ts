@@ -382,12 +382,15 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
  * @param {hipma_id} id of request
  * @return json
  */
-hipmaRouter.get("/changeStatus/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+//hipmaRouter.get("/changeStatus/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
     try {
-        var hipma_id = Number(req.params.hipma_id);
+        //var hipma_id = Number(req.params.hipma_id);
 
-        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "closed"}).where("id", hipma_id);
+        var hipma = req.body.params.requests;
+
+        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "closed"}).whereIn("id", hipma);
 
         if(updateStatus) {
             let type = "success";

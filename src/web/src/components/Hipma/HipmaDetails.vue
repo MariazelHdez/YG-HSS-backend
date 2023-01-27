@@ -95,12 +95,11 @@ export default {
 		HipmaApplicant,
 		HipmaAttachments
 	},
-
 	created(){
-		this.validateRecord();
+
 	},
 	mounted() {
-		this.getDataFromApi();
+		this.validateRecord();
 	},
 	methods: {
 		validateRecord() {
@@ -109,9 +108,11 @@ export default {
 			.then((resp) => {
 				if(!resp.data.flagHipma){
 					this.$router.push({
-					path: '/hipma',
-					query: { message: resp.data.message, type: resp.data.type}
+						path: '/hipma',
+						query: { message: resp.data.message, type: resp.data.type}
 					});
+				}else{
+					this.getDataFromApi();
 				}
 			})
 			.catch((err) => console.error(err))
@@ -132,8 +133,15 @@ export default {
 			});
 		},
 		changeStatus(){
+			//Sent it as an array to use the same function for both single and bulk status changes
+			var hipmaId = [this.$route.params.hipma_id];
+
 			axios
-			.get(HIPMA_CHANGE_STATUS_URL+this.$route.params.hipma_id)
+			.patch(HIPMA_CHANGE_STATUS_URL, {
+                params: {
+					requests: hipmaId
+				}
+            })
 			.then((resp) => {
 
 				this.$router.push({
@@ -143,8 +151,6 @@ export default {
 
 			})
 			.catch((err) => console.error(err))
-			.finally(() => {
-			});
 		}
 	},
 };
