@@ -3,7 +3,7 @@
 	<v-expansion-panels
         multiple
     >
-        <v-expansion-panel>
+        <v-expansion-panel class="mb-6">
 			<v-expansion-panel-header>Applicant's Information</v-expansion-panel-header>
 			<v-expansion-panel-content>
                 <v-simple-table>

@@ -1,9 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../components/Home.vue";
-import Dashboard from "../components/Dashboard.vue";
 import NotFound from "../views/NotFound.vue";
-import Grid from "../components/Grid";
 import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
 import Profile from "../components/Profile";
@@ -12,6 +10,7 @@ import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
+import HipmaExport from "../components/Hipma/HipmaExport";
 
 Vue.use(VueRouter);
 
@@ -20,19 +19,6 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home
-  },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    component: Dashboard
-  },
-  {
-    path: "/grid",
-    name: "Data grid",
-    component: Grid,
-    meta: {
-      requiresAuth: true
-    }
   },
   {
     path: "/sign-in",
@@ -86,6 +72,14 @@ const routes = [
     path: "/hipma/show/:hipma_id",
     name: "Health Information Details",
     component: HipmaDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/hipmaExport",
+    name: "Health Information Export",
+    component: HipmaExport,
     meta: {
       requiresAuth: true
     }
