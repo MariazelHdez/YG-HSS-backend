@@ -1,6 +1,6 @@
 <template>
-	<div class="books">
-		<h1>Hipma Requests</h1>
+	<div class="hipma-service">
+		<span class="title-service">Hipma Requests</span>
 
 		<v-dialog
 			v-model="dialog"
@@ -13,6 +13,7 @@
 					dark
 					v-bind="attrs"
 					v-on="on"
+					id="mark-closed"
 				>
 
 				Mark as closed
@@ -61,11 +62,11 @@
 
 		<HipmaInformation v-bind:hipma="itemsHipma" />
 
-		<HipmaBehalf v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"/>
+		<HipmaBehalf v-if="itemsHipma.HipmaSituations" v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"/>
 
 		<HipmaApplicant v-bind:hipma="itemsHipma" />
 
-		<HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"/>
+		<HipmaAttachments v-if="hipmaFiles" v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"/>
 
 	</div>
 </template>
