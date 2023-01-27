@@ -17,7 +17,6 @@
                     prepend-icon="mdi-animation"
                     @change="changeSelect"
                 ></v-select>
-
                 <v-btn
                     color="#F3A901"
                     class="pull-right ma-2 white--text"

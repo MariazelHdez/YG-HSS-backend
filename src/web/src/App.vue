@@ -136,7 +136,6 @@ import router from "./router";
 import store from "./store";
 import * as config from "./config";
 import { mapState } from "vuex";
-
 export default {
   name: "App",
   components: {},
@@ -167,7 +166,6 @@ export default {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
     console.log(this.isAuthenticated);
-
     if (!this.isAuthenticated) this.hasSidebar = false;
     else this.hasSidebar = config.hasSidebar;
   },

@@ -22,7 +22,7 @@
       :loading="loading"
       :search="search"
     >
-    <template v-slot:item.showUrl="{ item }">
+    <template  v-slot:[`item.showUrl`]="{ item }">
         <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
     </template>
     </v-data-table>

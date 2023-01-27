@@ -13,11 +13,6 @@ export const sections = [
             icon: "mdi-view-dashboard"
         },
         {
-            name: "Basic Form",
-            url: "/form",
-            icon: "mdi-book-open-variant"
-        },
-        {
             name: "Data grid",
             url: "/grid",
             icon: "mdi-table-large"
