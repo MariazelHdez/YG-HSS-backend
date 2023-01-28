@@ -1,5 +1,5 @@
 <template>
-	<div class="hipma-service">
+	<div class="hipma-service details">
 		<span class="title-service">Hipma Requests</span>
 
 		<v-dialog

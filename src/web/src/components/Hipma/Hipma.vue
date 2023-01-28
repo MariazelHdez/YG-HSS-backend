@@ -1,27 +1,38 @@
 
 <template>
     <div class="hipma-service">
-        <h1>HIPMA Requests</h1>
-
+        <span class="title-service">HIPMA Requests</span>
         <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
-        <v-row align="center">
+        <v-row 
+            align="center" 
+            class="container-actions"
+        >
             <v-col
-                class="d-flex"
                 cols="12"
                 sm="3"
+                class="actions"
             >
                 <v-select
                     :items="itemsBulk"
-                    label="Bulk actions"
-                    prepend-icon="mdi-animation"
-                    filled
+                    solo
+                    label="Bulk Actions"
+                    append-icon="mdi-chevron-down"
+                    prepend-inner-icon="mdi-layers-triple"
+                    color="grey lighten-2"
+                    item-color="grey lighten-2"
                     @change="changeSelect"
                     id="bulk-accion-select"
                 ></v-select>
+            </v-col>
+            <v-col 
+                class="align-start"
+                cols="12"
+                sm="3"
+            >
                 <v-btn
                     color="#F3A901"
-                    class="pull-right ma-2 white--text"
+                    class="ma-2 white--text"
                     :disabled="applyDisabled"
                     @click="changeStatus"
                     id="apply-btn"
@@ -31,7 +42,7 @@
             </v-col>
         </v-row>
 
-        <v-text-field v-model="search" label="Search"></v-text-field>
+        <!-- <v-text-field v-model="search" label="Search"></v-text-field> -->
 
         <v-data-table
             dense
@@ -81,7 +92,6 @@ export default {
         { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
         { text: "Applicant", value: "applicantFullName", sortable: true},
         { text: "Created", value: "created_at", sortable: true},
-        { text: "", value: "status", sortable: true},
         { text: "", value: "showUrl", sortable: false},
     ],
     page: 1,
