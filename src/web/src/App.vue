@@ -22,7 +22,7 @@
       </v-btn>
     </v-list-item>
       <v-divider></v-divider>
-      <v-list dense nav style="" class="mt-2 pb-0"
+      <v-list dense nav style="" class="mt-1 pb-0 pt-1"
         v-for='(section) in sections' :key="section.header">
           <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
           <img v-if="mini" :src="section.icon" height="36px" width="36px" />
@@ -182,7 +182,6 @@ export default {
   created: async function() {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
-    console.log(this.isAuthenticated);
     if (!this.isAuthenticated) this.hasSidebar = false;
     else this.hasSidebar = config.hasSidebar;
   },

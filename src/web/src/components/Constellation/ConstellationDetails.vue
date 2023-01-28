@@ -1,11 +1,11 @@
 <template>
-  <div class="books">
-    <h1>Constellation Health Requests</h1>
+  <div class="constellation-service details">
+    <span class="title-service">Constellation Health Request</span>
 
       <v-expansion-panels
         multiple
       >
-        <v-expansion-panel>
+        <v-expansion-panel class="mb-6">
           <v-expansion-panel-header>Applicant Personal Information</v-expansion-panel-header>
           <v-expansion-panel-content>
                 <v-simple-table>
@@ -122,7 +122,7 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
 
-        <v-expansion-panel>
+        <v-expansion-panel class="mb-6">
           <v-expansion-panel-header>Other Information</v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-simple-table>

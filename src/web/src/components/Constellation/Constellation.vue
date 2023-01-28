@@ -1,6 +1,6 @@
 <template>
-  <div class="books">
-    <h1>Constellation Health Requests</h1>
+  <div class="constellation-service">
+    <span class="title-service">Constellation Health Requests</span>
 
     <ConstellationAlert
       v-show="flagAlert"
@@ -8,22 +8,41 @@
       v-bind:alertType="alertType"
     />
 
-    <v-row>
-      <v-col class="align-center" cols="1" sm="4">
+    <v-row 
+      align="center" 
+      class="container-actions"
+    >
+      <v-col
+        cols="12"
+        sm="3"
+        class="actions"
+      >
         <v-select
           :items="builkActions"
           solo
-          label="Builk Actions"
+          label="Bulk Actions"
           append-icon="mdi-chevron-down"
           prepend-inner-icon="mdi-layers-triple"
           color="grey lighten-2"
           item-color="grey lighten-2"
           @change="enterBuilkAction"
+          id="bulk-accion-select"
         >
         </v-select>
       </v-col>
-      <v-col class="align-md-start" cols="1" sm="2">
-        <v-btn color="warning" dark @click="submitBuilk">Apply</v-btn>
+      <v-col 
+        class="align-start"
+        cols="12"
+        sm="3"
+      >
+        <v-btn 
+          color="#F3A901"
+          class="ma-2 white--text"
+          id="apply-btn"
+          @click="submitBuilk"
+        >
+          Apply
+        </v-btn>
       </v-col>
     </v-row>
 

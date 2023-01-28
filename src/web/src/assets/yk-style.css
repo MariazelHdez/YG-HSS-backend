@@ -259,6 +259,10 @@ a {
     float: right;
 }
 
+#menu-services a.v-list-item.v-list-item--link{
+    min-height: 30px;
+    max-height: 34px;
+}
 #menu-services .v-list-item__icon svg{
     font-size: 20px;
 }
@@ -269,7 +273,8 @@ a {
     line-height: 23px;
     font-weight: normal;
 }
-.v-data-table>.v-data-table__wrapper>table>tbody>tr>td.text-start{
+.v-data-table>.v-data-table__wrapper>table>tbody>tr>td.text-start,
+.details .v-data-table>.v-data-table__wrapper>table>tbody>tr>td{
     font-size: 12px;
 }
 .v-data-table__wrapper .v-data-table__checkbox div i {
@@ -282,22 +287,27 @@ a {
     letter-spacing: 0;
     line-height: 21px;
 }
-.hipma-service{
+.hipma-service,
+.constellation-service,
+.midwifery-service{
     margin-top: 15px;
 }
 .hipma-service button#mark-closed{
     font-size: 12px;
 }
 
-.hipma-service #apply-btn, #export-btn{
+#apply-btn, #export-btn{
     font-size: 15px;
     border-radius: 0px;
 }
-.hipma-service .v-label[for=bulk-accion-select]{
+div.row.container-actions .v-label[for=bulk-accion-select]{
     font-size: 14px;
 }
-.hipma-service  .v-input__control >  .v-input__slot,
+div.row.container-actions > .actions > .v-input > .v-input__control >  .v-input__slot,
 .v-menu__content  {
     border-radius: 0px;
-    min-height: 30px;
+    min-height: 36px;
+}
+div.row.container-actions > .actions{
+    margin-top: 25px;
 }
