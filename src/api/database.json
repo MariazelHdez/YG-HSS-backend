@@ -35,5 +35,15 @@
         "port": {"ENV": "DB_PORT"},
         "database": {"ENV": "DB_NAME_HIPMA"},
         "schema": {"ENV": "DB_NAME_HIPMA"}
+    },
+
+    "general": {
+        "driver": "pg",
+        "user": {"ENV": "DB_USER"},
+        "password": {"ENV": "DB_PASS"},
+        "host": {"ENV": "DB_HOST"},
+        "port": {"ENV": "DB_PORT"},
+        "database": {"ENV": "DB_NAME"},
+        "schema": {"ENV": "DB_NAME_GENERAL"}
     }
 }
