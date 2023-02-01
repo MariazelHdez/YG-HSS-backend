@@ -1,6 +1,6 @@
 <template>
-	<div class="books">
-		<h1>Hipma Requests</h1>
+	<div class="hipma-service details">
+		<span class="title-service">Hipma Requests</span>
 
 		<v-row>
 			<v-col
@@ -92,15 +92,14 @@
 		</v-row>
 
 		<div id="hipmaPanelInformation">
-		<HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+      <HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
 
-		<HipmaBehalf v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
+      <HipmaBehalf v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
 
-		<HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+      <HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
 
-		<HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
+      <HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
 		</div>
-
 	</div>
 </template>
 
