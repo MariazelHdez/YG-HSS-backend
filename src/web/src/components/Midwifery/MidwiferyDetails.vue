@@ -1,6 +1,6 @@
 <template>
 	<div class="books">
-		<h1>Hipma Requests</h1>
+		<h1>Midwifery Requests</h1>
 
 		<v-row>
 			<v-col
@@ -91,14 +91,35 @@
 			</v-col>
 		</v-row>
 
-		<div id="hipmaPanelInformation">
-		<HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+		<div id="midwiferyPanels">
+			<MidwiferyInformation v-bind:midwifery="itemsMidwifery" v-bind:options="optionsMidwifery"
+				v-bind:panelModel="panelModel"
+			/>
 
-		<HipmaBehalf v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
+			<MidwiferyContactInformation v-bind:midwifery="itemsMidwifery" v-bind:options="optionsMidwifery"
+				v-bind:panelModel="panelModel"
+			/>
 
-		<HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+			<MidwiferyMedicalInformation v-bind:midwifery="itemsMidwifery" v-bind:options="optionsMidwifery"
+				v-bind:panelModel="panelModel"
+			/>
 
-		<HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
+			<MidwiferyOtherMedicalInformation
+				v-if="itemsMidwifery.menstrual_cycle_length
+				|| itemsMidwifery.family_physician
+				|| itemsMidwifery.physician_s_name
+				|| itemsMidwifery.major_medical_conditions
+				|| itemsMidwifery.provide_details3"
+				v-bind:midwifery="itemsMidwifery" v-bind:options="optionsMidwifery"
+				v-bind:panelModel="panelModel"
+			/>
+
+			<MidwiferyDemographicInformation
+				v-if="itemsMidwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie
+					|| itemsMidwifery.how_did_you_find_out_about_the_midwifery_clinic_select_all_that"
+				v-bind:midwifery="itemsMidwifery" v-bind:panelModel="panelModel"
+			/>
+
 		</div>
 
 	</div>
@@ -106,31 +127,33 @@
 
 <script>
 const axios = require("axios");
-import HipmaInformation from './HipmaInformation.vue';
-import HipmaBehalf from './HipmaBehalf.vue';
-import HipmaApplicant from './HipmaApplicant.vue';
-import HipmaAttachments from './HipmaAttachments.vue';
-import { HIPMA_SHOW_URL } from "../../urls.js";
-import { HIPMA_VALIDATE_URL } from "../../urls.js";
-import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
+import MidwiferyInformation from './MidwiferyInformation.vue';
+import MidwiferyContactInformation from './MidwiferyContactInformation.vue';
+import MidwiferyMedicalInformation from './MidwiferyMedicalInformation.vue';
+import MidwiferyOtherMedicalInformation from './MidwiferyOtherMedicalInformation.vue';
+import MidwiferyDemographicInformation from './MidwiferyDemographicInformation.vue';
+import { MIDWIFERY_SHOW_URL } from "../../urls.js";
+import { MIDWIFERY_VALIDATE_URL } from "../../urls.js";
+import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 import html2pdf from "html2pdf.js";
 
 export default {
-	name: "HipmaDetails",
+	name: "MidwiferyDetails",
 	data: () => ({
 		loading: false,
-		itemsHipma: [],
-		itemsHipmaFiles: [],
+		itemsMidwifery: [],
+		optionsMidwifery: [],
 		dialog: false,
 		panelModel: [0],
 		fileName: "",
+		idStatusClosed: null,
 	}),
-
 	components: {
-		HipmaInformation,
-		HipmaBehalf,
-		HipmaApplicant,
-		HipmaAttachments
+		MidwiferyInformation,
+		MidwiferyContactInformation,
+		MidwiferyMedicalInformation,
+		MidwiferyOtherMedicalInformation,
+		MidwiferyDemographicInformation
 	},
 	created(){
 
@@ -141,11 +164,11 @@ export default {
 	methods: {
 		validateRecord() {
 			axios
-			.get(HIPMA_VALIDATE_URL+this.$route.params.hipma_id)
+			.get(MIDWIFERY_VALIDATE_URL+this.$route.params.midwifery_id)
 			.then((resp) => {
-				if(!resp.data.flagHipma){
+				if(!resp.data.flagMidwifery){
 					this.$router.push({
-						path: '/hipma',
+						path: '/midwifery',
 						query: { message: resp.data.message, type: resp.data.type}
 					});
 				}else{
@@ -158,12 +181,13 @@ export default {
 		},
 		getDataFromApi() {
 			axios
-			.get(HIPMA_SHOW_URL+this.$route.params.hipma_id)
+			.get(MIDWIFERY_SHOW_URL+this.$route.params.midwifery_id)
 			.then((resp) => {
 
-				this.itemsHipma = resp.data.hipma;
-				this.itemsHipmaFiles = resp.data.hipmaFiles;
+				this.itemsMidwifery = resp.data.midwifery;
+				this.optionsMidwifery = resp.data.options;
 				this.fileName = resp.data.fileName;
+				this.idStatusClosed = resp.data.midwiferyStatusClosed;
 
 			})
 			.catch((err) => console.error(err))
@@ -172,18 +196,19 @@ export default {
 		},
 		changeStatus(){
 			//Sent it as an array to use the same function for both single and bulk status changes
-			var hipmaId = [this.$route.params.hipma_id];
+			var midwiferyId = [this.$route.params.midwifery_id];
 
 			axios
-			.patch(HIPMA_CHANGE_STATUS_URL, {
+			.patch(MIDWIFERY_CHANGE_STATUS_URL, {
                 params: {
-					requests: hipmaId
+					requests: midwiferyId,
+					requestStatus: this.idStatusClosed
 				}
             })
 			.then((resp) => {
 
 				this.$router.push({
-					path: '/hipma',
+					path: '/midwifery',
 					query: { message: resp.data.message, type: resp.data.type}
 				});
 
@@ -193,10 +218,9 @@ export default {
 		exportToPDF() {
 			this.panelModel = [0];
 			var namePdf = this.fileName;
-			
 
 			setTimeout(function() {
-				html2pdf(document.getElementById("hipmaPanelInformation"), {
+				html2pdf(document.getElementById("midwiferyPanels"), {
 						margin: 5,
 						filename: namePdf,
 						pagebreak: {

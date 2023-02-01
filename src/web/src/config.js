@@ -46,6 +46,21 @@ export const sections = [
                 icon: "mdi-file-move"
             }
         ]
+    },
+    {
+        header: "Midwifery",
+        data:[
+            {
+                name: "Submissions",
+                url: "/midwifery",
+                icon: "mdi-format-list-bulleted"
+            },
+            {
+                name: "Export",
+                url: "/midwiferyExport",
+                icon: "mdi-file-move"
+            }
+        ]
     }
 ];
 export const environment = process.env.NODE_ENV;

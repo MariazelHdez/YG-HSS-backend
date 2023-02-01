@@ -1,9 +1,9 @@
 
 <template>
-    <div class="books">
-        <h1>Health Information Requests</h1>
+    <div class="midwifery">
+        <h1>Midwifery Requests</h1>
 
-        <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <v-row align="center">
             <v-col
@@ -15,6 +15,8 @@
                     :items="itemsBulk"
                     label="Bulk actions"
                     prepend-icon="mdi-animation"
+                    v-model="selectedStatus"
+                    item-text="text"
                     @change="changeSelect"
                 ></v-select>
 
@@ -53,12 +55,12 @@
 
 <script>
 const axios = require("axios");
-import HipmaAlert from './HipmaAlert.vue';
-import { HIPMA_URL } from "../../urls.js";
-import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
+import MidwiferyAlert from './MidwiferyAlert.vue';
+import { MIDWIFERY_URL } from "../../urls.js";
+import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 
 export default {
-  name: "HipmaIndex",
+  name: "MidwiferyIndex",
   data: () => ({
     loading: false,
     items: [],
@@ -69,17 +71,20 @@ export default {
     flagAlert: false,
     selected: [],
     applyDisabled: true,
-    itemsBulk: [{
-        text: "Mark as closed",
-        value: "closed"
-    }],
+    itemsBulk: [],
+    selectedStatus: null,
     headers: [
-        { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-        { text: "Request Type", value: "HipmaRequestType", sortable: true},
-        { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-        { text: "Applicant", value: "applicantFullName", sortable: true},
+        { text: "Preferred Name", value: "preferred_name", sortable: true},
+        { text: "Phone", value: "preferred_phone", sortable: true},
+        { text: "Email", value: "preferred_email", sortable: true},
+        { text: "Is this your first pregnancy?", value: "first_pregnancy", sortable: true},
+        { text: "Due Date", value: "due_date", sortable: true},
+        { text: "Preferred Birth Location", value: "birth_locations", sortable: true},
+        { text: "Medical Concerns with Pregnancy", value: "medical_concerns", sortable: true},
+        { text: "Major Medical Conditions", value: "major_medical_conditions", sortable: true},
+        { text: "Do you identify with any of these groups and communities?", value: "do_you_identify_with_one_or_more_of_these_groups_and_communitie", sortable: true},
         { text: "Created", value: "created_at", sortable: true},
-        { text: "", value: "status", sortable: true},
+        { text: "", value: "status_description", sortable: true},
         { text: "", value: "showUrl", sortable: false},
     ],
     page: 1,
@@ -87,7 +92,7 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    HipmaAlert
+    MidwiferyAlert
   },
   watch: {
     options: {
@@ -118,9 +123,10 @@ export default {
             this.loading = true;
 
             axios
-            .get(HIPMA_URL)
+            .get(MIDWIFERY_URL)
             .then((resp) => {
                 this.items = resp.data.data;
+                this.itemsBulk = resp.data.dataStatus;
                 //this.pagination.totalLength = resp.data.meta.count;
                 //this.totalLength = resp.data.meta.count;
                 this.loading = false;
@@ -150,24 +156,28 @@ export default {
 				checked.forEach(function (value) {
 					requests.push(value.id);
 				});
-			}
 
-            axios
-            .patch(HIPMA_CHANGE_STATUS_URL, {
-                params: {
-					requests: requests
-				}
-            })
-            .then((resp) => {
-                this.$router.push({
-					path: '/hipma',
-					query: { message: resp.data.message, type: resp.data.type}
-				});
-            })
-            .catch((err) => console.error(err))
-            .finally(() => {
-                this.loading = false;
-            });
+                axios
+                .patch(MIDWIFERY_CHANGE_STATUS_URL, {
+                    params: {
+                        requests: requests,
+                        requestStatus: this.selectedStatus
+                    }
+                })
+                .then(() => {
+                    this.getDataFromApi();
+                    /*
+                    this.$router.push({
+                        path: '/midwifery',
+                        //query: { message: resp.data.message, type: resp.data.type}
+                    });
+                    */
+                })
+                .catch((err) => console.error(err))
+                .finally(() => {
+                    this.loading = false;
+                });
+            }
         }
     },
 };

@@ -2,6 +2,7 @@
 
 	<v-expansion-panels
         multiple
+		v-model="modelPanel"
     >
         <v-expansion-panel class="mb-6">
 			<v-expansion-panel-header>Behalf Information</v-expansion-panel-header>
@@ -76,11 +77,12 @@
 
 export default {
     name: 'HipmaBehalf',
-    props: ['hipma', 'hipmaFiles'],
+    props: ['hipma', 'hipmaFiles', 'panelModel'],
 	data () {
 		return {
 			loader: null,
-			loading: false
+			loading: false,
+			modelPanel: this.panelModel
 		}
 	},
 	watch: {
@@ -92,6 +94,9 @@ export default {
 
 			this.loader = null;
 		},
+		panelModel(newValue) {
+			this.modelPanel = newValue;
+		}
 	},
 
 }
