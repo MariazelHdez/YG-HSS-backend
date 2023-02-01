@@ -45,7 +45,7 @@ export class GeneralRepository extends BaseRepository<SubmissionStatusDTO> {
                     {
                         id: row.id,
                         department: row.department,
-                        submissions: row.submissions,
+                        submissions: parseInt(row.submissions),
                         status: row.status
     
                     } as SubmissionStatusDTO
