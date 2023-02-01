@@ -2,6 +2,7 @@
 
 	<v-expansion-panels
         multiple
+		v-model="modelPanel"
     >
         <v-expansion-panel class="mb-6">
 			<v-expansion-panel-header>Attachments</v-expansion-panel-header>
@@ -285,11 +286,12 @@ import { HIPMA_DOWNLOAD_FILE_URL } from "../../urls.js";
 
 export default {
     name: 'HipmaAttachments',
-    props: ['hipma', 'hipmaFiles'],
+    props: ['hipma', 'hipmaFiles', 'panelModel'],
 	data () {
 		return {
 			loader: null,
-			loading: false
+			loading: false,
+			modelPanel: this.panelModel
 		}
 	},
 	watch: {
@@ -300,6 +302,9 @@ export default {
 			setTimeout(() => (this[l] = false), 3000)
 
 			this.loader = null;
+		},
+		panelModel(newValue) {
+			this.modelPanel = newValue;
 		},
 	},
 	methods: {

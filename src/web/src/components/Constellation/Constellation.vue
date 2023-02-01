@@ -7,7 +7,6 @@
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
     />
-
     <v-row 
       align="center" 
       class="container-actions"
@@ -88,16 +87,26 @@ export default {
     options: {},
     flagAlert: false,
     headers: [
-      { text: "Legal Name", value: "your_legal_name", width: '10%',sortable: true },
-      { text: "Date of Birth", value: "date_of_birth", width: '10%',sortable: true },
+      {
+        text: "Legal Name",
+        value: "your_legal_name",
+        width: "10%",
+        sortable: true,
+      },
+      {
+        text: "Date of Birth",
+        value: "date_of_birth",
+        width: "10%",
+        sortable: true,
+      },
       {
         text: "Do you have a family physician?",
         value: "family_physician",
-        width: '10%',
+        width: "10%",
         sortable: true,
       },
       { text: "Diagnosis/History", value: "diagnosis", sortable: true },
-      { text: "Created", value: "created_at", width: '15%',sortable: true },
+      { text: "Created", value: "created_at", width: "15%", sortable: true },
       { text: "Status", value: "status", sortable: true },
       { text: "", value: "showUrl", sortable: false },
     ],
@@ -181,21 +190,27 @@ export default {
         "Declined content": "Declined",
         "Closed content": "Closed",
       };
-      if ((this.actionSelected != "")) {
+      if (this.actionSelected != "") {
         this.itemsSelected.forEach((element) => {
-          let postUrl = CONSTELLATION_URL + "/changeStatus/" + element.constellation_health_id;
+          let postUrl =
+            CONSTELLATION_URL +
+            "/changeStatus/" +
+            element.constellation_health_id;
           let setStatus = statusSelected[this.actionSelected];
           axios
             .patch(postUrl, { newStatus: setStatus })
-            .then(() => {
+            .then((resp) => {
               this.loading = false;
+              this.$router.push({
+                path: "/constellation",
+                query: { message: resp.data.message, type: resp.data.type },
+              });
             })
             .catch((err) => console.error(err))
             .finally(() => {
               this.loading = false;
             });
         });
-        window.location.reload();
       }
     },
   },

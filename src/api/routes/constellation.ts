@@ -113,7 +113,7 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
                     'constellation_status.description as status_description')
             .first();
 
-        if(!constellationHealth || constellationHealth.status == "closed"){
+        if(!constellationHealth || constellationHealth.status_description == "closed"){
             flagExists= false;
             message= "The request you are consulting is closed or non existant, please choose a valid request.";
         }

@@ -203,7 +203,14 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             });
         }
 
-        res.json({ hipma: hipma, hipmaFiles: files });
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2, '0');
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let yyyy = today.getFullYear();
+        let todayDate = mm+'_'+dd+'_'+yyyy;
+        let fileName = 'hipma_request_details_'+todayDate+".pdf";
+
+        res.json({ hipma: hipma, hipmaFiles: files, fileName:fileName });
 
     } catch(e) {
         console.log(e);  // debug if needed
@@ -382,7 +389,6 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
  * @param {hipma_id} id of request
  * @return json
  */
-//hipmaRouter.get("/changeStatus/:hipma_id",[param("hipma_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
     try {
