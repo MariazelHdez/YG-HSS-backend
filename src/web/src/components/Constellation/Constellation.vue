@@ -7,9 +7,15 @@
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
     />
-
-    <v-row align="center" class="container-actions">
-      <v-col cols="12" sm="3" class="actions">
+    <v-row 
+      align="center" 
+      class="container-actions"
+    >
+      <v-col
+        cols="12"
+        sm="3"
+        class="actions"
+      >
         <v-select
           :items="builkActions"
           solo
@@ -23,8 +29,12 @@
         >
         </v-select>
       </v-col>
-      <v-col class="align-start" cols="12" sm="3">
-        <v-btn
+      <v-col 
+        class="align-start"
+        cols="12"
+        sm="3"
+      >
+        <v-btn 
           color="#F3A901"
           class="ma-2 white--text"
           id="apply-btn"

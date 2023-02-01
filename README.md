@@ -41,4 +41,9 @@ Environment variables should never be checked into the repository!
 - Run the following commands 
   - Create Constellation database: `db-migrate db:create bizont_edms_constellation_health`
   - Create schemas, tables and inserts in Constellation: `db-migrate up:constellation -e constellation`
-
+ 
+  - Create Midwifery database: `db-migrate db:create bizont_edms_midwifery`
+  - Create schemas, tables and inserts in Midwifery: `db-migrate up:midwifery -e midwifery`
+  
+  - Create HIPMA database: `db-migrate db:create bizont_edms_hipma`
+  - Create schemas, tables and inserts in HIPMA: `db-migrate up:hipma -e hipma`
