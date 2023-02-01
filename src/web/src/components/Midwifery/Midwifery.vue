@@ -46,7 +46,7 @@
             :value="selected"
             @toggle-select-all="selectAll"
         >
-        <template v-slot:item.showUrl="{ item }">
+        <template v-slot:[`item.actions`]="{ item }">
             <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
         </template>
         </v-data-table>
