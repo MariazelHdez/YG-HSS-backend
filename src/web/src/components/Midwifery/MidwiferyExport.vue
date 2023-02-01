@@ -1,0 +1,288 @@
+
+<template>
+	<div class="books">
+		<h1>Midwifery Export</h1>
+
+		<v-row>
+			<v-col
+				cols="6"
+				sm="6"
+				md="6"
+			>
+				<v-menu
+					ref="menu"
+					v-model="menu"
+					:close-on-content-click="false"
+					:return-value.sync="date"
+					transition="scale-transition"
+					offset-y
+					min-width="auto"
+				>
+					<template v-slot:activator="{ on, attrs }">
+						<v-text-field
+							v-model="date"
+							label="From:"
+							prepend-icon="mdi-calendar"
+							readonly
+							v-bind="attrs"
+							v-on="on"
+						></v-text-field>
+					</template>
+					<v-date-picker
+					v-model="date"
+					no-title
+					scrollable
+					>
+						<v-spacer></v-spacer>
+						<v-btn
+							text
+							color="primary"
+							@click="menu = false"
+						>
+							Cancel
+						</v-btn>
+						<v-btn
+							text
+							color="primary"
+							@click="$refs.menu.save(date)"
+						>
+							OK
+						</v-btn>
+					</v-date-picker>
+				</v-menu>
+			</v-col>
+
+			<v-col
+				cols="6"
+				sm="6"
+				md="6"
+			>
+				<v-menu
+					ref="menuEnd"
+					v-model="menuEnd"
+					:close-on-content-click="false"
+					:return-value.sync="dateEnd"
+					transition="scale-transition"
+					offset-y
+					min-width="auto"
+				>
+					<template v-slot:activator="{ on, attrs }">
+						<v-text-field
+							v-model="dateEnd"
+							label="To:"
+							prepend-icon="mdi-calendar"
+							readonly
+							v-bind="attrs"
+							v-on="on"
+						></v-text-field>
+					</template>
+					<v-date-picker
+					v-model="dateEnd"
+					no-title
+					scrollable
+					>
+						<v-spacer></v-spacer>
+						<v-btn
+							text
+							color="primary"
+							@click="menuEnd = false"
+						>
+							Cancel
+						</v-btn>
+						<v-btn
+							text
+							color="primary"
+							@click="$refs.menuEnd.save(dateEnd)"
+						>
+							OK
+						</v-btn>
+					</v-date-picker>
+				</v-menu>
+			</v-col>
+		</v-row>
+
+		<v-row>
+			<v-btn
+				:loading="loadingExport"
+				:disabled="loadingExport"
+				color="#F3A901"
+				class="pull-right ma-2 white--text"
+				@click="exportFile()"
+			>
+				Export
+				<v-icon
+					right
+					dark
+				>
+					mdi-cloud-download
+				</v-icon>
+			</v-btn>
+		</v-row>
+		<br>
+		<v-data-table
+			dense
+			v-model="selected"
+			show-select
+			:items="items"
+			:headers="headers"
+			:options.sync="options"
+			:loading="loading"
+			checkbox-color="black"
+			:value="selected"
+			@toggle-select-all="selectAll"
+		>
+
+		</v-data-table>
+	</div>
+</template>
+
+<script>
+const axios = require("axios");
+import { MIDWIFERY_URL } from "../../urls.js";
+import { MIDWIFERY_EXPORT_FILE_URL } from "../../urls.js";
+import { utils, writeFileXLSX  } from 'xlsx';
+
+export default {
+	name: "MidwiferyExport",
+	data: () => ({
+		loading: false,
+		items: [],
+		options: {},
+		flagAlert: false,
+		menu: false,
+		date: null,
+		menuEnd: false,
+		dateEnd: null,
+		selected: [],
+		loader: null,
+		loadingExport: false,
+		headers: [
+			{ text: "Preferred Name", value: "preferred_name", sortable: true},
+			{ text: "Phone", value: "preferred_phone", sortable: true},
+			{ text: "Email", value: "preferred_email", sortable: true},
+			{ text: "Is this your first pregnancy?", value: "first_pregnancy", sortable: true},
+			{ text: "Due Date", value: "due_date", sortable: true},
+			{ text: "Preferred Birth Location", value: "birth_locations", sortable: true},
+			{ text: "Medical Concerns with Pregnancy", value: "medical_concerns", sortable: true},
+			{ text: "Major Medical Conditions", value: "major_medical_conditions", sortable: true},
+			{ text: "Created", value: "created_at", sortable: true},
+		],
+		page: 1,
+		pageCount: 0,
+		iteamsPerPage: 10,
+	}),
+	watch: {
+		options: {
+			handler() {
+				this.getDataFromApi();
+			},
+			deep: true,
+		},
+		loader () {
+			const l = this.loader;
+			this[l] = !this[l];
+
+			setTimeout(() => (this[l] = false), 3000)
+
+			this.loader = null;
+		},
+	},
+	mounted() {
+		this.getDataFromApi();
+	},
+	methods: {
+		getDataFromApi() {
+		this.loading = true;
+
+			axios
+			.get(MIDWIFERY_URL)
+			.then((resp) => {
+				this.items = resp.data.data;
+				//this.pagination.totalLength = resp.data.meta.count;
+				//this.totalLength = resp.data.meta.count;
+				this.loading = false;
+			})
+			.catch((err) => console.error(err))
+			.finally(() => {
+				this.loading = false;
+			});
+		},
+		selectAll() {
+			//event.value - boolen value if needed
+			this.selected = this.selected.length === this.items.length
+			? []
+			: this.items
+		},
+		exportFile () {
+			let requests = [];
+			let checked = this.selected;
+			console.log(checked.length);
+			if(checked.length > 0){
+				checked.forEach(function (value) {
+					requests.push(value.id);
+				});
+			}
+
+			axios
+			.post(MIDWIFERY_EXPORT_FILE_URL, {
+				params: {
+					requests: requests,
+					dateFrom: this.date,
+					dateTo: this.dateEnd
+				}
+			})
+			.then((resp) => {
+
+				const ws = utils.json_to_sheet(resp.data.data);
+				const wb = utils.book_new();
+				utils.book_append_sheet(wb, ws, "Midwifery Requests");
+
+				utils.sheet_add_aoa(ws, [[
+					"Confirmation number",
+					"First name",
+					"Last name",
+					"Preferred name",
+					"Pronouns",
+					"Date of birth",
+					"Preferred phone",
+					"Preferred email",
+					"When was the first day of your last period",
+					"Due date",
+					"How many vaginal births",
+					"How many c-section births",
+					"Complications with previous",
+					"Provide details",
+					"Midwife before",
+					"Provide details2",
+					"Menstrual cycle length",
+					"Physician's name",
+					"Provide details3",
+					"Do you identify with one or more of these groups and communities",
+					"How did you find out about the midwifery clinic",
+					"Created at",
+					"Updated at",
+					"Community",
+					"Language",
+					"Birth locations",
+					"Preferred contact"
+				]], { origin: "A1" });
+
+				writeFileXLSX(wb, resp.data.fileName);
+
+				this.loading = false;
+			})
+			.catch((err) => console.error(err))
+			.finally(() => {
+				this.loading = false;
+			});
+
+
+			/*
+			console.log(this.date);
+			console.log(this.dateEnd);
+			console.log(this.selected);
+			*/
+		},
+	},
+};
+</script>

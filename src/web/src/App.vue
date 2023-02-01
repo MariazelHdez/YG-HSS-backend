@@ -3,14 +3,29 @@
     <v-navigation-drawer
       v-bind:app="hasSidebar"
       permanent
-      :expand-on-hover="hasSidebarClosable"
       clipped
       color="#fff"
+      id="menu-services"
+      :mini-variant.sync="mini"
       v-bind:class="{ 'd-none': !hasSidebar }"
     >
-      <v-list dense nav style="" class="mt-4"
+    <v-list-item>
+      <v-icon v-if="mini" >mdi-chevron-right</v-icon>
+      
+      <v-list-item-title> Services</v-list-item-title>
+
+      <v-btn
+        icon
+        @click.stop="mini = !mini"
+      >
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
+    </v-list-item>
+      <v-divider></v-divider>
+      <v-list dense nav style="" class="mt-1 pb-0 pt-1"
         v-for='(section) in sections' :key="section.header">
-          <v-subheader>{{ section.header }}</v-subheader>
+          <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
+          <img v-if="mini" :src="section.icon" height="36px" width="36px" />
         <v-list-item
           link
           nav
@@ -19,6 +34,7 @@
           v-for="detail in section.data"
           v-bind:key="detail.name"
           color= "white"
+          class="mb-0"
         >
           <v-list-item-icon>
             <v-icon>{{ detail.icon }}</v-icon>
@@ -150,7 +166,8 @@ export default {
   },
   data: () => ({
     dialog: false,
-    drawer: null,
+    drawer: false,
+    mini: false,
     drawerRight: null,
     headerShow: false,
     menuShow: false,
@@ -165,7 +182,6 @@ export default {
   created: async function() {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
-    console.log(this.isAuthenticated);
     if (!this.isAuthenticated) this.hasSidebar = false;
     else this.hasSidebar = config.hasSidebar;
   },

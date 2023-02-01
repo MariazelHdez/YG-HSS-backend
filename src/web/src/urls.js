@@ -14,3 +14,12 @@ export const HIPMA_URL = `${config.apiBaseUrl}/api/hipma`;
 export const HIPMA_SHOW_URL = `${HIPMA_URL}/show/`;
 export const HIPMA_VALIDATE_URL = `${HIPMA_URL}/validateRecord/`;
 export const HIPMA_DOWNLOAD_FILE_URL = `${HIPMA_URL}/downloadFile/`;
+export const HIPMA_CHANGE_STATUS_URL = `${HIPMA_URL}/changeStatus/`
+export const HIPMA_EXPORT_FILE_URL = `${HIPMA_URL}/export`;
+
+export const MIDWIFERY_URL = `${config.apiBaseUrl}/api/midwifery`;
+export const MIDWIFERY_SHOW_URL = `${MIDWIFERY_URL}/show/`;
+export const MIDWIFERY_VALIDATE_URL = `${MIDWIFERY_URL}/validateRecord/`;
+export const MIDWIFERY_DOWNLOAD_FILE_URL = `${MIDWIFERY_URL}/downloadFile/`;
+export const MIDWIFERY_CHANGE_STATUS_URL = `${MIDWIFERY_URL}/changeStatus/`
+export const MIDWIFERY_EXPORT_FILE_URL = `${MIDWIFERY_URL}/export`;

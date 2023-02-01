@@ -113,7 +113,7 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
                     'constellation_status.description as status_description')
             .first();
 
-        if(!constellationHealth || constellationHealth.status == "closed"){
+        if(!constellationHealth || constellationHealth.status_description == "closed"){
             flagExists= false;
             message= "The request you are consulting is closed or non existant, please choose a valid request.";
         }
@@ -449,41 +449,51 @@ constellationRouter.get("/export/:status",[param("status")], async (req: Request
     }
     });
 
+
 /**
- * Change the status request to "closed"
+ * Change the status request"
  *
  * @param {constellationHealth_id} id of request
  * @return json
  */
-constellationRouter.post("/changeStatus/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 
-    try{
-        var constellationHealth_id = Number(req.params.constellationHealth_id);
+    constellationRouter.patch("/changeStatus/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 
-        var statusconstellation =  await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
-            let arrayResult = Object();
-            for (let row of rows) {
-                arrayResult[row['description']] = row['id'];
+        try {
+            //var constellationHealth_id = Number(req.params.constellationHealth_id);
+    
+            var constellationHealth_id = Number(req.params.constellationHealth_id);
+
+            //var newStatus = String(req.body.newStatus);
+
+            var newStatus = String(req.body.newStatus);
+
+            var statusconstellation =  await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
+                let arrayResult = Object();
+                for (let row of rows) {
+                    arrayResult[row['description']] = row['id'];
+                }
+    
+                return arrayResult;
+            });
+    
+            var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: statusconstellation[newStatus]}).where("id", constellationHealth_id);
+    
+            if(updateStatus) {
+                let type = "success";
+                let message = "Request status changed successfully.";
+    
+                res.json({ status:200, message: message, type: type });
             }
-
-            return arrayResult;
-        });
-
-        var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: statusconstellation["Closed"]}).where("id", constellationHealth_id);
-
-        if(updateStatus){
-            res.json({ status:200, message: 'Status changed' });
+    
+        } catch(e) {
+            console.log(e);  // debug if needed
+            res.send( {
+                status: 400,
+                message: 'Request could not be processed'
+            });
         }
-
-    } catch(e) {
-        console.log(e);  // debug if needed
-        res.send( {
-            status: 400,
-            message: 'Request could not be processed'
-        });
-    }
-
-});
+    });
 
 /**
  * Obtains and transforms the data for storage

@@ -2,8 +2,9 @@
 
 	<v-expansion-panels
         multiple
+		v-model="modelPanel"
     >
-        <v-expansion-panel>
+        <v-expansion-panel class="mb-6">
 			<v-expansion-panel-header>Applicant's Information</v-expansion-panel-header>
 			<v-expansion-panel-content>
                 <v-simple-table>
@@ -71,7 +72,17 @@
 <script>
 export default {
     name: 'HipmaApplicant',
-    props: ['hipma'],
+    props: ['hipma', 'panelModel'],
+	data () {
+		return {
+			modelPanel: this.panelModel
+		}
+	},
+	watch: {
+		panelModel(newValue) {
+			this.modelPanel = newValue;
+		}
+	},
 
 }
 </script>
