@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { param } from "express-validator";
 import { GeneralRepository } from "../repository/GeneralRepository";
+import { groupBy } from "../utils/groupBy";
 
 const generalRepo = new GeneralRepository();
 
@@ -23,8 +24,20 @@ generalRouter.get("/submissions/status/:action_id/:action_value", [
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
         const result = await generalRepo.getSubmissionsStatus(actionId, actionVal);
-
-        res.send({data: result});
+        const grouped = groupBy(result, i => i.status);
+        const totals = [];        
+        for (const status in grouped) {
+            const group = grouped[status];
+            let sum = 0;
+            group.forEach((i) => {
+                sum += i.submissions;
+            });
+            totals.push(
+                { status: status, submissions: sum }
+            );
+        }
+                
+        res.send({data: totals});
 
     } catch(e) {
         console.log(e);  // debug if needed
