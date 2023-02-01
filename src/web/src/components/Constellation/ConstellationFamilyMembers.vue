@@ -1,7 +1,7 @@
 <template>
 <v-expansion-panels>
 
-        <v-expansion-panel>
+        <v-expansion-panel class="mb-6">
           <v-expansion-panel-header>Family Members Information</v-expansion-panel-header>
           <v-expansion-panel-content>
               <v-expansion-panels v-for="(items, index) in familyMembers" :key="index">
@@ -14,8 +14,8 @@
                     <v-expansion-panels
                       multiple
                     >
-                      <v-expansion-panel>
-                        <v-expansion-panel-header>Applicant Personal Information</v-expansion-panel-header>
+                      <v-expansion-panel class="mb-3">
+                        <v-expansion-panel-header >Applicant Personal Information</v-expansion-panel-header>
                         <v-expansion-panel-content>
                               <v-simple-table>
                                   <template v-slot:default>
@@ -131,7 +131,7 @@
                         </v-expansion-panel-content>
                       </v-expansion-panel>
                 
-                      <v-expansion-panel>
+                      <v-expansion-panel class="mb-3">
                         <v-expansion-panel-header>Other Information</v-expansion-panel-header>
                         <v-expansion-panel-content>
                           <v-simple-table>

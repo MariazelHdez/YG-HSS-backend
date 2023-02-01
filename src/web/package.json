@@ -1,5 +1,5 @@
 {
-  "name": "test",
+  "name": "YG-Backend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,14 +11,21 @@
   "dependencies": {
     "axios": "0.24.0",
     "core-js": "3.24.1",
+<<<<<<< HEAD
     "moment": "^2.29.4",
     "vue": "^2.7.14",
     "vue-chartjs": "^5.2.0",
+=======
+    "html2pdf.js": "^0.10.1",
+    "vue": "2.6.11",
+>>>>>>> dev
     "vue-router": "3.5.3",
     "vuetify": "^2.6.14",
-    "vuex": "3.4.0"
+    "vuex": "3.4.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "6.2.1",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "5.0.8",
     "@vue/cli-plugin-router": "~5.0.0",
