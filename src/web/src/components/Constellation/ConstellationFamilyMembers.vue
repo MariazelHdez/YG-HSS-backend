@@ -1,10 +1,10 @@
 <template>
-<v-expansion-panels>
+<v-expansion-panels multiple v-model="modelPanel">
 
         <v-expansion-panel class="mb-6">
           <v-expansion-panel-header>Family Members Information</v-expansion-panel-header>
           <v-expansion-panel-content>
-              <v-expansion-panels v-for="(items, index) in familyMembers" :key="index">
+              <v-expansion-panels v-for="(items, index) in familyMembers" :key="index" v-model="modelPanel[0]">
                 <v-expansion-panel>
                   <v-expansion-panel-header class="panel-header-familyMember">
                     {{items.first_name_family_member}}
@@ -13,6 +13,7 @@
 
                     <v-expansion-panels
                       multiple
+                      v-model="modelPanel"
                     >
                       <v-expansion-panel class="mb-3">
                         <v-expansion-panel-header >Applicant Personal Information</v-expansion-panel-header>
@@ -188,7 +189,18 @@
 <script>
 export default {
     name: 'ConstellationFamilyMembers',
-    props: ['familyMembers'],
+    props: ['familyMembers', 'panelModel'],
+	data() {
+		return {
+			modelPanel: this.panelModel,
+		};
+	},
+	watch: {
+		panelModel(newValue) {
+			this.modelPanel = newValue;
+		}
+	},
+    
 
 }
 </script>
