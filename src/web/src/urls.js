@@ -14,6 +14,8 @@ export const HIPMA_URL = `${config.apiBaseUrl}/api/hipma`;
 export const HIPMA_SHOW_URL = `${HIPMA_URL}/show/`;
 export const HIPMA_VALIDATE_URL = `${HIPMA_URL}/validateRecord/`;
 export const HIPMA_DOWNLOAD_FILE_URL = `${HIPMA_URL}/downloadFile/`;
+export const GENERAL_URL = `${config.apiBaseUrl}/api/general`;
+export const SUBMISSION_STATUS_URL = `${GENERAL_URL}/submissions/status`
 export const HIPMA_CHANGE_STATUS_URL = `${HIPMA_URL}/changeStatus/`
 export const HIPMA_EXPORT_FILE_URL = `${HIPMA_URL}/export`;
 
