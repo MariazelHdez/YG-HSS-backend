@@ -1,16 +1,15 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { GeneralRepository } from "../repository/GeneralRepository";
-import { groupBy } from "../utils/groupBy";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_HIPMA } from "../config";
+import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
-const generalRepo = new GeneralRepository();
+const submissionStatusRepo = new SubmissionStatusRepository();
 export const hipmaRouter = express.Router();
 
 
@@ -30,21 +29,9 @@ hipmaRouter.get("/submissions/status/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await generalRepo.getModuleSubmissionsStatus('hipma', actionId, actionVal);
-        const grouped = groupBy(result, i => i.status);
-        const totals = [];        
-        for (const status in grouped) {
-            const group = grouped[status];
-            let sum = 0;
-            group.forEach((i) => {
-                sum += i.submissions;
-            });
-            totals.push(
-                { status: status, submissions: sum }
-            );
-        }
-                
-        res.send({data: totals});
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_HIPMA, actionId, actionVal);
+                        
+        res.send({data: result});
 
     } catch(e) {
         console.log(e);  // debug if needed
