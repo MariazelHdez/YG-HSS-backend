@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="chart-wrapper">
-            <Doughnut v-if="hasData" :data="data" :options="options"></Doughnut>
+            <Bar v-if="hasData" :data="data" :options="options"></Bar>
             <div class="no-data" v-else>
               <h3>No data found.</h3>
             </div>
@@ -25,20 +25,20 @@
 
 <script>
 import { ref } from "vue";
-import { Chart as CharJS, ArcElement, Tooltip, Legend } from "chart.js"
-import { Doughnut } from "vue-chartjs"
+import { Chart as CharJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js"
+import { Bar } from "vue-chartjs"
 import { getFilterList } from "../../helper/index"
 
-CharJS.register(ArcElement, Tooltip, Legend);
+CharJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const dtOptions =  ref({});
 const filterList = getFilterList();
 const hasData = ref(false);
 
 export default {
-  name: "StatusChart",
+  name: "SubmissionsChart",
   components: {
-    Doughnut
+    Bar
   },
   props: ['title', 'data'],
   watch: {
@@ -46,25 +46,11 @@ export default {
         immediate: true,
         handler(newData) {
           this.hasData = false;
-          if (newData.datasets[0].data.length > 0) {
-            this.hasData = true;
-            const total = newData.datasets[0].data.reduce((x,y) => parseInt(x)+parseInt(y));
-            dtOptions.value = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        title: {
-                        display: true,
-                        text: `Total: ${total}`,
-                        align: "start"
-                        },
-                        position: "right",
-                        align: "end"
-                    }
-                }
-            };
-          }
+          newData.datasets.forEach((ds) => {
+            if (ds.data.length > 0) {
+              this.hasData = true;
+            }
+          });
         }
     }
   },
