@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
+import { GeneralRepository } from "../repository/GeneralRepository";
+import { groupBy } from "../utils/groupBy";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
@@ -10,8 +12,49 @@ var _ = require('lodash');
 //let { RequireServerAuth, RequireAdmin } = require("../auth")
 
 const db = knex(DB_CONFIG_CONSTELLATION)
-
+const generalRepo = new GeneralRepository();
 export const constellationRouter = express.Router();
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+constellationRouter.get("/submissions/status/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await generalRepo.getModuleSubmissionsStatus('constellation', actionId, actionVal);
+        const grouped = groupBy(result, i => i.status);
+        const totals = [];        
+        for (const status in grouped) {
+            const group = grouped[status];
+            let sum = 0;
+            group.forEach((i) => {
+                sum += i.submissions;
+            });
+            totals.push(
+                { status: status, submissions: sum }
+            );
+        }
+                
+        res.send({data: totals});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Obtain data to show in the index view

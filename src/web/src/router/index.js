@@ -8,12 +8,16 @@ import Profile from "../components/Profile";
 import store from "../store";
 import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
+import ConstellationAnalytics from "../components/Constellation/ConstellationAnalytics";
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
 import HipmaExport from "../components/Hipma/HipmaExport";
+import HipmaAnalytics from "../components/Hipma/HipmaAnalytics";
 import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
+import MidwiferyAnalytics from "../components/Midwifery/MidwiferyAnalytics";
+
 import Dashboard from "../components/Dashboard.vue";
 
 Vue.use(VueRouter);
@@ -27,7 +31,8 @@ const routes = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    component: Dashboard
+    component: Dashboard,
+    requiresAuth: true
   },
   {
     path: "/sign-in",
@@ -70,6 +75,14 @@ const routes = [
     }
   },
   {
+    path: "/constellationAnalytics",
+    name: "Constellation Analytics",
+    component: ConstellationAnalytics,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: "/hipma",
     name: "Health Information",
     component: Hipma,
@@ -93,7 +106,14 @@ const routes = [
       requiresAuth: true
     }
   },
-
+  {
+    path: "/hipmaAnalytics",
+    name: "Hipma Analytics",
+    component: HipmaAnalytics,
+    meta: {
+      requiresAuth: true
+    }
+  },
   {
     path: "/midwifery",
     name: "Midwifery",
@@ -118,6 +138,18 @@ const routes = [
       requiresAuth: true
     }
   },
+  {
+    path: "/midwiferyAnalytics",
+    name: "Midwifery Analytics",
+    component: MidwiferyAnalytics,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  
+  
+  
+  
 ];
 
 const router = new VueRouter({

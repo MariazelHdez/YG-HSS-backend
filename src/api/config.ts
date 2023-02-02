@@ -17,15 +17,22 @@ export const API_PORT = parseInt(process.env.API_PORT || "3000");
 export const FRONTEND_URL = process.env.FRONTEND_URL || "";
 export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || process.env.FRONTEND_URL || "";
 export const NODE_ENV = process.env.NODE_ENV;
+
 export const DB_NAME_CONSTELLATION = process.env.DB_NAME_CONSTELLATION || '';
 export const DB_NAME_MIDWIFERY = process.env.DB_NAME_MIDWIFERY || '';
 export const DB_NAME_HIPMA = process.env.DB_NAME_HIPMA || '';
 export const DB_NAME_GENERAL = process.env.DB_NAME_GENERAL || '';
+
 export const DB_USER = process.env.DB_USER || '';
 export const DB_PASS = process.env.DB_PASS || '';
 export const DB_HOST = process.env.DB_HOST || '';
 export const DB_PORT = process.env.DB_PORT || '';
 export const DB_NAME = process.env.DB_NAME || '';
+
+export const SCHEMA_CONSTELLATION = process.env.SCHEMA_CONSTELLATION || '';
+export const SCHEMA_MIDWIFERY = process.env.SCHEMA_MIDWIFERY || '';
+export const SCHEMA_HIPMA = process.env.SCHEMA_HIPMA || '';
+
 
 export const DB_CONFIG_CONSTELLATION = {
   client: 'pg',

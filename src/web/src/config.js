@@ -6,6 +6,17 @@ export const hasSidebarClosable = false;
 
 export const sections = [
     {
+        header: "Analytics",
+        icon: "",
+        data:[
+            {
+                name: "Dashboard",
+                url: "/",
+                icon: "fa-solid fa-grip"
+            },
+        ]
+    },
+    {
         header: "Constellation Health",
         icon: "/CH.png",
         data:[
