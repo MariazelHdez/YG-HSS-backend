@@ -14,6 +14,7 @@ import HipmaExport from "../components/Hipma/HipmaExport";
 import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
+import Dashboard from "../components/Dashboard.vue";
 
 Vue.use(VueRouter);
 
@@ -22,6 +23,11 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home
+  },
+  {
+    path: "/dashboard",
+    name: "Dashboard",
+    component: Dashboard
   },
   {
     path: "/sign-in",

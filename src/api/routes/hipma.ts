@@ -34,7 +34,7 @@ hipmaRouter.get("/", async (req: Request, res: Response) => {
                     'hipma_situations.description as HipmaSituations',
                     db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName")
                     )
-            .where('health_information.status', 'open')
+            .where('health_information.status', '1')
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
@@ -74,7 +74,7 @@ hipmaRouter.get("/validateRecord/:hipma_id",[param("hipma_id").isInt().notEmpty(
             .select('bizont_edms_hipma.health_information.*')
             .first();
 
-        if(!hipma || hipma.status == "closed"){
+        if(!hipma || hipma.status == 2){
             flagExists = false;
             message = "The request you are consulting is closed or non existant, please choose a valid request.";
         }
@@ -396,7 +396,7 @@ hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
         var hipma = req.body.params.requests;
 
-        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "closed"}).whereIn("id", hipma);
+        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "2"}).whereIn("id", hipma);
 
         if(updateStatus) {
             let type = "success";
@@ -459,7 +459,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
         var hipma = Object();
-        var sqlFilter = "health_information.status = 'open'";
+        var sqlFilter = "health_information.status = '1'";
 
         if(requests.length > 0){
             sqlFilter += " AND health_information.id IN ("+requests+")";

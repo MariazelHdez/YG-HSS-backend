@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { userRouter, dataRouter, constellationRouter, midwiferyRouter, hipmaRouter, generalRouter } from "./routes";
+import { userRouter, constellationRouter, midwiferyRouter, hipmaRouter, generalRouter } from "./routes";
 import * as config from './config';
 import { doHealthCheck } from "./utils/healthCheck";
 import { configureAuthentication } from "./routes/auth"
@@ -43,7 +43,6 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
 });
 
 app.use("/api/user", userRouter);
-app.use("/api/data", dataRouter);
 app.use("/api/constellation", constellationRouter);
 app.use("/api/midwifery", midwiferyRouter);
 app.use("/api/hipma", hipmaRouter);
