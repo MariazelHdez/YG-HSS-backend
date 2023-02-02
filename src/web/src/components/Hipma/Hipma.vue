@@ -2,6 +2,7 @@
 <template>
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
+
         <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <v-row 
@@ -21,6 +22,7 @@
                     prepend-inner-icon="mdi-layers-triple"
                     color="grey lighten-2"
                     item-color="grey lighten-2"
+                    v-model="selectedStatus"
                     @change="changeSelect"
                     id="bulk-accion-select"
                 ></v-select>
@@ -86,11 +88,12 @@ export default {
         text: "Mark as closed",
         value: "closed"
     }],
+    selectedStatus: null,
     headers: [
         { text: "Confirmation Number", value: "confirmation_number", sortable: true},
         { text: "Request Type", value: "HipmaRequestType", sortable: true},
         { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-        { text: "Applicant", value: "applicantFullName", sortable: true},
+        { text: "Applicant", value: "applicantfullname", sortable: true},
         { text: "Created", value: "created_at", sortable: true},
         { text: "", value: "showUrl", sortable: false},
     ],
@@ -171,10 +174,12 @@ export default {
 				}
             })
             .then((resp) => {
-                this.$router.push({
-					path: '/hipma',
-					query: { message: resp.data.message, type: resp.data.type}
-				});
+                this.getDataFromApi();
+                this.selectedStatus = null;
+                this.flagAlert = true;
+                this.applyDisabled = true;
+                this.alertMessage = resp.data.message;
+                this.alertType = resp.data.type;
             })
             .catch((err) => console.error(err))
             .finally(() => {

@@ -216,9 +216,9 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             midwifery.language = midwifery.preferred_language;
         }
 
-        if(!midwifery.preferred_name || midwifery.preferred_name == "") {
+        /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
             midwifery.preferred_name = midwifery.preferred_name;
-        }
+        }*/
 
         var communities = Object();
         var contact = Object();
@@ -323,7 +323,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.last_name = data.last_name;
 
         let legal_name = "";
-        if(_.isUndefined(data.preferred_name)) {
+        if(!_.isUndefined(data.preferred_name)) {
             legal_name = data.preferred_name;
         }else{
             legal_name = data.first_name+" "+data.last_name;
@@ -422,7 +422,6 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
  * @param {request}
  * @return file
  */
-//midwiferyRouter.get("/export/:status",[param("status")], async (req: Request, res: Response) => {
 midwiferyRouter.post("/export", async (req: Request, res: Response) => {
     try {
 
@@ -778,9 +777,9 @@ async function getMidwiferyOptions(field: any, data: string) {
 
     var bool = true;
 
-    if(data == "yes") {
+    if(data == "yes" || data == "Yes" || data == "YES") {
         bool = true;
-    }else if(data == "no") {
+    }else if(data == "no" || data == "No" || data == "NO") {
         bool = false;
     }else if(!data || data == "") {
         return null;
