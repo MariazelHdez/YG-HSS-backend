@@ -159,7 +159,6 @@ export default {
           });
           //this.pagination.totalLength = resp.data.meta.count;
           //this.totalLength = resp.data.meta.count;
-          this.loading = false;
         })
         .catch((err) => console.error(err))
         .finally(() => {
@@ -199,13 +198,7 @@ export default {
           let setStatus = statusSelected[this.actionSelected];
           axios
             .patch(postUrl, { newStatus: setStatus })
-            .then((resp) => {
-              this.loading = false;
-              this.$router.push({
-                path: "/constellation",
-                query: { message: resp.data.message, type: resp.data.type },
-              });
-            })
+            .then(() => { this.getDataFromApi(); })
             .catch((err) => console.error(err))
             .finally(() => {
               this.loading = false;
