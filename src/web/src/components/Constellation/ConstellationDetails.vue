@@ -25,7 +25,7 @@
           </v-btn>
         </v-col>
         <v-col md="auto">
-          <v-btn color="#F3A901" class="ma-2 white--text" id="apply-btn">
+          <v-btn color="#F3A901" class="ma-2 white--text" id="apply-btn"  @click="exportToPDF"> 
             <v-icon left>mdi-export</v-icon>
             Export Selected
           </v-btn>
@@ -35,7 +35,8 @@
       <v-row no-gutters>
         <v-col lg="1"> </v-col>
         <v-col>
-          <v-expansion-panels multiple mandatory>
+          <div id="constellationPanelInformation">
+          <v-expansion-panels multiple v-model="panel">
             <v-expansion-panel class="mb-6">
               <v-expansion-panel-header
                 >Applicant Personal Information</v-expansion-panel-header
@@ -169,7 +170,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
 
-            <v-expansion-panel class="mb-6">
+            <v-expansion-panel class="mb-6" >
               <v-expansion-panel-header
                 >Other Information</v-expansion-panel-header
               >
@@ -219,8 +220,9 @@
           </v-expansion-panels>
 
           <ConstellationFamilyMembers
-            v-bind:familyMembers="itemsConstellationFamily"
+            v-bind:familyMembers="itemsConstellationFamily" v-bind:panelModel="panelModel"
           />
+        </div>
         </v-col>
         <v-col lg="2"> </v-col>
       </v-row>
@@ -234,6 +236,8 @@ import ConstellationFamilyMembers from "./ConstellationFamilyMembers.vue";
 import { CONSTELLATION_SHOW_URL } from "../../urls.js";
 import { CONSTELLATION_VALIDATE_URL } from "../../urls.js";
 import { CONSTELLATION_URL } from "../../urls.js";
+import html2pdf from "html2pdf.js";
+
 
 export default {
   name: "Grid",
@@ -247,6 +251,9 @@ export default {
     actionSelected: "",
     itemsConstellation: [],
     itemsConstellationFamily: [],
+    fileName:"",
+    panel: [0, 1],
+    panelModel: [0, 1]
   }),
   components: {
     ConstellationFamilyMembers,
@@ -280,6 +287,7 @@ export default {
         .then((resp) => {
           this.itemsConstellation = resp.data.dataConstellation;
           this.itemsConstellationFamily = resp.data.dataConstellationFamily;
+          this.fileName = resp.data.fileName;
         })
         .catch((err) => console.error(err))
         .finally(() => {});
@@ -311,6 +319,20 @@ export default {
           });
       }
     },
+    exportToPDF() {
+      this.panel = [0, 1];
+			this.panelModel = [0, 1];
+      const fileName= this.itemsConstellation.first_name + "_" + this.itemsConstellation.last_name + "_" + this.fileName
+			setTimeout(function() {
+				html2pdf(document.getElementById("constellationPanelInformation"), {
+						margin: 5,
+						filename: fileName,
+						pagebreak: {
+							mode: ['avoid-all', 'css', 'legacy']
+						}
+				});
+			}, 500);
+		},
   },
 };
 </script>
