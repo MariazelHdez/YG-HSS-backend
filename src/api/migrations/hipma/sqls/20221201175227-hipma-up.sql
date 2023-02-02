@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS bizont_edms_hipma.health_information
 (
     id SERIAL PRIMARY KEY,
     confirmation_number character varying(10),
-    status character varying(25) DEFAULT 'open',
+    status int DEFAULT 1 NOT NULL,
     what_type_of_request_do_you_want_to_make_ int,
     are_you_requesting_access_to_your_own_personal_health_informatio int,
     select_the_situation_that_applies_ int,
@@ -52,6 +52,24 @@ CREATE INDEX health_information_creation_date_idx ON bizont_edms_hipma.health_in
 CREATE INDEX health_information_name_idx ON bizont_edms_hipma.health_information (first_name, last_name);
 
 
+/**************************************************************/
+/********************* hipma_status ***********************/
+/**************************************************************/
+
+CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_status
+(
+    id SERIAL PRIMARY KEY,
+    description character varying(500) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_status
+    OWNER to postgres;
+    
+    
 /**************************************************************/
 /********************** hipma_files ***************************/
 /**************************************************************/
@@ -198,6 +216,13 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS bizont_edms_hipma.hipma_request_type
     OWNER to postgres;
+
+/**************************************************************/
+/********************* hipma_status ********************/
+/**************************************************************/
+INSERT INTO bizont_edms_hipma.hipma_status(id, description)
+VALUES  (1, 'Open'),
+        (2, 'Closed');
 
 
 /**************************************************************/

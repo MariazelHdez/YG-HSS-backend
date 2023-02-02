@@ -56,16 +56,15 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
             .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
             .select('constellation_health.your_legal_name',
                     'constellation_health.date_of_birth',
+                    'constellation_health.id',
                     'constellation_health.family_physician',
                     'constellation_health.diagnosis',
                     'constellation_health.created_at',
-                    'constellation_health.status',
+                    'constellation_status.description as status',
                     'constellation_health.id as constellation_health_id')
-            .whereNot('constellation_status.description', 'closed')
+            .whereNot('constellation_status.id', '4')
             .orderBy('constellation_health.id', 'asc');
-
         var diagnosis = Object();
-
         diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
             let arrayResult = Object();
 
@@ -112,7 +111,18 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
             value.showUrl = "constellation/show/"+value.constellation_health_id;
         });
 
-        res.send({data: constellationHealth});
+        var constellationStatus = Array();
+        constellationStatus = await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
+            let arrayResult = Array();
+
+            for (let row of rows) {
+                //arrayResult[row['id']] = row['field_value'];
+                arrayResult.push({text: row['description'], value: row['id']});
+            }
+            return arrayResult;
+        });
+
+        res.send({data: constellationHealth, dataStatus: constellationStatus});
     } catch(e) {
         console.log(e);  // debug if needed
         res.send( {
@@ -494,43 +504,26 @@ constellationRouter.get("/export/:status",[param("status")], async (req: Request
  * @return json
  */
 
-    constellationRouter.patch("/changeStatus/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+constellationRouter.patch("/changeStatus", async (req: Request, res: Response) => {
+    try {
+        var constellation_id = req.body.params.requests;
+        var status_id = req.body.params.requestStatus;
+        var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: status_id}).whereIn("id", constellation_id);
+        if(updateStatus) {
+            let type = "success";
+            let message = "Request status changed successfully.";
 
-        try {
-            //var constellationHealth_id = Number(req.params.constellationHealth_id);
-    
-            var constellationHealth_id = Number(req.params.constellationHealth_id);
-
-            //var newStatus = String(req.body.newStatus);
-
-            var newStatus = String(req.body.newStatus);
-
-            var statusconstellation =  await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
-                let arrayResult = Object();
-                for (let row of rows) {
-                    arrayResult[row['description']] = row['id'];
-                }
-    
-                return arrayResult;
-            });
-    
-            var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: statusconstellation[newStatus]}).where("id", constellationHealth_id);
-    
-            if(updateStatus) {
-                let type = "success";
-                let message = "Request status changed successfully.";
-    
-                res.json({ status:200, message: message, type: type });
-            }
-    
-        } catch(e) {
-            console.log(e);  // debug if needed
-            res.send( {
-                status: 400,
-                message: 'Request could not be processed'
-            });
+            res.json({ status:200, message: message, type: type });
         }
-    });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Obtains and transforms the data for storage
