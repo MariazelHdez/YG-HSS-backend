@@ -4,24 +4,24 @@
 CREATE OR REPLACE VIEW bizont_edms_general.submissions_week_v
 AS SELECT 'bizont_edms_constellation_health'::text AS id,
     'Constellation Health'::text AS department,
-    count(1) AS total,
-    to_char(ch.created_at, 'yyyymmdd'::text) AS date
+    count(1) AS submissions,
+    to_char(ch.created_at, 'yyyymmdd'::text) AS date_code
    FROM bizont_edms_constellation_health.constellation_health ch
   WHERE ch.created_at > (CURRENT_DATE - '7 days'::interval)
   GROUP BY (to_char(ch.created_at, 'yyyymmdd'::text))
 UNION
  SELECT 'bizont_edms_hipma'::text AS id,
     'Hipma'::text AS department,
-    count(1) AS total,
-    to_char(ch.created_at, 'yyyymmdd'::text) AS date
+    count(1) AS submissions,
+    to_char(ch.created_at, 'yyyymmdd'::text) AS date_code
    FROM bizont_edms_hipma.health_information ch
   WHERE ch.created_at > (CURRENT_DATE - '7 days'::interval)
   GROUP BY (to_char(ch.created_at, 'yyyymmdd'::text))
 UNION
  SELECT 'bizont_edms_midwifery'::text AS id,
     'Midwifery Services'::text AS department,
-    count(1) AS total,
-    to_char(ch.created_at, 'yyyymmdd'::text) AS date
+    count(1) AS submissions,
+    to_char(ch.created_at, 'yyyymmdd'::text) AS date_code
    FROM bizont_edms_midwifery.midwifery_services ch
   WHERE ch.created_at > (CURRENT_DATE - '7 days'::interval)
   GROUP BY (to_char(ch.created_at, 'yyyymmdd'::text));
