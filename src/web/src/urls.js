@@ -9,6 +9,7 @@ export const PROFILE_URL = `${config.apiBaseUrl}/api/user`;
 export const CONSTELLATION_URL = `${config.apiBaseUrl}/api/constellation`;
 export const CONSTELLATION_SHOW_URL = `${CONSTELLATION_URL}/show/`;
 export const CONSTELLATION_VALIDATE_URL = `${CONSTELLATION_URL}/validateRecord/`;
+export const CONSTELLATION_EXPORT_FILE_URL = `${CONSTELLATION_URL}/export`;
 export const CONSTELLATION_SUBMISSIONS_URL = `${CONSTELLATION_URL}/submissions`
 export const CONSTELLATION_STATUS_URL = `${CONSTELLATION_SUBMISSIONS_URL}/status`
 

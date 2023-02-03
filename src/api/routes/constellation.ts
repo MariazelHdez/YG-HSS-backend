@@ -417,112 +417,65 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
  * @param {status} status of request
  * @return json
  */
-constellationRouter.get("/export/:status",[param("status")], async (req: Request, res: Response) => {
+constellationRouter.post("/export/", async (req: Request, res: Response) => {
     try {
-
-        var status = req.params.status;
+        let listStatus : Array<Number> = req.body.newStatus;
         var constellationHealth = Object();
-        var constellationFamily = Object();
-        var arrayFilter = Array();
-
-        var statusConstellation =  await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
-            let arrayResult = Object();
-            for (let row of rows) {
-                arrayResult[row['description']] = row['id'];
-            }
-
-            return arrayResult;
-        });
-
-        if(status == "no-filter"){
-            arrayFilter = [statusConstellation["New/Unread"], statusConstellation["Entered"], statusConstellation["Declined"]];
-        }else{
-            arrayFilter.push(status);
-        }
 
         constellationHealth = await db("bizont_edms_constellation_health.constellation_health")
             .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
             .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-            .where('constellation_health.status', arrayFilter)
-            .select('bizont_edms_constellation_health.constellation_health.*',
+            .whereIn('constellation_health.id', listStatus)
+            .select('bizont_edms_constellation_health.constellation_health.first_name',
+                    'bizont_edms_constellation_health.constellation_health.last_name',
+                    'bizont_edms_constellation_health.constellation_health.is_this_your_legal_name_',
+                    'bizont_edms_constellation_health.constellation_health.your_legal_name',
+                    'bizont_edms_constellation_health.constellation_health.pronouns',
+                    'bizont_edms_constellation_health.constellation_health.date_of_birth',
+                    'bizont_edms_constellation_health.constellation_health.have_yhcip',
+                    'bizont_edms_constellation_health.constellation_health.health_care_card',
+                    'bizont_edms_constellation_health.constellation_health.yhcip',
+                    'bizont_edms_constellation_health.constellation_health.postal_code',
+                    'bizont_edms_constellation_health.constellation_health.prefer_to_be_contacted',
+                    'bizont_edms_constellation_health.constellation_health.phone_number',
+                    'bizont_edms_constellation_health.constellation_health.email_address',
+                    'bizont_edms_constellation_health.constellation_health.leave_phone_message',
                     'bizont_edms_constellation_health.constellation_health_language.description as language_prefer_description',
-                    'bizont_edms_constellation_health.constellation_health_demographics.description as demographic_description');
-
-        var diagnosis = Object();
-        var clients = Array();
-
-        diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
-            let arrayResult = Object();
-
-            for (let row of rows) {
-                arrayResult[row['id']] = row['description'];
-            }
-
-            return arrayResult;
-        });
+                    'bizont_edms_constellation_health.constellation_health.interpretation_support',
+                    'bizont_edms_constellation_health.constellation_health.family_physician',
+                    'bizont_edms_constellation_health.constellation_health.current_family_physician',
+                    'bizont_edms_constellation_health.constellation_health.accessing_health_care',
+                    'bizont_edms_constellation_health.constellation_health.diagnosis',
+                    'bizont_edms_constellation_health.constellation_health_demographics.description as demographic_description',
+                    'bizont_edms_constellation_health.constellation_health.include_family_members',
+                    'bizont_edms_constellation_health.constellation_health.created_at',
+                    );
 
         constellationHealth.forEach(function (value: any) {
-
-            clients.push(value.id);
 
             if(value.date_of_birth == 0) {
                 value.date_of_birth =  "N/A";
             }else{
                 value.date_of_birth =  value.date_of_birth.toLocaleDateString("en-CA");
             }
-
-            let dataString = "";
-
-            _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
-                if(valueDiagnosis in diagnosis){
-                    dataString += diagnosis[valueDiagnosis]+",";
-                }else{
-                    dataString += valueDiagnosis+",";
-                }
-            });
-
+                value.created_at =  value.created_at.toLocaleString("en-CA");
+            
+            if(value.language_prefer_to_receive_services){
+                value.language_prefer_to_receive_services = value.preferred_language;
+            }else{
+                value.language_prefer_to_receive_services = value.language_preferred;
+            }
+            
+            var dataString = "";
+            
             if(dataString.substr(-1) == ","){
                 dataString = dataString.slice(0, -1);
             }
-
+            
             value.diagnosis = dataString.replace(/,/g, ', ');
-
         });
 
-        constellationFamily = await db("bizont_edms_constellation_health.constellation_health_family_members")
-            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-            .select('constellation_health_family_members.*',
-                    'constellation_health_language.description as language_prefer_description_family_member',
-                    'constellation_health_demographics.description as demographic_description_family_member')
-            .whereIn('constellation_health_family_members.constellation_health_id', clients);
-
-        constellationFamily.forEach(function (value: any, key: any) {
-
-            if(value.date_of_birth_family_member == 0) {
-                value.date_of_birth_family_member =  "N/A";
-            }
-
-            let dataString = "";
-
-            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
-
-                if(valueDiagnosisFm in diagnosis){
-                    dataString += diagnosis[valueDiagnosisFm]+",";
-                }else{
-                    dataString += valueDiagnosisFm+",";
-                }
-            });
-
-            if(dataString.substr(-1) == ","){
-                dataString = dataString.slice(0, -1);
-            }
-
-            constellationFamily[key].diagnosis_family_member = dataString.replace(/,/g, ', ');
-
-        });
-
-        res.json({ status: 200, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily});
+        res.json({ status: 200, dataConstellation: constellationHealth});
     } catch(e) {
         console.log(e);  // debug if needed
         res.send( {

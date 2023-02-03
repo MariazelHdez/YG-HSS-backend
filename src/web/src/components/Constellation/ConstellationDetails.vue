@@ -287,8 +287,7 @@ export default {
   },
   computed: {
     validateFamilyMembers() {
-      const hasFamily = this.validateFamily;
-      return hasFamily.includes("Yes") ? true : false;
+      return this.itemsConstellation.flagFamilyMembers;
     },
   },
   created() {
