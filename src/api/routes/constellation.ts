@@ -300,7 +300,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         constellationHealth.is_this_your_legal_name_ = data.is_this_your_legal_name_;
 
         let legal_name = "";
-        if(_.isUndefined(data.your_legal_name)){
+        if(!_.isUndefined(data.your_legal_name) &&  !_.isEmpty(data.your_legal_name )){
             legal_name = data.your_legal_name;
         }else{
             legal_name = data.first_name+" "+data.last_name;
@@ -570,8 +570,10 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
         constellationFamilyMembers.last_name_family_member = dataMember['last_name_family_member'];
         constellationFamilyMembers.is_this_your_legal_name__family_member = dataMember['is_this_your_legal_name_family_member'];
 
-        let legal_name = "";
-        if(!_.isEmpty(dataMember['your_legal_name_family_member'])){
+        let legal_name = dataMember['your_legal_name_family_member'];
+        
+        
+        if(!_.isEmpty(legal_name)){
             legal_name = dataMember['first_name_family_member']+" "+dataMember['last_name_family_member'];
         }
 
