@@ -6,6 +6,7 @@ import { SubmissionStatusRepository } from "../repository/SubmissionStatusReposi
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
+import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_MIDWIFERY)
@@ -15,6 +16,40 @@ export const midwiferyRouter = express.Router();
 
 const submissionStatusRepo = new SubmissionStatusRepository();
 
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+midwiferyRouter.get("/submissions/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_MIDWIFERY, actionId, actionVal);
+        const groupedId = groupBy(result, i => i.id);
+        const labels = groupBy(result, i => i.date_code);
+                        
+        res.send(
+            {
+                data: groupedId,
+                labels: labels
+            });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Obtain data to show in the index view
@@ -44,9 +79,6 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
         });
     }
 });
-
-
-
 
 /**
  * Obtain data to show in the index view
