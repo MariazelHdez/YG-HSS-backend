@@ -1,12 +1,11 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { GeneralRepository } from "../repository/GeneralRepository";
-import { groupBy } from "../utils/groupBy";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_MIDWIFERY } from "../config";
+import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_MIDWIFERY)
@@ -14,7 +13,7 @@ const db = knex(DB_CONFIG_MIDWIFERY)
 export const midwiferyRouter = express.Router();
 
 
-const generalRepo = new GeneralRepository();
+const submissionStatusRepo = new SubmissionStatusRepository();
 
 
 /**
@@ -33,21 +32,9 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await generalRepo.getModuleSubmissionsStatus('midwifery', actionId, actionVal);
-        const grouped = groupBy(result, i => i.status);
-        const totals = [];        
-        for (const status in grouped) {
-            const group = grouped[status];
-            let sum = 0;
-            group.forEach((i) => {
-                sum += i.submissions;
-            });
-            totals.push(
-                { status: status, submissions: sum }
-            );
-        }
-                
-        res.send({data: totals});
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_MIDWIFERY, actionId, actionVal);
+                        
+        res.send({data: result});
 
     } catch(e) {
         console.log(e);  // debug if needed
@@ -266,9 +253,9 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             midwifery.language = midwifery.preferred_language;
         }
 
-        if(!midwifery.preferred_name || midwifery.preferred_name == "") {
+        /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
             midwifery.preferred_name = midwifery.preferred_name;
-        }
+        }*/
 
         var communities = Object();
         var contact = Object();
@@ -373,7 +360,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.last_name = data.last_name;
 
         let legal_name = "";
-        if(_.isUndefined(data.preferred_name)) {
+        if(!_.isUndefined(data.preferred_name)) {
             legal_name = data.preferred_name;
         }else{
             legal_name = data.first_name+" "+data.last_name;
@@ -472,7 +459,6 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
  * @param {request}
  * @return file
  */
-//midwiferyRouter.get("/export/:status",[param("status")], async (req: Request, res: Response) => {
 midwiferyRouter.post("/export", async (req: Request, res: Response) => {
     try {
 
@@ -828,9 +814,9 @@ async function getMidwiferyOptions(field: any, data: string) {
 
     var bool = true;
 
-    if(data == "yes") {
+    if(data == "yes" || data == "Yes" || data == "YES") {
         bool = true;
-    }else if(data == "no") {
+    }else if(data == "no" || data == "No" || data == "NO") {
         bool = false;
     }else if(!data || data == "") {
         return null;

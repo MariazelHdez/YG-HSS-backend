@@ -13,8 +13,8 @@
         "password": {"ENV": "DB_PASS"},
         "host": {"ENV": "DB_HOST"},
         "port": {"ENV": "DB_PORT"},
-        "database": {"ENV": "DB_NAME_CONSTELLATION"},
-        "schema": {"ENV": "DB_NAME_CONSTELLATION"}
+        "database": {"ENV": "DB_NAME"},
+        "schema": {"ENV": "SCHEMA_CONSTELLATION"}
     },
 
     "midwifery": {
@@ -23,8 +23,8 @@
         "password": {"ENV": "DB_PASS"},
         "host": {"ENV": "DB_HOST"},
         "port": {"ENV": "DB_PORT"},
-        "database": {"ENV": "DB_NAME_MIDWIFERY"},
-        "schema": {"ENV": "DB_NAME_MIDWIFERY"}
+        "database": {"ENV": "DB_NAME"},
+        "schema": {"ENV": "SCHEMA_MIDWIFERY"}
     },
 
     "hipma": {
@@ -33,8 +33,8 @@
         "password": {"ENV": "DB_PASS"},
         "host": {"ENV": "DB_HOST"},
         "port": {"ENV": "DB_PORT"},
-        "database": {"ENV": "DB_NAME_HIPMA"},
-        "schema": {"ENV": "DB_NAME_HIPMA"}
+        "database": {"ENV": "DB_NAME"},
+        "schema": {"ENV": "SCHEMA_HIPMA"}
     },
 
     "general": {
@@ -43,7 +43,7 @@
         "password": {"ENV": "DB_PASS"},
         "host": {"ENV": "DB_HOST"},
         "port": {"ENV": "DB_PORT"},
-        "database": {"ENV": "DB_NAME_GENERAL"},
-        "schema": {"ENV": "DB_NAME_GENERAL"}
+        "database": {"ENV": "DB_NAME"},
+        "schema": {"ENV": "SCHEMA_GENERAL"}
     }
 }

@@ -1,18 +1,17 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { GeneralRepository } from "../repository/GeneralRepository";
-import { groupBy } from "../utils/groupBy";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_CONSTELLATION } from "../config";
+import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 var _ = require('lodash');
 
 //let { RequireServerAuth, RequireAdmin } = require("../auth")
 
 const db = knex(DB_CONFIG_CONSTELLATION)
-const generalRepo = new GeneralRepository();
+const submissionStatusRepo = new SubmissionStatusRepository();
 export const constellationRouter = express.Router();
 
 /**
@@ -31,21 +30,9 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await generalRepo.getModuleSubmissionsStatus('constellation', actionId, actionVal);
-        const grouped = groupBy(result, i => i.status);
-        const totals = [];        
-        for (const status in grouped) {
-            const group = grouped[status];
-            let sum = 0;
-            group.forEach((i) => {
-                sum += i.submissions;
-            });
-            totals.push(
-                { status: status, submissions: sum }
-            );
-        }
-                
-        res.send({data: totals});
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_CONSTELLATION, actionId, actionVal);
+                        
+        res.send({data: result});
 
     } catch(e) {
         console.log(e);  // debug if needed
@@ -69,16 +56,15 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
             .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
             .select('constellation_health.your_legal_name',
                     'constellation_health.date_of_birth',
+                    'constellation_health.id',
                     'constellation_health.family_physician',
                     'constellation_health.diagnosis',
                     'constellation_health.created_at',
-                    'constellation_health.status',
+                    'constellation_status.description as status',
                     'constellation_health.id as constellation_health_id')
-            .whereNot('constellation_status.description', 'closed')
+            .whereNot('constellation_status.id', '4')
             .orderBy('constellation_health.id', 'asc');
-
         var diagnosis = Object();
-
         diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
             let arrayResult = Object();
 
@@ -125,7 +111,18 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
             value.showUrl = "constellation/show/"+value.constellation_health_id;
         });
 
-        res.send({data: constellationHealth});
+        var constellationStatus = Array();
+        constellationStatus = await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
+            let arrayResult = Array();
+
+            for (let row of rows) {
+                //arrayResult[row['id']] = row['field_value'];
+                arrayResult.push({text: row['description'], value: row['id']});
+            }
+            return arrayResult;
+        });
+
+        res.send({data: constellationHealth, dataStatus: constellationStatus});
     } catch(e) {
         console.log(e);  // debug if needed
         res.send( {
@@ -303,7 +300,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         constellationHealth.is_this_your_legal_name_ = data.is_this_your_legal_name_;
 
         let legal_name = "";
-        if(_.isUndefined(data.your_legal_name)){
+        if(!_.isUndefined(data.your_legal_name) &&  !_.isEmpty(data.your_legal_name )){
             legal_name = data.your_legal_name;
         }else{
             legal_name = data.first_name+" "+data.last_name;
@@ -507,43 +504,26 @@ constellationRouter.get("/export/:status",[param("status")], async (req: Request
  * @return json
  */
 
-    constellationRouter.patch("/changeStatus/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+constellationRouter.patch("/changeStatus", async (req: Request, res: Response) => {
+    try {
+        var constellation_id = req.body.params.requests;
+        var status_id = req.body.params.requestStatus;
+        var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: status_id}).whereIn("id", constellation_id);
+        if(updateStatus) {
+            let type = "success";
+            let message = "Request status changed successfully.";
 
-        try {
-            //var constellationHealth_id = Number(req.params.constellationHealth_id);
-    
-            var constellationHealth_id = Number(req.params.constellationHealth_id);
-
-            //var newStatus = String(req.body.newStatus);
-
-            var newStatus = String(req.body.newStatus);
-
-            var statusconstellation =  await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
-                let arrayResult = Object();
-                for (let row of rows) {
-                    arrayResult[row['description']] = row['id'];
-                }
-    
-                return arrayResult;
-            });
-    
-            var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: statusconstellation[newStatus]}).where("id", constellationHealth_id);
-    
-            if(updateStatus) {
-                let type = "success";
-                let message = "Request status changed successfully.";
-    
-                res.json({ status:200, message: message, type: type });
-            }
-    
-        } catch(e) {
-            console.log(e);  // debug if needed
-            res.send( {
-                status: 400,
-                message: 'Request could not be processed'
-            });
+            res.json({ status:200, message: message, type: type });
         }
-    });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Obtains and transforms the data for storage
@@ -590,8 +570,10 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
         constellationFamilyMembers.last_name_family_member = dataMember['last_name_family_member'];
         constellationFamilyMembers.is_this_your_legal_name__family_member = dataMember['is_this_your_legal_name_family_member'];
 
-        let legal_name = "";
-        if(!_.isEmpty(dataMember['your_legal_name_family_member'])){
+        let legal_name = dataMember['your_legal_name_family_member'];
+        
+        
+        if(!_.isEmpty(legal_name)){
             legal_name = dataMember['first_name_family_member']+" "+dataMember['last_name_family_member'];
         }
 
