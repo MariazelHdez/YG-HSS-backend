@@ -53,9 +53,14 @@ generalRouter.get("/submissions/:action_id/:action_value", [
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
         const result = await submissionStatusRepo.getSubmissions(actionId, actionVal);
-        const grouped = groupBy(result, i => i.date_code);
+        const groupedId = groupBy(result, i => i.id);
+        const labels = groupBy(result, i => i.date_code);
                         
-        res.send({data: grouped});
+        res.send(
+            {
+                data: groupedId,
+                labels: labels
+            });
 
     } catch(e) {
         console.log(e);  // debug if needed

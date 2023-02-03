@@ -14,7 +14,7 @@ const getFilterList = () => {
     return fList;    
 };
 
-const setData = (data, labelColor) => {
+const setSubmissionsStatusData = (data, labelColor) => {
     return {
         labels: labelColor.map((x, i) => `${x.label}: ${data[i]}`),
         datasets: [
@@ -27,7 +27,15 @@ const setData = (data, labelColor) => {
     }
 };
 
+const setSubmissionsData = (datasetData, labelColor) => {
+    return {
+        labels: labelColor,
+        datasets: datasetData
+    }
+};
+
 export {
    getFilterList, 
-   setData
+   setSubmissionsStatusData,
+   setSubmissionsData
 };
