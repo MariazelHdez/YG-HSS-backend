@@ -1,5 +1,3 @@
-
-
 -- bizont_edms_general.submissions_status_week_v source
 
 CREATE OR REPLACE VIEW bizont_edms_general.submissions_status_week_v
