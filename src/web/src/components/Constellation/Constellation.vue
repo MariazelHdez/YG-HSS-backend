@@ -7,7 +7,6 @@
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
     />
-
     <v-row 
       align="center" 
       class="container-actions"
@@ -18,14 +17,14 @@
         class="actions"
       >
         <v-select
-          :items="builkActions"
+          :items="bulkActions"
           solo
           label="Bulk Actions"
           append-icon="mdi-chevron-down"
           prepend-inner-icon="mdi-layers-triple"
           color="grey lighten-2"
           item-color="grey lighten-2"
-          @change="enterBuilkAction"
+          @change="enterBulkAction"
           id="bulk-accion-select"
         >
         </v-select>
@@ -37,8 +36,9 @@
       >
         <v-btn 
           color="#F3A901"
-          class="ma-2 white--text apply-btn"
-          @click="submitBuilk"
+          class="ma-2 white--text"
+          id="apply-btn"
+          @click="submitBulk"
         >
           Apply
         </v-btn>
@@ -74,11 +74,8 @@ export default {
   data: () => ({
     loading: false,
     items: [],
-    builkActions: [
-      "Entered into EMR content",
-      "Declined content",
-      "Closed content",
-    ],
+    selected: [],
+    bulkActions: [],
     actionSelected: "",
     itemsSelected: [],
     alertMessage: "",
@@ -87,16 +84,26 @@ export default {
     options: {},
     flagAlert: false,
     headers: [
-      { text: "Legal Name", value: "your_legal_name", width: '10%',sortable: true },
-      { text: "Date of Birth", value: "date_of_birth", width: '10%',sortable: true },
+      {
+        text: "Legal Name",
+        value: "your_legal_name",
+        width: "10%",
+        sortable: true,
+      },
+      {
+        text: "Date of Birth",
+        value: "date_of_birth",
+        width: "10%",
+        sortable: true,
+      },
       {
         text: "Do you have a family physician?",
         value: "family_physician",
-        width: '10%',
+        width: "10%",
         sortable: true,
       },
       { text: "Diagnosis/History", value: "diagnosis", sortable: true },
-      { text: "Created", value: "created_at", width: '15%',sortable: true },
+      { text: "Created", value: "created_at", width: "15%", sortable: true },
       { text: "Status", value: "status", sortable: true },
       { text: "", value: "showUrl", sortable: false },
     ],
@@ -138,17 +145,11 @@ export default {
   methods: {
     getDataFromApi() {
       this.loading = true;
-
       axios
         .get(CONSTELLATION_URL)
         .then((resp) => {
           this.items = resp.data.data;
-          this.items = this.items.filter((element) => element.status != 4);
-          this.items.forEach((element) => {
-            element.status = this.validateStatus(element.status);
-          });
-          //this.pagination.totalLength = resp.data.meta.count;
-          //this.totalLength = resp.data.meta.count;
+          this.bulkActions = resp.data.dataStatus;
           this.loading = false;
         })
         .catch((err) => console.error(err))
@@ -162,39 +163,32 @@ export default {
     enterSelect() {
       this.itemsSelected = this.selected;
     },
-    validateStatus(id) {
-      let statusDescription = {
-        1: "New/Unread",
-        2: "Entered",
-        3: "Declined",
-        4: "Closed",
-      };
-      return statusDescription[id];
-    },
-    enterBuilkAction(value) {
+    enterBulkAction(value) {
       this.actionSelected = value;
     },
-    submitBuilk() {
-      let statusSelected = {
-        "Entered into EMR content": "Entered",
-        "Declined content": "Declined",
-        "Closed content": "Closed",
-      };
-      if ((this.actionSelected != "")) {
+    submitBulk() {
+      if (this.actionSelected != "") {
+        let requests = [];
         this.itemsSelected.forEach((element) => {
-          let postUrl = CONSTELLATION_URL + "/changeStatus/" + element.constellation_health_id;
-          let setStatus = statusSelected[this.actionSelected];
-          axios
-            .patch(postUrl, { newStatus: setStatus })
+          requests.push(element.id);
+        });
+
+        if(requests.length > 0){
+          let patchUrl = CONSTELLATION_URL + "/changeStatus/";
+          axios.patch(patchUrl, {
+                params: {
+                    requests: requests,
+                    requestStatus: this.actionSelected
+                }
+            })
             .then(() => {
-              this.loading = false;
+                this.getDataFromApi();
             })
             .catch((err) => console.error(err))
             .finally(() => {
-              this.loading = false;
+                this.loading = false;
             });
-        });
-        window.location.reload();
+        }
       }
     },
   },

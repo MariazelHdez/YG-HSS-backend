@@ -1,15 +1,82 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_HIPMA } from "../config";
+import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
+import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
-
+const submissionStatusRepo = new SubmissionStatusRepository();
 export const hipmaRouter = express.Router();
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+hipmaRouter.get("/submissions/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_HIPMA, actionId, actionVal);
+        const groupedId = groupBy(result, i => i.id);
+        const labels = groupBy(result, i => i.date_code);
+                        
+        res.send(
+            {
+                data: groupedId,
+                labels: labels
+            });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+hipmaRouter.get("/submissions/status/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_HIPMA, actionId, actionVal);
+                        
+        res.send({data: result});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
 
 /**
  * Obtain data to show in the index view
@@ -34,7 +101,7 @@ hipmaRouter.get("/", async (req: Request, res: Response) => {
                     'hipma_situations.description as HipmaSituations',
                     db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName")
                     )
-            .where('health_information.status', 'open')
+            .where('health_information.status', '1')
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
@@ -74,7 +141,7 @@ hipmaRouter.get("/validateRecord/:hipma_id",[param("hipma_id").isInt().notEmpty(
             .select('bizont_edms_hipma.health_information.*')
             .first();
 
-        if(!hipma || hipma.status == "closed"){
+        if(!hipma || hipma.status == 2){
             flagExists = false;
             message = "The request you are consulting is closed or non existant, please choose a valid request.";
         }
@@ -396,7 +463,7 @@ hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
         var hipma = req.body.params.requests;
 
-        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "closed"}).whereIn("id", hipma);
+        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "2"}).whereIn("id", hipma);
 
         if(updateStatus) {
             let type = "success";
@@ -459,7 +526,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
         var hipma = Object();
-        var sqlFilter = "health_information.status = 'open'";
+        var sqlFilter = "health_information.status = '1'";
 
         if(requests.length > 0){
             sqlFilter += " AND health_information.id IN ("+requests+")";
