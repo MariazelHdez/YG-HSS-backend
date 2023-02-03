@@ -8,6 +8,7 @@ import Profile from "../components/Profile";
 import store from "../store";
 import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
+import ConstellationExport from "../components/Constellation/ConstellationExport"
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
 import HipmaExport from "../components/Hipma/HipmaExport";
@@ -59,6 +60,14 @@ const routes = [
     path: "/constellation/show/:constellationHealth_id",
     name: "Constellation Health",
     component: ConstellationDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/constellationExport",
+    name: "Constellation Export",
+    component: ConstellationExport,
     meta: {
       requiresAuth: true
     }
