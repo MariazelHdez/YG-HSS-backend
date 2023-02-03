@@ -37,8 +37,7 @@
       >
         <v-btn 
           color="#F3A901"
-          class="ma-2 white--text"
-          id="apply-btn"
+          class="ma-2 white--text apply-btn"
           @click="submitBuilk"
         >
           Apply

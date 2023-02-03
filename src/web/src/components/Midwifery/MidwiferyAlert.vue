@@ -1,6 +1,7 @@
 <template>
     <v-alert
         prominent
+        dismissible
         :type="alertType"
     >
     {{this.alertMessage}}

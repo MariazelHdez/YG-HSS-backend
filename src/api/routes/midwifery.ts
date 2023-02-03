@@ -166,21 +166,39 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         let midwifery_id = Number(req.params.midwifery_id);
         var midwifery = Object();
         var midwiferyOptions = Object();
+        var communityLocations = Object();
+        var languages = Object();
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .leftJoin('bizont_edms_midwifery.midwifery_community_locations', 'midwifery_services.community_located', 'midwifery_community_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_languages', 'midwifery_services.preferred_language', 'midwifery_languages.id')
             .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
-                    'midwifery_community_locations.description as community',
-                    'midwifery_languages.description as language',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact')
             .where("midwifery_services.id", midwifery_id)
             .first();
 
         midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -208,12 +226,20 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             midwifery.due_date =  "N/A";
         }
 
-        if(midwifery.community == null) {
-            midwifery.community = midwifery.community_located;
+        if(!_.isNull(midwifery.community_located)) {
+            if(communityLocations.hasOwnProperty(midwifery.community_located)){
+                midwifery.community = communityLocations[midwifery.community_located];
+            }else{
+                midwifery.community = midwifery.community_located;
+            }
         }
 
-        if(midwifery.language == null) {
-            midwifery.language = midwifery.preferred_language;
+        if(!_.isNull(midwifery.preferred_language)) {
+            if(languages.hasOwnProperty(midwifery.preferred_language)){
+                midwifery.language = languages[midwifery.preferred_language];
+            }else{
+                midwifery.language = midwifery.preferred_language;
+            }
         }
 
         /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
@@ -440,13 +466,9 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_community_locations', 'midwifery_services.community_located', 'midwifery_community_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_languages', 'midwifery_services.preferred_language', 'midwifery_languages.id')
             .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
-                    'midwifery_community_locations.description as community',
-                    'midwifery_languages.description as language',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact')
             .whereRaw(sqlFilter);
@@ -464,6 +486,8 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         var communities = Object();
         var contact = Object();
+        var communityLocations = Object();
+        var languages = Object();
 
         communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
             let arrayResult = Object();
@@ -477,6 +501,26 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         contact =  await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
             let arrayResult = Object();
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+            let arrayResult = Object();
+
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
             }
@@ -504,12 +548,23 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
                 value.due_date =  "N/A";
             }
 
-            if(value.community == null) {
-                value.community = value.community_located;
+            value.created_at =   value.created_at.toLocaleString("en-CA");
+            value.updated_at =   value.updated_at.toLocaleString("en-CA");
+
+            if(!_.isNull(value.community_located)) {
+                if(communityLocations.hasOwnProperty(value.community_located)){
+                    value.community = communityLocations[value.community_located];
+                }else{
+                    value.community = value.community_located;
+                }
             }
 
-            if(value.language == null) {
-                value.language = value.preferred_language;
+            if(!_.isNull(value.preferred_language)) {
+                if(languages.hasOwnProperty(value.preferred_language)){
+                    value.language = languages[value.preferred_language];
+                }else{
+                    value.language = value.preferred_language;
+                }
             }
 
             if(!value.preferred_name || value.preferred_name == "") {
@@ -517,47 +572,47 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             }
 
             if(!_.isNull(value.okay_to_leave_message)){
-                value.okay_to_leave_message = midwiferyOptions[midwifery.okay_to_leave_message];
+                value.okay_to_leave_message = midwiferyOptions[value.okay_to_leave_message];
             }
 
             if(!_.isNull(value.yukon_health_insurance)){
-                value.yukon_health_insurance = midwiferyOptions[midwifery.yukon_health_insurance];
+                value.yukon_health_insurance = midwiferyOptions[value.yukon_health_insurance];
             }
 
             if(!_.isNull(value.need_interpretation)){
-                value.need_interpretation = midwiferyOptions[midwifery.need_interpretation];
+                value.need_interpretation = midwiferyOptions[value.need_interpretation];
             }
 
             if(!_.isNull(value.date_confirmed)){
-                value.date_confirmed = midwiferyOptions[midwifery.date_confirmed];
+                value.date_confirmed = midwiferyOptions[value.date_confirmed];
             }
 
             if(!_.isNull(value.first_pregnancy)){
-                value.first_pregnancy = midwiferyOptions[midwifery.first_pregnancy];
+                value.first_pregnancy = midwiferyOptions[value.first_pregnancy];
             }
 
             if(!_.isNull(value.complications_with_previous)){
-                value.complications_with_previous = midwiferyOptions[midwifery.complications_with_previous];
+                value.complications_with_previous = midwiferyOptions[value.complications_with_previous];
             }
 
             if(!_.isNull(value.midwife_before)){
-                value.midwife_before = midwiferyOptions[midwifery.midwife_before];
+                value.midwife_before = midwiferyOptions[value.midwife_before];
             }
 
             if(!_.isNull(value.medical_concerns)){
-                value.medical_concerns = midwiferyOptions[midwifery.medical_concerns];
+                value.medical_concerns = midwiferyOptions[value.medical_concerns];
             }
 
             if(!_.isNull(value.have_you_had_primary_health_care)){
-                value.have_you_had_primary_health_care = midwiferyOptions[midwifery.have_you_had_primary_health_care];
+                value.have_you_had_primary_health_care = midwiferyOptions[value.have_you_had_primary_health_care];
             }
 
             if(!_.isNull(value.family_physician)){
-                value.family_physician = midwiferyOptions[midwifery.family_physician];
+                value.family_physician = midwiferyOptions[value.family_physician];
             }
 
             if(!_.isNull(value.major_medical_conditions)){
-                value.major_medical_conditions = midwiferyOptions[midwifery.major_medical_conditions];
+                value.major_medical_conditions = midwiferyOptions[value.major_medical_conditions];
             }
 
             if(!_.isEmpty(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
@@ -708,7 +763,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
         names.forEach(function (value: any, key: any) {
             if(!groups.hasOwnProperty(value)){
                 others = names[key];
-                //names.splice(key, 1);
+                names.splice(key, 1);
             }
         });
 
@@ -727,7 +782,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
         names.forEach(function (value: any, key: any) {
             if(!contact.hasOwnProperty(value)){
                 others = names[key];
-                //names.splice(key, 1);
+                names.splice(key, 1);
             }
         });
 

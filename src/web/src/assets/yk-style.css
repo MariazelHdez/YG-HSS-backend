@@ -296,7 +296,7 @@ a {
     font-size: 12px;
 }
 
-#apply-btn, #export-btn{
+.apply-btn, .export-btn{
     font-size: 15px;
     border-radius: 0px;
 }
@@ -310,4 +310,41 @@ div.row.container-actions > .actions > .v-input > .v-input__control >  .v-input_
 }
 div.row.container-actions > .actions{
     margin-top: 25px;
+}
+
+
+@-moz-keyframes loader {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes loader {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@-o-keyframes loader {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loader {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
