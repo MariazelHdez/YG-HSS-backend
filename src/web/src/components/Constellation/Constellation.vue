@@ -74,6 +74,7 @@ export default {
   data: () => ({
     loading: false,
     items: [],
+    selected: [],
     bulkActions: [],
     actionSelected: "",
     itemsSelected: [],

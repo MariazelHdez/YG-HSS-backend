@@ -78,8 +78,8 @@
       </v-col>
       <v-col>
         <v-btn
-          :loading="loadingExport"
-          :disabled="loadingExport"
+          :loading="loading"
+          :disabled="loading"
           color="#F3A901"
           class="pull-right white--text"
           @click="exportFile"
@@ -118,6 +118,7 @@ export default {
   name: "ConstellationIndex",
   data: () => ({
     loading: false,
+    selected: [],
     items: [],
     bulkActions: [],
     actionSelected: "",

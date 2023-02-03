@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../components/Home.vue";
+// import Home from "../components/Home.vue";
 import NotFound from "../views/NotFound.vue";
 import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
@@ -24,11 +24,13 @@ import Dashboard from "../components/Dashboard.vue";
 Vue.use(VueRouter);
 
 const routes = [
+/*
   {
     path: "/",
     name: "Home",
     component: Home
   },
+*/
   {
     path: "/dashboard",
     name: "Dashboard",
