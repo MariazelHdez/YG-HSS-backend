@@ -1,37 +1,50 @@
 
 <template>
-    <div class="midwifery">
-        <h1>Midwifery Requests</h1>
+    <div class="midwifery-service">
+        <span class="title-service">Midwifery Requests</span>
 
         <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
-        <v-row align="center">
+        <v-row
+            align="center"
+            class="container-actions"
+        >
             <v-col
-                class="d-flex"
                 cols="12"
-                sm="4"
+                sm="3"
+                class="actions"
             >
                 <v-select
                     :items="itemsBulk"
-                    label="Bulk actions"
-                    prepend-icon="mdi-animation"
+                    solo
+                    label="Bulk Actions"
+                    append-icon="mdi-chevron-down"
+                    prepend-inner-icon="mdi-layers-triple"
+                    color="grey lighten-2"
+                    item-color="grey lighten-2"
                     v-model="selectedStatus"
-                    item-text="text"
                     @change="changeSelect"
+                    id="bulk-accion-select"
                 ></v-select>
-
+            </v-col>
+            <v-col
+                class="align-start"
+                cols="12"
+                sm="3"
+            >
                 <v-btn
                     color="#F3A901"
-                    class="pull-right ma-2 white--text"
+                    class="ma-2 white--text"
                     :disabled="applyDisabled"
                     @click="changeStatus"
+                    id="apply-btn"
                 >
                     Apply
                 </v-btn>
             </v-col>
         </v-row>
 
-        <v-text-field v-model="search" label="Search"></v-text-field>
+        <!-- <v-text-field v-model="search" label="Search"></v-text-field> -->
 
         <v-data-table
             dense
@@ -46,7 +59,7 @@
             :value="selected"
             @toggle-select-all="selectAll"
         >
-        <template v-slot:[`item.actions`]="{ item }">
+        <template v-slot:[`item.showUrl`]="{ item }">
             <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
         </template>
         </v-data-table>
@@ -164,14 +177,13 @@ export default {
                         requestStatus: this.selectedStatus
                     }
                 })
-                .then(() => {
+                .then((resp) => {
                     this.getDataFromApi();
-                    /*
-                    this.$router.push({
-                        path: '/midwifery',
-                        //query: { message: resp.data.message, type: resp.data.type}
-                    });
-                    */
+                    this.selectedStatus = null;
+                    this.flagAlert = true;
+                    this.applyDisabled = true;
+                    this.alertMessage = resp.data.message;
+                    this.alertType = resp.data.type;
                 })
                 .catch((err) => console.error(err))
                 .finally(() => {

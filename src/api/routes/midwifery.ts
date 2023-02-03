@@ -1,15 +1,84 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_MIDWIFERY } from "../config";
+import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
+import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
+
+
+const submissionStatusRepo = new SubmissionStatusRepository();
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+midwiferyRouter.get("/submissions/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_MIDWIFERY, actionId, actionVal);
+        const groupedId = groupBy(result, i => i.id);
+        const labels = groupBy(result, i => i.date_code);
+                        
+        res.send(
+            {
+                data: groupedId,
+                labels: labels
+            });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
+    param("action_id").notEmpty(), 
+    param("action_value").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_MIDWIFERY, actionId, actionVal);
+                        
+        res.send({data: result});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Obtain data to show in the index view
@@ -216,9 +285,9 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             midwifery.language = midwifery.preferred_language;
         }
 
-        if(!midwifery.preferred_name || midwifery.preferred_name == "") {
+        /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
             midwifery.preferred_name = midwifery.preferred_name;
-        }
+        }*/
 
         var communities = Object();
         var contact = Object();
@@ -323,7 +392,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.last_name = data.last_name;
 
         let legal_name = "";
-        if(_.isUndefined(data.preferred_name)) {
+        if(!_.isUndefined(data.preferred_name)) {
             legal_name = data.preferred_name;
         }else{
             legal_name = data.first_name+" "+data.last_name;
@@ -422,7 +491,6 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
  * @param {request}
  * @return file
  */
-//midwiferyRouter.get("/export/:status",[param("status")], async (req: Request, res: Response) => {
 midwiferyRouter.post("/export", async (req: Request, res: Response) => {
     try {
 
@@ -778,9 +846,9 @@ async function getMidwiferyOptions(field: any, data: string) {
 
     var bool = true;
 
-    if(data == "yes") {
+    if(data == "yes" || data == "Yes" || data == "YES") {
         bool = true;
-    }else if(data == "no") {
+    }else if(data == "no" || data == "No" || data == "NO") {
         bool = false;
     }else if(!data || data == "") {
         return null;

@@ -43,7 +43,7 @@
                             <td>{{ items.last_name_family_member }}</td>
                           </tr>
                           <tr>
-                            <td>Is this your legal name?</td>
+                            <td>Is this their legal name?</td>
                             <td>
                               {{ items.is_this_your_legal_name__family_member }}
                             </td>
@@ -65,7 +65,7 @@
                           </tr>
 
                           <tr v-if="items.have_yhcip_family_member">
-                            <td>Do you have a Yukon health care card?</td>
+                            <td>Does this person have a Yukon health care card?</td>
                             <td>{{ items.have_yhcip_family_member }}</td>
                           </tr>
 
@@ -81,13 +81,13 @@
 
                           <tr v-if="items.province_family_member">
                             <td>
-                              Which province or territory is this card from?
+                              Which province or territory is their card from?
                             </td>
                             <td>{{ items.province_family_member }}</td>
                           </tr>
 
                           <tr v-if="items.relationship_family_member">
-                            <td>How are you related to this person?</td>
+                            <td>How is this person related to you?</td>
                             <td>{{ items.relationship_family_member }}</td>
                           </tr>
 
@@ -123,8 +123,7 @@
                             "
                           >
                             <td>
-                              What language would you prefer to receive services
-                              in?
+                              What language does this person prefer to receive services in?
                             </td>
                             <td>
                               {{
@@ -153,7 +152,7 @@
 
                           <tr v-if="items.demographics_groups_family_member">
                             <td>
-                              Do you identify with one or more of these groups?
+                              Does this person identify with one or more of these groups?
                             </td>
                             <td>
                               {{ items.demographic_description_family_member }}
@@ -184,14 +183,14 @@
                         </thead>
                         <tbody>
                           <tr v-if="items.family_physician_family_member">
-                            <td>Do you currently have a family physician?</td>
+                            <td>Does this person currently have a family physician?</td>
                             <td>{{ items.family_physician_family_member }}</td>
                           </tr>
 
                           <tr
                             v-if="items.current_family_physician_family_member"
                           >
-                            <td>Who is your current family physician?</td>
+                            <td>Who is their current family physician?</td>
                             <td>
                               {{ items.current_family_physician_family_member }}
                             </td>

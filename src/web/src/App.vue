@@ -25,7 +25,7 @@
       <v-list dense nav style="" class="mt-1 pb-0 pt-1"
         v-for='(section) in sections' :key="section.header">
           <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
-          <img v-if="mini" :src="section.icon" height="36px" width="36px" />
+          <img v-if="mini && section.icon" :src="section.icon" height="36px" width="36px" />
         <v-list-item
           link
           nav

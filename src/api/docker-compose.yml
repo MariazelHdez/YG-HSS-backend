@@ -19,6 +19,7 @@ services:
         ports:
             - '5432:5432'
         volumes: 
+            - ./bkp:/host/bkp:rw
             - db:/var/lib/postgresql/data
 volumes:
     db:

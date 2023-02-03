@@ -13,7 +13,6 @@
 					ref="menu"
 					v-model="menu"
 					:close-on-content-click="false"
-					:return-value.sync="date"
 					transition="scale-transition"
 					offset-y
 					min-width="auto"
@@ -23,32 +22,16 @@
 							v-model="date"
 							label="From:"
 							prepend-icon="mdi-calendar"
-							readonly
 							v-bind="attrs"
 							v-on="on"
 						></v-text-field>
 					</template>
 					<v-date-picker
-					v-model="date"
-					no-title
-					scrollable
-					>
-						<v-spacer></v-spacer>
-						<v-btn
-							text
-							color="primary"
-							@click="menu = false"
-						>
-							Cancel
-						</v-btn>
-						<v-btn
-							text
-							color="primary"
-							@click="$refs.menu.save(date)"
-						>
-							OK
-						</v-btn>
-					</v-date-picker>
+						v-model="date"
+						no-title
+						@input="menu = false"
+						@change="updateDate"
+					></v-date-picker>
 				</v-menu>
 			</v-col>
 
@@ -61,7 +44,6 @@
 					ref="menuEnd"
 					v-model="menuEnd"
 					:close-on-content-click="false"
-					:return-value.sync="dateEnd"
 					transition="scale-transition"
 					offset-y
 					min-width="auto"
@@ -71,36 +53,19 @@
 							v-model="dateEnd"
 							label="To:"
 							prepend-icon="mdi-calendar"
-							readonly
 							v-bind="attrs"
 							v-on="on"
 						></v-text-field>
 					</template>
 					<v-date-picker
-					v-model="dateEnd"
-					no-title
-					scrollable
-					>
-						<v-spacer></v-spacer>
-						<v-btn
-							text
-							color="primary"
-							@click="menuEnd = false"
-						>
-							Cancel
-						</v-btn>
-						<v-btn
-							text
-							color="primary"
-							@click="$refs.menuEnd.save(dateEnd)"
-						>
-							OK
-						</v-btn>
-					</v-date-picker>
+						v-model="dateEnd"
+						no-title
+						@input="menuEnd = false"
+						@change="updateDate"
+					></v-date-picker>
 				</v-menu>
 			</v-col>
 			<v-col
-				class="d-flex"
 				cols="6"
 				sm="12"
 				md="4">
@@ -108,7 +73,7 @@
 					:loading="loadingExport"
 					:disabled="loadingExport"
 					color="#F3A901"
-					class="pull-right white--text"
+					class="white--text"
 					@click="exportFile()"
 					id="export-btn"
 				>
@@ -118,6 +83,21 @@
 						dark
 					>
 						mdi-cloud-download
+					</v-icon>
+				</v-btn>
+				&nbsp;
+				<v-btn
+					color="#F3A901"
+					class="white--text"
+					@click="resetInputs()"
+					id="export-btn"
+				>
+					Reset
+					<v-icon
+						right
+						dark
+					>
+						mdi-restore
 					</v-icon>
 				</v-btn>
 			</v-col>
@@ -165,7 +145,7 @@ export default {
 			{ text: "Confirmation Number", value: "confirmation_number", sortable: true},
 			{ text: "Request Type", value: "HipmaRequestType", sortable: true},
 			{ text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-			{ text: "Applicant", value: "applicantFullName", sortable: true},
+			{ text: "Applicant", value: "applicantfullname", sortable: true},
 			{ text: "Created", value: "created_at", sortable: true},
 		],
 		page: 1,
@@ -192,6 +172,21 @@ export default {
 		this.getDataFromApi();
 	},
 	methods: {
+		updateDate(){
+			if(this.date !== null && this.dateEnd !== null){
+				var date = this.date;
+				var dateEnd = this.dateEnd;
+				let itemsDate = [];
+
+				this.items.forEach(function (value) {
+					if(value.created_at > date && value.created_at < dateEnd){
+						itemsDate.push(value);
+					}
+				});
+
+				this.items = itemsDate;
+			}
+		},
 		getDataFromApi() {
 		this.loading = true;
 
@@ -213,6 +208,11 @@ export default {
 			this.selected = this.selected.length === this.items.length
 			? []
 			: this.items
+		},
+		resetInputs() {
+			this.date = null;
+			this.dateEnd = null;
+			this.getDataFromApi();
 		},
 		exportFile () {
 			let requests = [];
@@ -267,7 +267,7 @@ export default {
 					"Updated at",
 					"Request Type",
 					"Access Personal Health Information",
-					"Copy Health Information",
+					"Get a copy of Health Information",
 					"Situations",
 					"Copy activity request",
 					"Need help identifying data range",
