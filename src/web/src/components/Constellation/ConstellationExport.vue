@@ -10,7 +10,7 @@
     <v-row align="center" class="container-actions">
       <v-col cols="12" sm="2">
         <v-select
-          :items="builkActions"
+          :items="bulkActions"
           v-model="actionSelected"
           label="Status"
           append-icon="mdi-chevron-down"
@@ -119,7 +119,7 @@ export default {
   data: () => ({
     loading: false,
     items: [],
-    builkActions: ["Entered into EMR content", "Declined content"],
+    bulkActions: [],
     actionSelected: "",
     actionToFilter: "",
     itemsSelected: [],
@@ -218,11 +218,8 @@ export default {
       this.dateFormattedMax = this.formatDate(this.dateMax);
     },
     actionSelected() {
-      const statusSelected = {
-        "Entered into EMR content": "Entered",
-        "Declined content": "Declined",
-      };
-      this.actionToFilter = statusSelected[this.actionSelected];
+      let action = this.bulkActions.filter((element) => element.value == this.actionSelected);
+      this.actionToFilter = action[0].text;
     },
   },
   created() {
@@ -245,10 +242,7 @@ export default {
         .get(CONSTELLATION_URL)
         .then((resp) => {
           this.items = resp.data.data;
-          this.items = this.items.filter((element) => element.status != 4);
-          this.items.forEach((element) => {
-            element.status = this.validateStatus(element.status);
-          });
+          this.bulkActions = resp.data.dataStatus.filter((element) => element.value != 4);
         })
         .catch((err) => console.error(err))
         .finally(() => {
@@ -260,15 +254,6 @@ export default {
     },
     enterSelect() {
       this.itemsSelected = this.selected;
-    },
-    validateStatus(id) {
-      let statusDescription = {
-        1: "New/Unread",
-        2: "Entered",
-        3: "Declined",
-        4: "Closed",
-      };
-      return statusDescription[id];
     },
     formatDate(date) {
       if (!date) return null;
