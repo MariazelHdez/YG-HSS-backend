@@ -34,10 +34,9 @@
             >
                 <v-btn
                     color="#F3A901"
-                    class="ma-2 white--text"
+                    class="ma-2 white--text apply-btn"
                     :disabled="applyDisabled"
                     @click="changeStatus"
-                    id="apply-btn"
                 >
                     Apply
                 </v-btn>

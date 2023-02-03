@@ -336,31 +336,31 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
             files._statutory_declaration_of_parental_or_guardianship_status = saveFile('_statutory_declaration_of_parental_or_guardianship_status', data);
         }
 
-        if(!_.isEmpty(data.minor_s_consent_to_release_of_information_if_applicable_)) {
+        if(!_.isEmpty(data._minor_s_consent_to_release_of_information_if_applicable_)) {
             files._minor_s_consent_to_release_of_information_if_applicable_ = saveFile('_minor_s_consent_to_release_of_information_if_applicable_', data);
         }
 
-        if(!_.isEmpty(data.court_order_identifying_custody_of_the_minor)){
+        if(!_.isEmpty(data._court_order_identifying_custody_of_the_minor)){
             files._court_order_identifying_custody_of_the_minor = saveFile('_court_order_identifying_custody_of_the_minor', data);
         }
 
-        if(!_.isEmpty(data.statutory_declaration_of_substitute_decision_maker_status)) {
+        if(!_.isEmpty(data._statutory_declaration_of_substitute_decision_maker_status)) {
             files._statutory_declaration_of_substitute_decision_maker_status = saveFile('_statutory_declaration_of_substitute_decision_maker_status', data);
         }
 
-        if(!_.isEmpty(data.physician_affirmation_confirm_auth)){
+        if(!_.isEmpty(data._physician_affirmation_confirm_auth)){
             files._physician_affirmation_confirm_auth = saveFile('_physician_affirmation_confirm_auth', data);
         }
 
-        if(!_.isEmpty(data.confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece)){
+        if(!_.isEmpty(data._confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece)){
             files._confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece = saveFile('_confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece', data);
         }
 
-        if(!_.isEmpty(data.letters_of_administration_or_grant_of_probate)){
+        if(!_.isEmpty(data._letters_of_administration_or_grant_of_probate)){
             files._letters_of_administration_or_grant_of_probate = saveFile('_letters_of_administration_or_grant_of_probate', data);
         }
 
-        if(!_.isEmpty(data.consent_to_release_of_information)){
+        if(!_.isEmpty(data._consent_to_release_of_information)){
             files._consent_to_release_of_information = saveFile('_consent_to_release_of_information', data);
         }
 
@@ -585,6 +585,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                 value.date_of_birth =   value.date_of_birth.toLocaleString("en-CA");
             }
 
+            value.created_at =   value.created_at.toLocaleString("en-CA");
+            value.updated_at =   value.updated_at.toLocaleString("en-CA");
+
             if(value.date_range_is_unknown_or_i_need_help_identifying_the_date_range == 1){
                 value.needHelpIdentifyingDataRange = "YES";
             }else{
@@ -786,7 +789,7 @@ async function getDataByModel(model: string, id: any, type: string){
             socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
                                         let arrayResult = Object();
                                         for (let row of rows) {
-                                            arrayResult[row['description']] = row['id'];
+                                            arrayResult[row['id']] = row['description'];
                                         }
 
                                         return arrayResult;
@@ -801,14 +804,14 @@ async function getDataByModel(model: string, id: any, type: string){
 
             data = await db("bizont_edms_hipma.hipma_health_social_services_program")
                             .select()
-                            .whereIn('description', id);
+                            .whereIn('id', id);
 
         }else if(model == "HipmaHssSystems") {
 
             hss = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
                                 let arrayResult = Object();
                                 for (let row of rows) {
-                                    arrayResult[row['description']] = row['id'];
+                                    arrayResult[row['id']] = row['description'];
                                 }
 
                                 return arrayResult;
@@ -817,13 +820,13 @@ async function getDataByModel(model: string, id: any, type: string){
             id.forEach(function (value: any, key: any) {
                 if(!hss.hasOwnProperty(value)){
                     others = id[key];
-                    //id.splice(key, 1);
+                    id.splice(key, 1);
                 }
             });
 
             data =  await db("bizont_edms_hipma.hipma_hss_systems")
                             .select()
-                            .whereIn('description', id);
+                            .whereIn('id', id);
         }
 
         if(data.length){

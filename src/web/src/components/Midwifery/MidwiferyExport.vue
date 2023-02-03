@@ -74,7 +74,7 @@
 					:loading="loadingExport"
 					:disabled="loadingExport"
 					color="#F3A901"
-					class="white--text"
+					class="ma-2 white--text apply-btn"
 					@click="exportFile()"
 					id="export-btn"
 				>
@@ -88,10 +88,12 @@
 				</v-btn>
 				&nbsp;
 				<v-btn
+					:loading="loadingReset"
+					:disabled="loadingReset"
 					color="#F3A901"
-					class="white--text"
+					class="ma-2 white--text apply-btn"
 					@click="resetInputs()"
-					id="export-btn"
+					id="reset-btn"
 				>
 					Reset
 					<v-icon
@@ -103,6 +105,18 @@
 				</v-btn>
 			</v-col>
 		</v-row>
+		<v-select
+			:items="itemsStatus"
+			solo
+			label="Request Status"
+			append-icon="mdi-chevron-down"
+			prepend-inner-icon="mdi-layers-triple"
+			color="grey lighten-2"
+			item-color="grey lighten-2"
+			v-model="selectedStatus"
+			@change="changeSelect"
+			id="export-status-select"
+		></v-select>
 		<br>
 		<v-data-table
 			dense
@@ -132,6 +146,7 @@ export default {
 	data: () => ({
 		loading: false,
 		items: [],
+		itemsUnfiltered: [],
 		options: {},
 		flagAlert: false,
 		menu: false,
@@ -139,8 +154,11 @@ export default {
 		menuEnd: false,
 		dateEnd: null,
 		selected: [],
+		itemsStatus: [],
+		selectedStatus: null,
 		loader: null,
 		loadingExport: false,
+		loadingReset: false,
 		headers: [
 			{ text: "Preferred Name", value: "preferred_name", sortable: true},
 			{ text: "Phone", value: "preferred_phone", sortable: true},
@@ -167,7 +185,7 @@ export default {
 			const l = this.loader;
 			this[l] = !this[l];
 
-			setTimeout(() => (this[l] = false), 3000)
+			setTimeout(() => (this[l] = false), 2000)
 
 			this.loader = null;
 		},
@@ -182,7 +200,7 @@ export default {
 				var dateEnd = this.dateEnd;
 				let itemsDate = [];
 
-				this.items.forEach(function (value) {
+				this.itemsUnfiltered.forEach(function (value) {
 					if(value.created_at > date && value.created_at < dateEnd){
 						itemsDate.push(value);
 					}
@@ -191,6 +209,18 @@ export default {
 				this.items = itemsDate;
 			}
 		},
+		changeSelect(){
+            let status = this.selectedStatus;
+			let itemsStatus = [];
+
+			this.itemsUnfiltered.forEach(function (value) {
+				if(value.status == status){
+					itemsStatus.push(value);
+				}
+			});
+
+			this.items = itemsStatus;
+        },
 		getDataFromApi() {
 		this.loading = true;
 
@@ -198,6 +228,8 @@ export default {
 			.get(MIDWIFERY_URL)
 			.then((resp) => {
 				this.items = resp.data.data;
+				this.itemsStatus = resp.data.dataStatus;
+				this.itemsUnfiltered = resp.data.data;
 				//this.pagination.totalLength = resp.data.meta.count;
 				//this.totalLength = resp.data.meta.count;
 				this.loading = false;
@@ -214,11 +246,14 @@ export default {
 			: this.items
 		},
 		resetInputs() {
+			this.loader = 'loadingReset';
 			this.date = null;
 			this.dateEnd = null;
+			this.selectedStatus = null;
 			this.getDataFromApi();
 		},
 		exportFile () {
+			this.loader = 'loadingExport';
 			let requests = [];
 			let checked = this.selected;
 			console.log(checked.length);
@@ -249,27 +284,36 @@ export default {
 					"Preferred name",
 					"Pronouns",
 					"Date of birth",
+					"Yukon health insurance",
+					"Need interpretation",
 					"Preferred phone",
 					"Preferred email",
+					"Is okay to leave message",
 					"When was the first day of your last period",
 					"Due date",
+					"Date confirmed",
+					"Is this your first pregnancy?",
 					"How many vaginal births",
 					"How many c-section births",
 					"Complications with previous",
 					"Provide details",
 					"Midwife before",
+					"Medical Concerns with Pregnancy",
 					"Provide details2",
+					"Have you had primary healthcare?",
 					"Menstrual cycle length",
+					"Family physician",
 					"Physician's name",
+					"Major medical conditions",
 					"Provide details3",
 					"Do you identify with one or more of these groups and communities",
 					"How did you find out about the midwifery clinic",
 					"Created at",
 					"Updated at",
-					"Community",
-					"Language",
-					"Birth locations",
-					"Preferred contact"
+					"Birth location",
+					"Preferred contact",
+					"Community located",
+					"Preferred language"
 				]], { origin: "A1" });
 
 				writeFileXLSX(wb, resp.data.fileName);
@@ -280,13 +324,6 @@ export default {
 			.finally(() => {
 				this.loading = false;
 			});
-
-
-			/*
-			console.log(this.date);
-			console.log(this.dateEnd);
-			console.log(this.selected);
-			*/
 		},
 	},
 };

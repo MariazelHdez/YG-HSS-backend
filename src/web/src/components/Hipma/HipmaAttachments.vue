@@ -24,16 +24,14 @@
 								</td>
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._statutory_declaration_of_parental_or_guardianship_status.id)"
 									>
 										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -55,16 +53,14 @@
 								</td>
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._minor_s_consent_to_release_of_information_if_applicable_.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -86,16 +82,14 @@
 								</td>
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._court_order_identifying_custody_of_the_minor.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -117,16 +111,14 @@
 								</td>
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._statutory_declaration_of_substitute_decision_maker_status.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -152,16 +144,14 @@
 
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._physician_affirmation_confirm_auth.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -174,8 +164,6 @@
 									Confirmation of Authority to Exercise Rights or Powers of a Deceased Person
 								</td>
 								<td>
-									Confirmation of Authority to Exercise Rights or Powers of a Deceased Person
-								</td>
 									<v-icon
 										right
 										light
@@ -184,19 +172,18 @@
 									mdi-file
 									</v-icon>
 									{{hipmaFiles._confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece.file_fullName}}
+								</td>
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click=
 										"downloadFile(hipmaFiles._confirmation_of_authority_to_exercise_rights_or_powers_of_a_dece.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -221,16 +208,14 @@
 
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="pull-right ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._letters_of_administration_or_grant_of_probate.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -255,16 +240,14 @@
 
 								<td>
 									<v-btn
-										:loading="loading"
-										:disabled="loading"
 										color="#F3A901"
-										class="ma-2 white--text"
+										class="ma-2 white--text apply-btn"
 										@click="downloadFile(hipmaFiles._consent_to_release_of_information.id)"
 									>
-										Download:&nbsp;
+										Download &nbsp;
 										<v-icon
-										right
-										dark
+											right
+											dark
 										>
 										mdi-cloud-download
 										</v-icon>
@@ -289,23 +272,8 @@ export default {
     props: ['hipma', 'hipmaFiles', 'panelModel'],
 	data () {
 		return {
-			loader: null,
-			loading: false,
 			modelPanel: this.panelModel
 		}
-	},
-	watch: {
-		loader () {
-			const l = this.loader;
-			this[l] = !this[l];
-
-			setTimeout(() => (this[l] = false), 3000)
-
-			this.loader = null;
-		},
-		panelModel(newValue) {
-			this.modelPanel = newValue;
-		},
 	},
 	methods: {
 		fileDownload(response, title) {
@@ -318,7 +286,6 @@ export default {
 			link.click()
 		},
 		downloadFile (idDownload) {
-			this.loader = 'loading';
 			axios
 			.get(HIPMA_DOWNLOAD_FILE_URL+idDownload)
 			.then((resp) => {

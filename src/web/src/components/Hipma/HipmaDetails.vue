@@ -15,7 +15,7 @@
 					<template v-slot:activator="{ on, attrs }">
 						<v-btn
 							color="#F3A901"
-							class="pull-right"
+							class="pull-right ma-2 white--text apply-btn"
 							dark
 							v-bind="attrs"
 							v-on="on"
@@ -73,8 +73,9 @@
 			>
 				<v-btn
 					color="#F3A901"
-					class="pull-right"
-					dark
+					class="pull-right ma-2 white--text apply-btn"
+					:loading="loadingExport"
+					:disabled="loadingExport"
 					@click="exportToPDF"
 				>
 
@@ -117,7 +118,8 @@ import html2pdf from "html2pdf.js";
 export default {
 	name: "HipmaDetails",
 	data: () => ({
-		loading: false,
+		loader: null,
+		loadingExport: false,
 		itemsHipma: [],
 		itemsHipmaFiles: [],
 		dialog: false,
@@ -136,6 +138,16 @@ export default {
 	},
 	mounted() {
 		this.validateRecord();
+	},
+	watch: {
+		loader () {
+			const l = this.loader
+			this[l] = !this[l]
+
+			setTimeout(() => (this[l] = false), 3000)
+
+			this.loader = null
+		},
 	},
 	methods: {
 		validateRecord() {
@@ -190,9 +202,9 @@ export default {
 			.catch((err) => console.error(err))
 		},
 		exportToPDF() {
+			this.loader = 'loadingExport';
 			this.panelModel = [0];
 			var namePdf = this.fileName;
-			
 
 			setTimeout(function() {
 				html2pdf(document.getElementById("hipmaPanelInformation"), {

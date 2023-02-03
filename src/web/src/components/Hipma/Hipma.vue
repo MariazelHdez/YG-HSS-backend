@@ -34,10 +34,10 @@
             >
                 <v-btn
                     color="#F3A901"
-                    class="ma-2 white--text"
+                    class="ma-2 white--text apply-btn"
                     :disabled="applyDisabled"
+                    :loading="loadingApply"
                     @click="changeStatus"
-                    id="apply-btn"
                 >
                     Apply
                 </v-btn>
@@ -89,6 +89,8 @@ export default {
         value: "closed"
     }],
     selectedStatus: null,
+    loader: null,
+    loadingApply: false,
     headers: [
         { text: "Confirmation Number", value: "confirmation_number", sortable: true},
         { text: "Request Type", value: "HipmaRequestType", sortable: true},
@@ -116,6 +118,14 @@ export default {
         this.getDataFromApi();
       },
       deep: true,
+    },
+    loader () {
+        const l = this.loader
+        this[l] = !this[l]
+
+        setTimeout(() => (this[l] = false), 2000)
+
+        this.loader = null
     },
   },
     created(){
@@ -158,6 +168,8 @@ export default {
             this.applyDisabled = false;
         },
         changeStatus(){
+            this.loader = 'loadingApply';
+            this.applyDisabled = false;
             let requests = [];
 			let checked = this.selected;
 
