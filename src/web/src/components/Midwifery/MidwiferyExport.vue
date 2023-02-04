@@ -201,7 +201,7 @@ export default {
 				let itemsDate = [];
 
 				this.itemsUnfiltered.forEach(function (value) {
-					if(value.created_at > date && value.created_at < dateEnd){
+					if(value.created_at_format >= date && value.created_at_format <= dateEnd){
 						itemsDate.push(value);
 					}
 				});
@@ -268,7 +268,8 @@ export default {
 				params: {
 					requests: requests,
 					dateFrom: this.date,
-					dateTo: this.dateEnd
+					dateTo: this.dateEnd,
+					status: this.selectedStatus
 				}
 			})
 			.then((resp) => {

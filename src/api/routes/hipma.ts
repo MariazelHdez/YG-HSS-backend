@@ -38,6 +38,11 @@ hipmaRouter.get("/", async (req: Request, res: Response) => {
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
+            value.created_at_format =  value.created_at.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
             value.created_at =  value.created_at.toLocaleString("en-CA");
 
             value.showUrl = "hipma/show/"+value.id;
@@ -116,15 +121,27 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
         .first();
 
         if(!_.isNull(hipma.date_from_)) {
-            hipma.date_from_ =   hipma.date_from_.toLocaleString("en-CA");
+            hipma.date_from_ =  hipma.date_from_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isNull(hipma.date_to_)) {
-            hipma.date_to_ =   hipma.date_to_.toLocaleString("en-CA");
+            hipma.date_to_ =  hipma.date_to_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isNull(hipma.date_of_birth)) {
-            hipma.date_of_birth =   hipma.date_of_birth.toLocaleString("en-CA");
+            hipma.date_of_birth =  hipma.date_of_birth.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isEmpty(hipma.name_of_health_and_social_services_program_area_optional_)) {
@@ -463,8 +480,13 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 
         if(requests.length > 0){
             sqlFilter += " AND health_information.id IN ("+requests+")";
-        }else if(dateFrom !== null && dateTo !== null){
-            sqlFilter += " AND health_information.created_at >= '"+dateFrom+"' AND health_information.created_at <= '"+dateTo+"'";
+        }
+
+        if(dateFrom !== null && dateTo !== null){
+            let dateFromFormat = dateFrom.toLocaleString("en-CA");
+            let dateToFormat = dateTo.toLocaleString("en-CA");
+
+            sqlFilter += " AND health_information.created_at >= '"+dateFromFormat+"' AND health_information.created_at <= '"+dateToFormat+"'";
         }
 
         hipma = await db("bizont_edms_hipma.health_information")
@@ -507,15 +529,27 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         hipma.forEach(function (value: any) {
 
             if(!_.isNull(value.date_from_)) {
-                value.date_from_ =   value.date_from_.toLocaleString("en-CA");
+                value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             if(!_.isNull(value.date_to_)) {
-                value.date_to_ =   value.date_to_.toLocaleString("en-CA");
+                value.date_to_ =  value.date_to_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             if(!_.isNull(value.date_of_birth)) {
-                value.date_of_birth =   value.date_of_birth.toLocaleString("en-CA");
+                value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             value.created_at =   value.created_at.toLocaleString("en-CA");

@@ -1,6 +1,6 @@
 <template>
-	<div class="books">
-		<h1>Midwifery Requests</h1>
+	<div class="midwifery details">
+		<span class="title-service">Midwifery Requests</span>
 
 		<v-row>
 			<v-col
