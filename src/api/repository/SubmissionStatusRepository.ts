@@ -89,6 +89,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
                 .select("department")
                 .select("date_code")
                 .select("submissions")
+                .select("color")
                 .where(whereClause)
                 .orderBy('date_code', 'asc');
         }
@@ -121,6 +122,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
                 .select("department")
                 .select("date_code")
                 .select("submissions")
+                .select("color")
                 .where(whereClause)
                 .orderBy('date_code', 'asc');
         }

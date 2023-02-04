@@ -182,15 +182,15 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
         .where("health_information.id", hipma_id)
         .first();
 
-        if(!_.isEmpty(hipma.date_from_)) {
+        if(!_.isNull(hipma.date_from_)) {
             hipma.date_from_ =   hipma.date_from_.toLocaleString("en-CA");
         }
 
-        if(!_.isEmpty(hipma.date_to_)) {
+        if(!_.isNull(hipma.date_to_)) {
             hipma.date_to_ =   hipma.date_to_.toLocaleString("en-CA");
         }
 
-        if(!_.isEmpty(hipma.date_of_birth)) {
+        if(!_.isNull(hipma.date_of_birth)) {
             hipma.date_of_birth =   hipma.date_of_birth.toLocaleString("en-CA");
         }
 
@@ -573,15 +573,15 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 
         hipma.forEach(function (value: any) {
 
-            if(!_.isEmpty(value.date_from_)) {
+            if(!_.isNull(value.date_from_)) {
                 value.date_from_ =   value.date_from_.toLocaleString("en-CA");
             }
 
-            if(!_.isEmpty(value.date_to_)) {
+            if(!_.isNull(value.date_to_)) {
                 value.date_to_ =   value.date_to_.toLocaleString("en-CA");
             }
 
-            if(!_.isEmpty(value.date_of_birth)) {
+            if(!_.isNull(value.date_of_birth)) {
                 value.date_of_birth =   value.date_of_birth.toLocaleString("en-CA");
             }
 
@@ -638,6 +638,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
             delete value.status;
             delete value.are_you_requesting_access_to_your_own_personal_health_informati;
             delete value.select_the_situation_that_applies_;
+            delete value.get_a_copy_of_your_health_information_;
             delete value.get_a_copy_of_your_activity_request;
             delete value.i_affirm_the_information_above_to_be_true_and_accurate_;
             delete value.date_range_is_unknown_or_i_need_help_identifying_the_date_range;

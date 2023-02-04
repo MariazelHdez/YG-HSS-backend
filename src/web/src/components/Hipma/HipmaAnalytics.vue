@@ -1,23 +1,14 @@
 <template>
-  <div class="home">
-    <h1>Dashboard</h1>
-
+  <div class="analytics-page">
     <div class="row">
       <div class="col-md-6">
         <v-card class="mt-5" color="#ffffff">
-          <v-card-title>Another card</v-card-title>
-          <v-card-text>This is the body of the text</v-card-text>
-        </v-card>
-        
-      </div>
-      <div class="col-md-6">
-        <v-card class="mt-5" color="#ffffff">
-          <StatusChart :title="'Status'" :data="statusData" @filterSelected="scFilterSelected"></StatusChart>       
+          <SubmissionsChart :title="'Submissions'" :data="submissionsData" @filterSelected="sFilterSelected"></SubmissionsChart>
         </v-card>
       </div>
       <div class="col-md-6">
         <v-card class="mt-5" color="#ffffff">
-          <SubmissionsChart :title="'Submissions'" :data="submissionsData" @filterSelected="sFilterSelected"></SubmissionsChart>       
+          <StatusChart :title="'Status'" :data="statusData" @filterSelected="scFilterSelected"></StatusChart>
         </v-card>
       </div>
     </div>
@@ -64,8 +55,9 @@ const getSubmissionsDataFromApi = (actionId, actionVal) => {
       const data = curData.data[g[0] ?? 0] ?? [];
       if (data) {
         const ds = {
-          label: g[0],
+          label: 'HIPMA',
           data: data.map((x) => x.submissions),
+          backgroundColor:  data.map((x) => x.color),
         };
         datasets.push(ds);
       }

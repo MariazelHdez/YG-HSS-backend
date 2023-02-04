@@ -1,24 +1,17 @@
 <template>
   <div class="home">
-    <h1>Dashboard</h1>
-
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-7">
         <v-card class="mt-5" color="#ffffff">
-          <v-card-title>Another card</v-card-title>
-          <v-card-text>This is the body of the text</v-card-text>
+          <SubmissionsChart :title="'Submissions'" :data="submissionsData" @filterSelected="sFilterSelected"></SubmissionsChart>
+        </v-card>  
+        <v-card class="mt-5" color="#ffffff">
+          <StatusChart :title="'Status'" :data="statusData" @filterSelected="scFilterSelected"></StatusChart>
         </v-card>
-        
+            
       </div>
-      <div class="col-md-6">
-        <v-card class="mt-5" color="#ffffff">
-          <StatusChart :title="'Status'" :data="statusData" @filterSelected="scFilterSelected"></StatusChart>       
-        </v-card>
-      </div>
-      <div class="col-md-6">
-        <v-card class="mt-5" color="#ffffff">
-          <SubmissionsChart :title="'Submissions'" :data="submissionsData" @filterSelected="sFilterSelected"></SubmissionsChart>       
-        </v-card>
+      <div class="col-md-5">
+       
       </div>
     </div>
   </div>
@@ -36,7 +29,8 @@ const labelColors = [
   { label: "New/Unread", color: "#41b883" },
   { label: "Closed", color: "#dd3e22" },
   { label: "Declined", color: "#f3b228" },
-  { label: "Entered", color: "#1a1aff" }
+  { label: "Entered", color: "#1a1aff" },
+  {label: 'Open', color: '#0097A9'}
 ];
 
 const scData = ref({});
@@ -66,8 +60,9 @@ const getSubmissionsDataFromApi = (actionId, actionVal) => {
       const data = curData.data[g[0] ?? 0] ?? [];
       if (data) {
         const ds = {
-          label: g[0],
+          label:  g[1] &&  g[1][0] && g[1][0].department ?  g[1][0].department : g[0],
           data: data.map((x) => x.submissions),
+          backgroundColor:  data.map((x) => x.color),
         };
         datasets.push(ds);
       }
