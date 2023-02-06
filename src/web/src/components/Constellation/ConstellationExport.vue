@@ -213,10 +213,14 @@ export default {
       deep: true,
     },
     dateMin() {
-      this.dateFormattedMin = this.formatDate(this.dateMin);
+      if(this.dateMin){
+        this.dateFormattedMin = this.formatDate(this.dateMin);
+      }
     },
     dateMax() {
-      this.dateFormattedMax = this.formatDate(this.dateMax);
+      if(this.dateMax){
+        this.dateFormattedMax = this.formatDate(this.dateMax);
+      }
     },
     actionSelected() {
       let action = this.bulkActions.filter((element) => element.value == this.actionSelected);
@@ -262,9 +266,10 @@ export default {
       return `${month}/${day}/${year}`;
     },
     setFilters() {
-      this.dateMin = "";
-      this.dateMax = "";
-      this.actionSelected = "";
+      this.dateMin = null;
+      this.dateMax = null;
+      this.actionSelected = null;
+      this.getDataFromApi();
     },
     exportFile() {
       var idArray = [];
@@ -272,8 +277,14 @@ export default {
         idArray.push(e.constellation_health_id);
       });
       axios
-        .post(CONSTELLATION_EXPORT_FILE_URL, {listStatus: idArray})
-        .then((resp) => {
+        .post(CONSTELLATION_EXPORT_FILE_URL, {
+				params: {
+					requests: idArray,
+					status: this.actionSelected,
+					dateFrom: this.dateMin,
+					dateTo: this.dateMax
+				}
+			}).then((resp) => {
           const ws = utils.json_to_sheet(resp.data.dataConstellation);
           const wb = utils.book_new();
           utils.book_append_sheet(wb, ws, "Constellation Requests");
