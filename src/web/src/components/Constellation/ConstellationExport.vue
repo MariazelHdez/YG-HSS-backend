@@ -272,7 +272,7 @@ export default {
         idArray.push(e.constellation_health_id);
       });
       axios
-        .post(CONSTELLATION_EXPORT_FILE_URL, {newStatus: idArray})
+        .post(CONSTELLATION_EXPORT_FILE_URL, {listStatus: idArray})
         .then((resp) => {
           const ws = utils.json_to_sheet(resp.data.dataConstellation);
           const wb = utils.book_new();
@@ -290,7 +290,6 @@ export default {
                 "Date of birth",
                 "Do you have a Yukon health care card?",
                 "Health care card number",
-                "Health care card number",
                 "YHCIP",
                 "Postal code",
                 "Prefer to be contacted",
@@ -306,6 +305,35 @@ export default {
                 "Demographic groups",
                 "Include family members",
                 "created_at",
+              ],
+            ],
+            { origin: "A1" }
+          );
+          const ws2 = utils.json_to_sheet(resp.data.dataFamilyMembers);
+          utils.book_append_sheet(wb, ws2, "Const. Health Family Members");
+          utils.sheet_add_aoa(
+            ws2,
+            [
+              [
+                "Client name",
+                "First name family member",
+                "Last name family member",
+                "Legal name family member",
+                "Pronouns family member",
+                "Date of birth family member",
+                "Do you have a Yukon health care card?",
+                "Health care card number",
+                "Which province or territory is this card from?",
+                "YHCIP family member",
+                "Relationship",
+                "Language prefer to receive services",
+                "Other language",
+                "Interpretation support",
+                "Family physician",
+                "Current family physician",
+                "Accessing health care family member",
+                "Diagnosis or history family member",
+                "Demographic groups family member",
               ],
             ],
             { origin: "A1" }
