@@ -1,9 +1,11 @@
+import { AuditRepository } from './../repository/AuditRepository';
 import { groupBy } from '../utils/groupBy';
 import express, { Request, Response } from "express";
 import { param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 
 const submissionStatusRepo = new SubmissionStatusRepository();
+const auditRepo = new AuditRepository();
 
 export const generalRouter = express.Router();
 
@@ -59,6 +61,31 @@ generalRouter.get("/submissions/:action_id/:action_value", [
                 data: groupedId,
                 labels: labels
             });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { event_type } event type.
+ * @return json
+ */
+generalRouter.get("/audit/:event_type", [
+    param("event_type").notEmpty()
+], async (req: Request, res: Response) => {
+
+    try {
+
+        const event_type = parseInt(req.params.event_type);
+        const result = await auditRepo.getAudit(event_type);
+        res.send({ data: result });
 
     } catch(e) {
         console.log(e);  // debug if needed

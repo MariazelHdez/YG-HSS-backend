@@ -4,9 +4,11 @@ export abstract class BaseRepository<T> implements IRepository<T> {
 
     loadResults<T>(data: Array<any>): Array<T> {
         const result: Array<T> = [];
-        data.forEach((row) => {
-            result.push(row as T);
-        });
+        if (Array.isArray(data)) {
+            data.forEach((row) => {
+                result.push(row as T);
+            });
+        }
         return result;
     }
 
