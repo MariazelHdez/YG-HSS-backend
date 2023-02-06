@@ -24,15 +24,8 @@ import Dashboard from "../components/Dashboard.vue";
 Vue.use(VueRouter);
 
 const routes = [
-/*
   {
     path: "/",
-    name: "Home",
-    component: Home
-  },
-*/
-  {
-    path: "/dashboard",
     name: "Dashboard",
     component: Dashboard,
     requiresAuth: true
