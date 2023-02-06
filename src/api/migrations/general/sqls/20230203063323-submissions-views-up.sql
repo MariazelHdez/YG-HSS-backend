@@ -1,3 +1,5 @@
+/* Replace with your SQL commands */
+-- bizont_edms_general.submissions_week_v source
 
 CREATE OR REPLACE VIEW bizont_edms_general.submissions_week_v
 AS SELECT 'bizont_edms_constellation_health'::text AS id,
