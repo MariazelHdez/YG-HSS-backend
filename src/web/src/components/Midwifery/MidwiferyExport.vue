@@ -260,7 +260,7 @@ export default {
 				params: {
 					requests: requests,
 					dateFrom: this.date,
-					dateTo: this.dateEnd,
+					dateTo: this.dateEnd
 					status: this.selectedStatus
 				}
 			})
