@@ -4,7 +4,67 @@
         <span class="title-service">HIPMA Requests</span>
 
         <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
+        
+        <v-row>
+          <v-col
+            class='d-flex'
+    				cols="6"
+    				sm="6"
+    				md="6"
+          >
+            <v-menu
+    					ref="menu"
+    					v-model="menu"
+    					:close-on-content-click="false"
+    					transition="scale-transition"
+    					offset-y
+    					min-width="auto"
+    				>
+    					<template v-slot:activator="{ on, attrs }">
+    						<v-text-field
+    							v-model="date"
+    							label="From:"
+    							prepend-icon="mdi-calendar"
+    							v-bind="attrs"
+    							v-on="on"
+    						></v-text-field>
+    					</template>
+    					<v-date-picker
+    						v-model="date"
+    						no-title
+    						@input="menu = false"
+    						@change="updateDate"
+    					></v-date-picker>
+    				</v-menu>
+            <v-menu
+    					ref="menuEnd"
+    					v-model="menuEnd"
+    					:close-on-content-click="false"
+    					transition="scale-transition"
+    					offset-y
+    					min-width="auto"
+    				>
+    					<template v-slot:activator="{ on, attrs }">
+    						<v-text-field
+    							v-model="dateEnd"
+    							label="To:"
+    							prepend-icon="mdi-calendar"
+    							v-bind="attrs"
+    							v-on="on"
+    						></v-text-field>
+    					</template>
+    					<v-date-picker
+    						v-model="dateEnd"
+    						no-title
+    						@input="menuEnd = false"
+    						@change="updateDate"
+    					></v-date-picker>
+    				</v-menu>
+        </v-col>
+        <v-col sm="auto" v-if="removeFilters">
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+        </v-col>
+      </v-row>
         <v-row 
             align="center" 
             class="container-actions"
@@ -76,6 +136,10 @@ export default {
   name: "HipmaIndex",
   data: () => ({
     loading: false,
+    date: null,
+    menu: false,
+    dateEnd: null,
+    menuEnd: false,
     items: [],
     alertMessage: "",
     alertType: "",
@@ -139,11 +203,29 @@ export default {
         this.getDataFromApi();
     },
     methods: {
+        updateDate(){
+    			if(this.date !== null && this.dateEnd !== null){
+      			this.getDataFromApi();
+    			}
+    		},
+    		removeFilters() {
+          return this.date || this.dateEnd ;
+        },
+        resetInputs() {
+    			this.date = null;
+    			this.dateEnd = null;
+    			this.getDataFromApi();
+    		},
         getDataFromApi() {
             this.loading = true;
 
             axios
-            .get(HIPMA_URL)
+            .post(HIPMA_URL, {
+      				params: {
+      					dateFrom: this.date,
+      					dateTo: this.dateEnd,
+      				}
+      			})
             .then((resp) => {
                 this.items = resp.data.data;
                 //this.pagination.totalLength = resp.data.meta.count;

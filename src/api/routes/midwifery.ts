@@ -1,28 +1,105 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
+import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_MIDWIFERY } from "../config";
+import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
+import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
 
+
+const submissionStatusRepo = new SubmissionStatusRepository();
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+midwiferyRouter.get("/submissions/:action_id/:action_value",[ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_MIDWIFERY, actionId, actionVal);
+        const groupedId = groupBy(result, i => i.id);
+        const labels = groupBy(result, i => i.date_code);
+                        
+        res.send(
+            {
+                data: groupedId,
+                labels: labels
+            });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Obtain data to show in the index view
+ *
+ * @param { action_id } action id.
+ * @param { action_value } action value.
+ * @return json
+ */
+midwiferyRouter.get("/submissions/status/:action_id/:action_value", [ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
+
+    try {
+
+        const actionId = req.params.action_id;
+        const actionVal = req.params.action_value;
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_MIDWIFERY, actionId, actionVal);
+                        
+        res.send({data: result});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
 /**
  * Obtain data to show in the index view
  *
  * @return json
  */
-midwiferyRouter.get("/", async (req: Request, res: Response) => {
+midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
     try {
 
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
+        var sqlFilter = "midwifery_services.status <> '4'";
+
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += "  AND midwifery_services.status IN ("+status_request+")";
+        }
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
@@ -32,13 +109,12 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact')
-            .whereNot('midwifery_status.description', 'Closed')
+            .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
         midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().whereNot('description', 'Closed')
             .then((rows: any) => {
                 let arrayResult = Array();
-
                 for (let row of rows) {
                     arrayResult.push({text: row['description'], value: row['id']});
                 }
@@ -493,7 +569,13 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         if(status !== null){
             sqlFilter += " AND midwifery_services.status = "+status+"";
+
         }
+        
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
