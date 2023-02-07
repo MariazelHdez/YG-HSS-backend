@@ -441,6 +441,7 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
 
     try {
         var path = "";
+        //var fs = require("fs");
         var hipmaFile_id = Number(req.params.hipmaFile_id);
         var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("id", hipmaFile_id).select().first();
         var buffer = Buffer.from(hipmaFiles.file_data, 'base64')
@@ -449,8 +450,10 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
         path = __dirname+'/'+safeName+"."+hipmaFiles.file_type;
 
+        //fs.writeFileSync(path, buffer);
+
         if(hipmaFiles) {
-            res.json({ fileData: file , fileName: safeName+"."+hipmaFiles.file_type});
+            res.json({ fileData: hipmaFiles.file_data , fileName: safeName+"."+hipmaFiles.file_type, fileType: hipmaFiles.file_type});
         }
 
     } catch(e) {
@@ -483,10 +486,14 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         }
 
         if(dateFrom !== null && dateTo !== null){
-            let dateFromFormat = dateFrom.toLocaleString("en-CA");
-            let dateToFormat = dateTo.toLocaleString("en-CA");
+            if(dateFrom == dateTo){
+                let dateFromFormat = new Date(dateFrom).toISOString().replace('T',' ').replace('Z','');
+                let dateFromFormatEnd = dateFromFormat.replace("00:00:00", "23:59:59");
 
-            sqlFilter += " AND health_information.created_at >= '"+dateFromFormat+"' AND health_information.created_at <= '"+dateToFormat+"'";
+                sqlFilter += " AND health_information.created_at >= '"+dateFromFormat+"' AND health_information.created_at <= '"+dateFromFormatEnd+"'";
+            }else{
+                sqlFilter += " AND health_information.created_at >= '"+dateFrom+"' AND health_information.created_at <= '"+dateTo+"'";
+            }
         }
 
         hipma = await db("bizont_edms_hipma.health_information")
@@ -675,8 +682,7 @@ function saveFile(field_name: any, data: any){
     if(data[field_name] !== 'undefined' && (data[field_name]) && data[field_name]['data'] !== 'undefined'){
 
         var filesHipma = Object();
-        var buffer = Buffer.from(data[field_name]['data'], 'base64')
-        var file = buffer.toString();
+        var buffer = Buffer.from(data[field_name]['data'], 'base64');
         let mime = data[field_name]['mime'];
         let name = data[field_name]['name'];
         let extension = mime.split("/");
@@ -684,7 +690,7 @@ function saveFile(field_name: any, data: any){
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
         path = __dirname+'/'+safeName;
 
-        fs.writeFileSync(path, file);
+        fs.writeFileSync(path, buffer);
 
         // Obtain file's general information
         var stats = fs.statSync(path);

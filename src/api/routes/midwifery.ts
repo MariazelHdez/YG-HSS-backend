@@ -35,15 +35,15 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
             .whereNot('midwifery_status.description', 'Closed')
             .orderBy('midwifery_services.id', 'asc');
 
-        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().then((rows: any) => {
-            let arrayResult = Array();
+        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().whereNot('description', 'Closed')
+            .then((rows: any) => {
+                let arrayResult = Array();
 
-            for (let row of rows) {
-                //arrayResult[row['id']] = row['field_value'];
-                arrayResult.push({text: row['description'], value: row['id']});
-            }
+                for (let row of rows) {
+                    arrayResult.push({text: row['description'], value: row['id']});
+                }
 
-            return arrayResult;
+                return arrayResult;
         });
 
         midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
@@ -481,7 +481,14 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         }
 
         if(dateFrom !== null && dateTo !== null){
-            sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
+            if(dateFrom == dateTo){
+                let dateFromFormat = new Date(dateFrom).toISOString().replace('T',' ').replace('Z','');
+                let dateFromFormatEnd = dateFromFormat.replace("00:00:00", "23:59:59");
+
+                sqlFilter += " AND midwifery_services.created_at >= '"+dateFromFormat+"' AND midwifery_services.created_at <= '"+dateFromFormatEnd+"'";
+            }else{
+                sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
+            }
         }
 
         if(status !== null){
