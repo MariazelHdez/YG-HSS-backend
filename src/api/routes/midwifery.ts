@@ -546,10 +546,10 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        var status = req.body.params.status;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_status.id <> (4)";
+        var sqlFilter = "midwifery_services.status <> 4";
 
         if(requests.length > 0){
             sqlFilter += " AND midwifery_services.id IN ("+requests+")";
@@ -558,9 +558,9 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         if(dateFrom && dateTo ){
             sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
-        
-        if(status){
-           sqlFilter += " AND midwifery_services.status = "+status+"";
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += " AND midwifery_services.status IN ( "+status_request+")";
         }
 
 
