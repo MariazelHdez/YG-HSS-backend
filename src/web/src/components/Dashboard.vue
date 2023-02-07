@@ -52,22 +52,8 @@ const getSubmissionsStatusDataFromApi = (actionId, actionVal) => {
 const getSubmissionsDataFromApi = (actionId, actionVal) => {
   axios
   .get(`${SUBMISSION_URL}/${actionId}/${actionVal}`)
-  .then((resp) => {
-    const curData = resp.data
-    const datasets = [];
-    const labels = Object.entries(curData.labels).map((x) => x[0]);
-    Object.entries(curData.data).forEach((g) => {
-      const data = curData.data[g[0] ?? 0] ?? [];
-      if (data) {
-        const ds = {
-          label:  g[1] &&  g[1][0] && g[1][0].department ?  g[1][0].department : g[0],
-          data: data.map((x) => x.submissions),
-          backgroundColor:  data.map((x) => x.color),
-        };
-        datasets.push(ds);
-      }
-    })
-    sData.value = setSubmissionsData(datasets, labels);
+  .then((resp) => {    
+    sData.value = setSubmissionsData(resp);
   })
   .catch((err) => console.error(err));
 };
