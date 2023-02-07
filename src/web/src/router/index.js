@@ -28,7 +28,9 @@ const routes = [
     path: "/",
     name: "Dashboard",
     component: Dashboard,
-    requiresAuth: true
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: "/sign-in",

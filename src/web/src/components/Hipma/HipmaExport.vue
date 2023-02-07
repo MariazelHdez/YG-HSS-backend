@@ -6,8 +6,9 @@
 		<v-row>
 			<v-col
 				cols="6"
-				sm="6"
-				md="4"
+				sm="12"
+				md="6"
+				class="d-flex"
 			>
 				<v-menu
 					ref="menu"
@@ -33,13 +34,6 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="6"
-				md="4"
-			>
 				<v-menu
 					ref="menuEnd"
 					v-model="menuEnd"
@@ -65,6 +59,9 @@
 					></v-date-picker>
 				</v-menu>
 			</v-col>
+			<v-col sm="auto">
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+      </v-col>
 			<v-col
 				cols="6"
 				sm="12"
@@ -86,7 +83,7 @@
 					</v-icon>
 				</v-btn>
 				&nbsp;
-				<v-btn
+				<!--v-btn
 					:loading="loadingReset"
 					:disabled="loadingReset"
 					color="#F3A901"
@@ -101,7 +98,7 @@
 					>
 						mdi-restore
 					</v-icon>
-				</v-btn>
+				</v-btn-->
 			</v-col>
 
 		</v-row>

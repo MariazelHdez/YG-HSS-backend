@@ -145,9 +145,9 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
         });
 
         _.forEach(midwifery, function(value: any, key: any) {
-            value.first_pregnancy = !value.first_pregnancy ? ( midwiferyOptions[value.first_pregnancy] == 1 ? 'Yes' : 'No'): '' ;
-            value.medical_concerns = !value.medical_concerns ? ( midwiferyOptions[value.medical_concerns] == 1 ? 'Yes' : 'No'): '' ;
-            value.major_medical_conditions = !value.major_medical_conditions ? ( midwiferyOptions[value.major_medical_conditions] == 1 ? 'Yes' : 'No'): '' ;
+            value.first_pregnancy = value.first_pregnancy ? ( midwiferyOptions[value.first_pregnancy] == 1 ? 'Yes' : 'No'): '' ;
+            value.medical_concerns = value.medical_concerns ? ( midwiferyOptions[value.medical_concerns] == 1 ? 'Yes' : 'No'): '' ;
+            value.major_medical_conditions = value.major_medical_conditions ? ( midwiferyOptions[value.major_medical_conditions] == 1 ? 'Yes' : 'No'): '' ;
 
             if(value.due_date == 0) {
                 value.due_date =  "N/A";
@@ -175,7 +175,6 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
                 value.do_you_identify_with_one_or_more_of_these_groups_and_communitie = dataString.replace(/,/g, ', ');
             }
-
             value.created_at_format =  value.created_at.toLocaleString("en-CA", {
                 year: "numeric",
                 month: "2-digit",
@@ -547,33 +546,21 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        var status = req.body.params.status;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_services.id IS NOT NULL";
+        var sqlFilter = "midwifery_services.status <> 4";
 
         if(requests.length > 0){
             sqlFilter += " AND midwifery_services.id IN ("+requests+")";
         }
-
-        if(dateFrom !== null && dateTo !== null){
-            if(dateFrom == dateTo){
-                let dateFromFormat = new Date(dateFrom).toISOString().replace('T',' ').replace('Z','');
-                let dateFromFormatEnd = dateFromFormat.replace("00:00:00", "23:59:59");
-
-                sqlFilter += " AND midwifery_services.created_at >= '"+dateFromFormat+"' AND midwifery_services.created_at <= '"+dateFromFormatEnd+"'";
-            }else{
-                sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
-            }
-        }
-
-        if(status !== null){
-            sqlFilter += " AND midwifery_services.status = "+status+"";
-
-        }
         
         if(dateFrom && dateTo ){
             sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += " AND midwifery_services.status IN ( "+status_request+")";
         }
 
 
