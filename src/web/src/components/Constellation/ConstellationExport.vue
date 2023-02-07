@@ -244,7 +244,13 @@ export default {
     getDataFromApi() {
       this.loading = true;
       axios
-        .get(CONSTELLATION_URL)
+        .post(CONSTELLATION_URL, {
+      				params: {
+      					dateFrom: this.dateMin,
+      					dateTo: this.dateMax,
+      					status: this.actionSelected
+      				}
+        })
         .then((resp) => {
           this.items = resp.data.data;
           this.bulkActions = resp.data.dataStatus.filter((element) => element.value != 4);

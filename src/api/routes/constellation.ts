@@ -84,9 +84,21 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
  *
  * @return json
  */
-constellationRouter.get("/", async (req: Request, res: Response) => {
+constellationRouter.post("/", async (req: Request, res: Response) => {
 
     try {
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
+        var sqlFilter = "constellation_health.status <> '4'";
+         
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += "  AND constellation_health.status IN ("+status_request+")";
+        }
 
         var constellationHealth =  await db("bizont_edms_constellation_health.constellation_health")
             .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
@@ -98,7 +110,7 @@ constellationRouter.get("/", async (req: Request, res: Response) => {
                     'constellation_health.created_at',
                     'constellation_status.description as status',
                     'constellation_health.id as constellation_health_id')
-            .whereNot('constellation_status.id', '4')
+            .whereRaw(sqlFilter)
             .orderBy('constellation_health.id', 'asc');
         var diagnosis = Object();
         diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {

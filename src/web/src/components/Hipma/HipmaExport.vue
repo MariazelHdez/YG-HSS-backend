@@ -178,24 +178,19 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-				var date = this.date;
-				var dateEnd = this.dateEnd;
-				let itemsDate = [];
-
-				this.itemsUnfiltered.forEach(function (value) {
-					if(value.created_at > date && value.created_at < dateEnd){
-						itemsDate.push(value);
-					}
-				});
-
-				this.items = itemsDate;
+				this.getDataFromApi();
 			}
 		},
 		getDataFromApi() {
 		this.loading = true;
 
 			axios
-			.get(HIPMA_URL)
+			.post(HIPMA_URL, {
+				params: {
+					dateFrom: this.date,
+					dateTo: this.dateEnd,
+				}
+			})
 			.then((resp) => {
 				this.items = resp.data.data;
 				this.itemsUnfiltered = resp.data.data;

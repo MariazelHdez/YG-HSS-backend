@@ -1,10 +1,79 @@
 
 <template>
     <div class="midwifery-service">
-        <span class="title-service">Midwifery Requests</span>
+      <span class="title-service">Midwifery Requests</span>
+      <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
-        <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+      <v-row>
+        <v-col
+          class='d-flex'
+  				cols="6"
+  				sm="6"
+  				md="6"
+        >
+  			  <v-select
+  			    v-model="statusSelected"
+            :items="statusFilter"
+            :menu-props="{ maxHeight: '400' }"
+            label="Select"
+            multiple
+            persistent-hint
+            @change="changeStatusSelect"
+          ></v-select>
+          <v-menu
+  					ref="menu"
+  					v-model="menu"
+  					:close-on-content-click="false"
+  					transition="scale-transition"
+  					offset-y
+  					min-width="auto"
+  				>
+  					<template v-slot:activator="{ on, attrs }">
+  						<v-text-field
+  							v-model="date"
+  							label="From:"
+  							prepend-icon="mdi-calendar"
+  							v-bind="attrs"
+  							v-on="on"
+  						></v-text-field>
+  					</template>
+  					<v-date-picker
+  						v-model="date"
+  						no-title
+  						@input="menu = false"
+  						@change="updateDate"
+  					></v-date-picker>
+  				</v-menu>
+          <v-menu
+  					ref="menuEnd"
+  					v-model="menuEnd"
+  					:close-on-content-click="false"
+  					transition="scale-transition"
+  					offset-y
+  					min-width="auto"
+  				>
+  					<template v-slot:activator="{ on, attrs }">
+  						<v-text-field
+  							v-model="dateEnd"
+  							label="To:"
+  							prepend-icon="mdi-calendar"
+  							v-bind="attrs"
+  							v-on="on"
+  						></v-text-field>
+  					</template>
+  					<v-date-picker
+  						v-model="dateEnd"
+  						no-title
+  						@input="menuEnd = false"
+  						@change="updateDate"
+  					></v-date-picker>
+  				</v-menu>
+      </v-col>
+      <v-col sm="auto" v-if="removeFilters">
+        <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+      </v-col>
 
+    </v-row>
         <v-row
             align="center"
             class="container-actions"
@@ -75,13 +144,20 @@ export default {
   name: "MidwiferyIndex",
   data: () => ({
     loading: false,
+    statusSelected:null,
+    date: null,
+    menu: false,
+    dateEnd: null,
+    menuEnd: false,
     items: [],
+    itemsUnfiltered: [],
     alertMessage: "",
     alertType: "",
     search: "",
     options: {},
     flagAlert: false,
     selected: [],
+    statusFilter: [],
     applyDisabled: true,
     itemsBulk: [],
     selectedStatus: null,
@@ -131,14 +207,29 @@ export default {
         this.getDataFromApi();
     },
     methods: {
+        changeStatusSelect(){
+          this.getDataFromApi();
+        },
+        updateDate(){
+    			if(this.date !== null && this.dateEnd !== null){
+      			this.getDataFromApi();
+    			}
+    		},
         getDataFromApi() {
             this.loading = true;
-
             axios
-            .get(MIDWIFERY_URL)
+            .post(MIDWIFERY_URL, {
+      				params: {
+      					dateFrom: this.date,
+      					dateTo: this.dateEnd,
+      					status: this.statusSelected
+      				}
+      			})
             .then((resp) => {
                 this.items = resp.data.data;
+                this.itemsUnfiltered = resp.data.data;
                 this.itemsBulk = resp.data.dataStatus;
+                this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
                 //this.pagination.totalLength = resp.data.meta.count;
                 //this.totalLength = resp.data.meta.count;
                 this.loading = false;
@@ -160,6 +251,15 @@ export default {
         changeSelect(){
             this.applyDisabled = false;
         },
+        removeFilters() {
+          return this.date || this.dateEnd || this.statusSelected;
+        },
+        resetInputs() {
+    			this.date = null;
+    			this.dateEnd = null;
+    			this.statusSelected = null;
+    			this.getDataFromApi();
+    		},
         changeStatus(){
             let requests = [];
 			let checked = this.selected;

@@ -320,6 +320,9 @@ button.details-btn.v-btn{
   font-size: 12px;
   border-radius: 0px;
 }
+div.row.container-actions.align-center{
+  margin-top: 0px;
+}
 @-moz-keyframes loader {
     from {
         transform: rotate(0);

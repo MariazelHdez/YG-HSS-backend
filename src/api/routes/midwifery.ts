@@ -23,10 +23,8 @@ const submissionStatusRepo = new SubmissionStatusRepository();
  * @param { action_value } action value.
  * @return json
  */
-midwiferyRouter.get("/submissions/:action_id/:action_value", [
-    param("action_id").notEmpty(), 
-    param("action_value").notEmpty()
-], async (req: Request, res: Response) => {
+midwiferyRouter.get("/submissions/:action_id/:action_value",[ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
 
     try {
 
@@ -58,10 +56,8 @@ midwiferyRouter.get("/submissions/:action_id/:action_value", [
  * @param { action_value } action value.
  * @return json
  */
-midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
-    param("action_id").notEmpty(), 
-    param("action_value").notEmpty()
-], async (req: Request, res: Response) => {
+midwiferyRouter.get("/submissions/status/:action_id/:action_value", [ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
 
     try {
 
@@ -85,13 +81,25 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
  *
  * @return json
  */
-midwiferyRouter.get("/", async (req: Request, res: Response) => {
+midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
     try {
 
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
+        var sqlFilter = "midwifery_services.status <> '4'";
+
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += "  AND midwifery_services.status IN ("+status_request+")";
+        }
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
@@ -101,14 +109,13 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact')
-            .whereNot('midwifery_status.description', 'Closed')
+            .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
         midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().then((rows: any) => {
             let arrayResult = Array();
 
             for (let row of rows) {
-                //arrayResult[row['id']] = row['field_value'];
                 arrayResult.push({text: row['description'], value: row['id']});
             }
 
@@ -529,9 +536,12 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         if(requests.length > 0){
             sqlFilter += " AND midwifery_services.id IN ("+requests+")";
-        }else if(dateFrom !== null && dateTo !== null){
-            sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
         }
+        
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')

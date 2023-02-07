@@ -83,17 +83,23 @@ hipmaRouter.get("/submissions/status/:action_id/:action_value", [
  *
  * @return json
  */
-hipmaRouter.get("/", async (req: Request, res: Response) => {
+hipmaRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
         var hipma = Object();
-
+        var sqlFilter = "health_information.status = '1'";
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+        
         hipma = await db("bizont_edms_hipma.health_information")
             .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
             .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
             .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
             .leftJoin('bizont_edms_hipma.hipma_situations', 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+            .whereRaw(sqlFilter)
             .select('health_information.*',
                     'hipma_request_type.description as HipmaRequestType',
                     'hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
@@ -101,7 +107,6 @@ hipmaRouter.get("/", async (req: Request, res: Response) => {
                     'hipma_situations.description as HipmaSituations',
                     db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName")
                     )
-            .where('health_information.status', '1')
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
@@ -530,8 +535,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 
         if(requests.length > 0){
             sqlFilter += " AND health_information.id IN ("+requests+")";
-        }else if(dateFrom !== null && dateTo !== null){
-            sqlFilter += " AND health_information.created_at >= '"+dateFrom+"' AND health_information.created_at <= '"+dateTo+"'";
+        }
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
 
         hipma = await db("bizont_edms_hipma.health_information")

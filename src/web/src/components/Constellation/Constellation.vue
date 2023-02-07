@@ -7,6 +7,77 @@
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
     />
+    
+     <v-row>
+        <v-col
+          class='d-flex'
+  				cols="6"
+  				sm="6"
+  				md="6"
+        >
+  			  <v-select
+  			    v-model="statusSelected"
+            :items="statusFilter"
+            :menu-props="{ maxHeight: '400' }"
+            label="Select"
+            multiple
+            persistent-hint
+            @change="changeStatusSelect"
+          ></v-select>
+          <v-menu
+  					ref="menu"
+  					v-model="menu"
+  					:close-on-content-click="false"
+  					transition="scale-transition"
+  					offset-y
+  					min-width="auto"
+  				>
+  					<template v-slot:activator="{ on, attrs }">
+  						<v-text-field
+  							v-model="date"
+  							label="From:"
+  							prepend-icon="mdi-calendar"
+  							v-bind="attrs"
+  							v-on="on"
+  						></v-text-field>
+  					</template>
+  					<v-date-picker
+  						v-model="date"
+  						no-title
+  						@input="menu = false"
+  						@change="updateDate"
+  					></v-date-picker>
+  				</v-menu>
+          <v-menu
+  					ref="menuEnd"
+  					v-model="menuEnd"
+  					:close-on-content-click="false"
+  					transition="scale-transition"
+  					offset-y
+  					min-width="auto"
+  				>
+  					<template v-slot:activator="{ on, attrs }">
+  						<v-text-field
+  							v-model="dateEnd"
+  							label="To:"
+  							prepend-icon="mdi-calendar"
+  							v-bind="attrs"
+  							v-on="on"
+  						></v-text-field>
+  					</template>
+  					<v-date-picker
+  						v-model="dateEnd"
+  						no-title
+  						@input="menuEnd = false"
+  						@change="updateDate"
+  					></v-date-picker>
+  				</v-menu>
+      </v-col>
+      <v-col sm="auto" v-if="removeFilters">
+        <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+      </v-col>
+
+    </v-row>
     <v-row 
       align="center" 
       class="container-actions"
@@ -74,6 +145,12 @@ export default {
   data: () => ({
     loading: false,
     items: [],
+    statusSelected:null,
+    date: null,
+    menu: false,
+    dateEnd: null,
+    statusFilter: [],
+    menuEnd: false,
     selected: [],
     bulkActions: [],
     actionSelected: "",
@@ -143,13 +220,37 @@ export default {
     this.getDataFromApi();
   },
   methods: {
+    changeStatusSelect(){
+      this.getDataFromApi();
+    },
+    updateDate(){
+			if(this.date !== null && this.dateEnd !== null){
+  			this.getDataFromApi();
+			}
+		},
+		removeFilters() {
+      return this.date || this.dateEnd || this.statusSelected;
+    },
+    resetInputs() {
+			this.date = null;
+			this.dateEnd = null;
+			this.statusSelected = null;
+			this.getDataFromApi();
+		},
     getDataFromApi() {
       this.loading = true;
       axios
-        .get(CONSTELLATION_URL)
+        .post(CONSTELLATION_URL, {
+      				params: {
+      					dateFrom: this.date,
+      					dateTo: this.dateEnd,
+      					status: this.statusSelected
+      				}
+        })
         .then((resp) => {
           this.items = resp.data.data;
           this.bulkActions = resp.data.dataStatus;
+          this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
           this.loading = false;
         })
         .catch((err) => console.error(err))

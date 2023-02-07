@@ -7,8 +7,19 @@
 			<v-col
 				cols="6"
 				sm="6"
-				md="4"
+				md="8"
+				class='d-flex'
 			>
+			  <v-select
+            :items="itemsStatus"
+            :menu-props="{ maxHeight: '400' }"
+            label="Select"
+            multiple
+            persistent-hint
+           v-model="selectedStatus"
+      			@change="changeSelect"
+      			id="export-status-select"
+          ></v-select>
 				<v-menu
 					ref="menu"
 					v-model="menu"
@@ -33,13 +44,6 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="6"
-				md="4"
-			>
 				<v-menu
 					ref="menuEnd"
 					v-model="menuEnd"
@@ -64,12 +68,9 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="12"
-				md="4">
+				<v-col sm="auto" id="reset-btn">
+              <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+        </v-col>
 				<v-btn
 					:loading="loadingExport"
 					:disabled="loadingExport"
@@ -87,7 +88,11 @@
 					</v-icon>
 				</v-btn>
 				&nbsp;
-				<v-btn
+				
+
+      
+      
+				<!--v-btn
 					:loading="loadingReset"
 					:disabled="loadingReset"
 					color="#F3A901"
@@ -102,21 +107,21 @@
 					>
 						mdi-restore
 					</v-icon>
-				</v-btn>
+				</v-btn-->
 			</v-col>
 		</v-row>
-		<v-select
-			:items="itemsStatus"
-			solo
-			label="Request Status"
-			append-icon="mdi-chevron-down"
-			prepend-inner-icon="mdi-layers-triple"
-			color="grey lighten-2"
-			item-color="grey lighten-2"
-			v-model="selectedStatus"
-			@change="changeSelect"
-			id="export-status-select"
-		></v-select>
+		
+		
+		
+
+          
+		
+		
+		
+		
+		
+		
+		
 		<br>
 		<v-data-table
 			dense
@@ -196,39 +201,26 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-				var date = this.date;
-				var dateEnd = this.dateEnd;
-				let itemsDate = [];
-
-				this.itemsUnfiltered.forEach(function (value) {
-					if(value.created_at > date && value.created_at < dateEnd){
-						itemsDate.push(value);
-					}
-				});
-
-				this.items = itemsDate;
-			}
+        this.getDataFromApi();
+      }
 		},
 		changeSelect(){
-            let status = this.selectedStatus;
-			let itemsStatus = [];
-
-			this.itemsUnfiltered.forEach(function (value) {
-				if(value.status == status){
-					itemsStatus.push(value);
-				}
-			});
-
-			this.items = itemsStatus;
-        },
+      this.getDataFromApi();
+    },
 		getDataFromApi() {
 		this.loading = true;
 
 			axios
-			.get(MIDWIFERY_URL)
+			.post(MIDWIFERY_URL, {
+  				params: {
+  					dateFrom: this.date,
+  					dateTo: this.dateEnd,
+  					status: this.selectedStatus
+  				}
+  			})
 			.then((resp) => {
 				this.items = resp.data.data;
-				this.itemsStatus = resp.data.dataStatus;
+				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
 				this.itemsUnfiltered = resp.data.data;
 				//this.pagination.totalLength = resp.data.meta.count;
 				//this.totalLength = resp.data.meta.count;
