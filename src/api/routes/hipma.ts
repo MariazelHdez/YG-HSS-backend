@@ -110,6 +110,11 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
+            value.created_at_format =  value.created_at.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
             value.created_at =  value.created_at.toLocaleString("en-CA");
 
             value.showUrl = "hipma/show/"+value.id;
@@ -188,15 +193,27 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
         .first();
 
         if(!_.isNull(hipma.date_from_)) {
-            hipma.date_from_ =   hipma.date_from_.toLocaleString("en-CA");
+            hipma.date_from_ =  hipma.date_from_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isNull(hipma.date_to_)) {
-            hipma.date_to_ =   hipma.date_to_.toLocaleString("en-CA");
+            hipma.date_to_ =  hipma.date_to_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isNull(hipma.date_of_birth)) {
-            hipma.date_of_birth =   hipma.date_of_birth.toLocaleString("en-CA");
+            hipma.date_of_birth =  hipma.date_of_birth.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }
 
         if(!_.isEmpty(hipma.name_of_health_and_social_services_program_area_optional_)) {
@@ -496,6 +513,7 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
 
     try {
         var path = "";
+        //var fs = require("fs");
         var hipmaFile_id = Number(req.params.hipmaFile_id);
         var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("id", hipmaFile_id).select().first();
         var buffer = Buffer.from(hipmaFiles.file_data, 'base64')
@@ -504,8 +522,10 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
         path = __dirname+'/'+safeName+"."+hipmaFiles.file_type;
 
+        //fs.writeFileSync(path, buffer);
+
         if(hipmaFiles) {
-            res.json({ fileData: file , fileName: safeName+"."+hipmaFiles.file_type});
+            res.json({ fileData: hipmaFiles.file_data , fileName: safeName+"."+hipmaFiles.file_type, fileType: hipmaFiles.file_type});
         }
 
     } catch(e) {
@@ -536,6 +556,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         if(requests.length > 0){
             sqlFilter += " AND health_information.id IN ("+requests+")";
         }
+        
         if(dateFrom && dateTo ){
             sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
@@ -580,15 +601,27 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         hipma.forEach(function (value: any) {
 
             if(!_.isNull(value.date_from_)) {
-                value.date_from_ =   value.date_from_.toLocaleString("en-CA");
+                value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             if(!_.isNull(value.date_to_)) {
-                value.date_to_ =   value.date_to_.toLocaleString("en-CA");
+                value.date_to_ =  value.date_to_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             if(!_.isNull(value.date_of_birth)) {
-                value.date_of_birth =   value.date_of_birth.toLocaleString("en-CA");
+                value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }
 
             value.created_at =   value.created_at.toLocaleString("en-CA");
@@ -714,8 +747,7 @@ function saveFile(field_name: any, data: any){
     if(data[field_name] !== 'undefined' && (data[field_name]) && data[field_name]['data'] !== 'undefined'){
 
         var filesHipma = Object();
-        var buffer = Buffer.from(data[field_name]['data'], 'base64')
-        var file = buffer.toString();
+        var buffer = Buffer.from(data[field_name]['data'], 'base64');
         let mime = data[field_name]['mime'];
         let name = data[field_name]['name'];
         let extension = mime.split("/");
@@ -723,7 +755,7 @@ function saveFile(field_name: any, data: any){
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
         path = __dirname+'/'+safeName;
 
-        fs.writeFileSync(path, file);
+        fs.writeFileSync(path, buffer);
 
         // Obtain file's general information
         var stats = fs.statSync(path);

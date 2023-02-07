@@ -276,20 +276,14 @@ export default {
 		}
 	},
 	methods: {
-		fileDownload(response, title) {
-			const url = window.URL.createObjectURL(new Blob([response.data]));
-			const link = document.createElement('a');
-
-			link.href = url
-			link.setAttribute('download', title)
-			document.body.appendChild(link)
-			link.click()
-		},
 		downloadFile (idDownload) {
 			axios
 			.get(HIPMA_DOWNLOAD_FILE_URL+idDownload)
 			.then((resp) => {
-				this.fileDownload(resp.data.fileData, resp.data.fileName)
+				var a = document.createElement("a"); //Create dummy <a>
+				a.href = "data:file/"+resp.data.fileType+";base64," + resp.data.fileData;
+				a.download =  resp.data.fileName;
+				a.click(); //Downloaded file
 			})
 			.catch((err) => console.error(err))
 			.finally(() => {

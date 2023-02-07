@@ -112,14 +112,14 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
             .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
-        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().then((rows: any) => {
-            let arrayResult = Array();
+        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().whereNot('description', 'Closed')
+            .then((rows: any) => {
+                let arrayResult = Array();
+                for (let row of rows) {
+                    arrayResult.push({text: row['description'], value: row['id']});
+                }
 
-            for (let row of rows) {
-                arrayResult.push({text: row['description'], value: row['id']});
-            }
-
-            return arrayResult;
+                return arrayResult;
         });
 
         midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
@@ -176,6 +176,11 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                 value.do_you_identify_with_one_or_more_of_these_groups_and_communitie = dataString.replace(/,/g, ', ');
             }
 
+            value.created_at_format =  value.created_at.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
             value.created_at =  value.created_at.toLocaleString("en-CA");
             value.due_date =  value.due_date.toLocaleString("en-CA");
 
@@ -285,19 +290,31 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         });
 
         if(!_.isNull(midwifery.date_of_birth)) {
-            midwifery.date_of_birth = midwifery.date_of_birth.toLocaleString("en-CA");
+            midwifery.date_of_birth =  midwifery.date_of_birth.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.date_of_birth == 0) {
             midwifery.date_of_birth = "N/A";
         }
 
         if(!_.isNull(midwifery.when_was_the_first_day_of_your_last_period_)) {
-            midwifery.when_was_the_first_day_of_your_last_period_ =  midwifery.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA");
+            midwifery.when_was_the_first_day_of_your_last_period_ =  midwifery.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.when_was_the_first_day_of_your_last_period_ == 0) {
             midwifery.when_was_the_first_day_of_your_last_period_ =  "N/A";
         }
 
         if(!_.isNull(midwifery.due_date)) {
-            midwifery.due_date =  midwifery.due_date.toLocaleString("en-CA");
+            midwifery.due_date =  midwifery.due_date.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.due_date == 0) {
             midwifery.due_date =  "N/A";
         }
@@ -530,12 +547,29 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
+        var status = req.body.params.status;
         var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_status.description IN ('New/Unread', 'Entered', 'Declined')";
+        var sqlFilter = "midwifery_services.id IS NOT NULL";
 
         if(requests.length > 0){
             sqlFilter += " AND midwifery_services.id IN ("+requests+")";
+        }
+
+        if(dateFrom !== null && dateTo !== null){
+            if(dateFrom == dateTo){
+                let dateFromFormat = new Date(dateFrom).toISOString().replace('T',' ').replace('Z','');
+                let dateFromFormatEnd = dateFromFormat.replace("00:00:00", "23:59:59");
+
+                sqlFilter += " AND midwifery_services.created_at >= '"+dateFromFormat+"' AND midwifery_services.created_at <= '"+dateFromFormatEnd+"'";
+            }else{
+                sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
+            }
+        }
+
+        if(status !== null){
+            sqlFilter += " AND midwifery_services.status = "+status+"";
+
         }
         
         if(dateFrom && dateTo ){
@@ -610,19 +644,31 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         midwifery.forEach(function (value: any) {
 
             if(!_.isNull(value.date_of_birth)) {
-                value.date_of_birth = value.date_of_birth.toLocaleString("en-CA");
+                value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.date_of_birth == 0) {
                 value.date_of_birth = "N/A";
             }
 
             if(!_.isNull(value.when_was_the_first_day_of_your_last_period_)) {
-                value.when_was_the_first_day_of_your_last_period_ =  value.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA");
+                value.when_was_the_first_day_of_your_last_period_ =  value.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.when_was_the_first_day_of_your_last_period_ == 0) {
                 value.when_was_the_first_day_of_your_last_period_ =  "N/A";
             }
 
             if(!_.isNull(value.due_date)) {
-                value.due_date =  value.due_date.toLocaleString("en-CA");
+                value.due_date =  value.due_date.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.due_date == 0) {
                 value.due_date =  "N/A";
             }

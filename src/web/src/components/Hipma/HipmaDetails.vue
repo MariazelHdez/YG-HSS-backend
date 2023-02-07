@@ -95,21 +95,27 @@
     <v-row no-gutters>
       <v-col id="hipmaPanelInformation">
         <HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
-  
-        <HipmaBehalf v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
-  
+
+        <HipmaBehalf
+          v-if="itemsHipma.HipmaSituations
+          || itemsHipma.first_name_behalf
+          || itemsHipma.last_name_behalf
+          || itemsHipma.company_or_organization_optional_behalf
+          || itemsHipma.address_behalf
+          || itemsHipma.city_or_town_behalf
+          || itemsHipma.postal_code_behalf
+          || itemsHipma.email_address_behalf"
+          v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"
+          v-bind:panelModel="panelModel"
+        />
+
         <HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
-  
+
         <HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
       </v-col>
       <v-col lg="1"> </v-col>
       </v-row>
     </v-container>
-		
-		
-		
-		
-		
 	</div>
 </template>
 
