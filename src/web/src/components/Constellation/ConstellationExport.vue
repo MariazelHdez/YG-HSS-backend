@@ -245,11 +245,11 @@ export default {
       this.loading = true;
       axios
         .post(CONSTELLATION_URL, {
-      				params: {
-      					dateFrom: this.dateMin,
-      					dateTo: this.dateMax,
-      					status: this.actionSelected
-      				}
+            params: {
+                dateFrom: this.dateMin,
+                dateTo: this.dateMax,
+                status: this.actionSelected
+            }
         })
         .then((resp) => {
           this.items = resp.data.data;

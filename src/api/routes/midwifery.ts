@@ -108,7 +108,10 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
             .select('midwifery_services.*',
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+            )
             .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
@@ -180,8 +183,10 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                 month: "2-digit",
                 day: "2-digit",
             });
-            value.created_at =  value.created_at.toLocaleString("en-CA");
-            value.due_date =  value.due_date.toLocaleString("en-CA");
+            /*
+                value.created_at =  value.created_at.toLocaleString("en-CA");
+                value.due_date =  value.due_date.toLocaleString("en-CA");
+            */
 
             value.showUrl = "midwifery/show/"+value.id;
         });
@@ -254,7 +259,11 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
+                        "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
+                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+            )
             .where("midwifery_services.id", midwifery_id)
             .first();
 
@@ -288,7 +297,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        if(!_.isNull(midwifery.date_of_birth)) {
+        /*if(!_.isNull(midwifery.date_of_birth)) {
             midwifery.date_of_birth =  midwifery.date_of_birth.toLocaleString("en-CA", {
                 year: "numeric",
                 month: "2-digit",
@@ -316,7 +325,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             });
         }else if(midwifery.due_date == 0) {
             midwifery.due_date =  "N/A";
-        }
+        }*/
 
         if(!_.isNull(midwifery.community_located)) {
             if(communityLocations.hasOwnProperty(midwifery.community_located)){
@@ -570,7 +579,13 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
+                    "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
+                    "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date,"+
+                    "to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                    "to_char(midwifery_services.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
+            )
             .whereRaw(sqlFilter);
 
 
@@ -629,7 +644,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         });
 
         midwifery.forEach(function (value: any) {
-
+            /*
             if(!_.isNull(value.date_of_birth)) {
                 value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
                     year: "numeric",
@@ -662,6 +677,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
             value.created_at =   value.created_at.toLocaleString("en-CA");
             value.updated_at =   value.updated_at.toLocaleString("en-CA");
+            */
 
             if(!_.isNull(value.community_located)) {
                 if(communityLocations.hasOwnProperty(value.community_located)){
@@ -803,7 +819,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         var midwifery_id = req.body.params.requests;
         var status_id = req.body.params.requestStatus;
 
-        var updateStatus = await db("bizont_edms_midwifery.midwifery_services").update({status: status_id}).whereIn("id", midwifery_id);
+        var updateStatus = await db("bizont_edms_midwifery.midwifery_services").update({status: status_id}).whereIn("midwifery_services.id", midwifery_id);
 
         if(updateStatus) {
             let type = "success";
@@ -816,7 +832,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         console.log(e);  // debug if needed
         res.send( {
             status: 400,
-            message: 'Request could not be processed'
+            message: 'Request could not be processed change'
         });
     }
 });

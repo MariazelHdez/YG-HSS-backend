@@ -1,79 +1,81 @@
 
 <template>
     <div class="midwifery-service">
-      <span class="title-service">Midwifery Requests</span>
-      <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <span class="title-service">Midwifery Requests</span>
 
-      <v-row>
-        <v-col
-          class='d-flex'
-  				cols="6"
-  				sm="6"
-  				md="6"
-        >
-  			  <v-select
-  			    v-model="statusSelected"
-            :items="statusFilter"
-            :menu-props="{ maxHeight: '400' }"
-            label="Select"
-            multiple
-            persistent-hint
-            @change="changeStatusSelect"
-          ></v-select>
-          <v-menu
-  					ref="menu"
-  					v-model="menu"
-  					:close-on-content-click="false"
-  					transition="scale-transition"
-  					offset-y
-  					min-width="auto"
-  				>
-  					<template v-slot:activator="{ on, attrs }">
-  						<v-text-field
-  							v-model="date"
-  							label="From:"
-  							prepend-icon="mdi-calendar"
-  							v-bind="attrs"
-  							v-on="on"
-  						></v-text-field>
-  					</template>
-  					<v-date-picker
-  						v-model="date"
-  						no-title
-  						@input="menu = false"
-  						@change="updateDate"
-  					></v-date-picker>
-  				</v-menu>
-          <v-menu
-  					ref="menuEnd"
-  					v-model="menuEnd"
-  					:close-on-content-click="false"
-  					transition="scale-transition"
-  					offset-y
-  					min-width="auto"
-  				>
-  					<template v-slot:activator="{ on, attrs }">
-  						<v-text-field
-  							v-model="dateEnd"
-  							label="To:"
-  							prepend-icon="mdi-calendar"
-  							v-bind="attrs"
-  							v-on="on"
-  						></v-text-field>
-  					</template>
-  					<v-date-picker
-  						v-model="dateEnd"
-  						no-title
-  						@input="menuEnd = false"
-  						@change="updateDate"
-  					></v-date-picker>
-  				</v-menu>
-      </v-col>
-      <v-col sm="auto" v-if="removeFilters">
-        <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
-      </v-col>
+        <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
-    </v-row>
+        <Notifications ref="notifier"></Notifications>
+
+        <v-row>
+            <v-col
+                class='d-flex'
+                cols="6"
+                sm="6"
+                md="6"
+            >
+            <v-select
+                v-model="statusSelected"
+                :items="statusFilter"
+                :menu-props="{ maxHeight: '400' }"
+                label="Select"
+                multiple
+                persistent-hint
+                @change="changeStatusSelect"
+            ></v-select>
+            <v-menu
+                ref="menu"
+                v-model="menu"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+            >
+                <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                        v-model="date"
+                        label="From:"
+                        prepend-icon="mdi-calendar"
+                        v-bind="attrs"
+                        v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-date-picker
+                    v-model="date"
+                    no-title
+                    @input="menu = false"
+                    @change="updateDate"
+                ></v-date-picker>
+            </v-menu>
+            <v-menu
+                ref="menuEnd"
+                v-model="menuEnd"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+            >
+                <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                        v-model="dateEnd"
+                        label="To:"
+                        prepend-icon="mdi-calendar"
+                        v-bind="attrs"
+                        v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-date-picker
+                    v-model="dateEnd"
+                    no-title
+                    @input="menuEnd = false"
+                    @change="updateDate"
+                ></v-date-picker>
+            </v-menu>
+            </v-col>
+            <v-col sm="auto" v-if="removeFilters">
+            <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+            </v-col>
+        </v-row>
         <v-row
             align="center"
             class="container-actions"
@@ -127,9 +129,9 @@
             :value="selected"
             @toggle-select-all="selectAll"
         >
-        <template v-slot:[`item.showUrl`]="{ item }">
-            <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
-        </template>
+            <template v-slot:[`item.showUrl`]="{ item }">
+                <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
+            </template>
         </v-data-table>
     </div>
 </template>
@@ -137,6 +139,7 @@
 <script>
 const axios = require("axios");
 import MidwiferyAlert from './MidwiferyAlert.vue';
+import Notifications from "../Notifications.vue";
 import { MIDWIFERY_URL } from "../../urls.js";
 import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 
@@ -180,7 +183,8 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    MidwiferyAlert
+    MidwiferyAlert,
+    Notifications
   },
   watch: {
     options: {
@@ -197,34 +201,39 @@ export default {
     },
   },
     created(){
-        if (typeof this.$route.query.message !== 'undefined' && typeof this.$route.query.type !== 'undefined'){
-            this.flagAlert = true;
-            this.alertMessage = this.$route.query.message;
-            this.alertType = this.$route.query.type;
-        }
     },
     mounted() {
+
+        if (typeof this.$route.query.message !== undefined && typeof this.$route.query.type !== undefined){
+            if(this.$route.query.type == "success"){
+                this.$refs.notifier.showSuccess(this.$route.query.message);
+            }else{
+                this.flagAlert = true;
+                this.alertMessage = this.$route.query.message;
+                this.alertType = this.$route.query.type;
+            }
+        }
+
         this.getDataFromApi();
     },
     methods: {
         changeStatusSelect(){
-          this.getDataFromApi();
+            this.getDataFromApi();
         },
         updateDate(){
-    			if(this.date !== null && this.dateEnd !== null){
-      			this.getDataFromApi();
-    			}
-    		},
+            if(this.date !== null && this.dateEnd !== null){
+                this.getDataFromApi();
+            }
+        },
         getDataFromApi() {
             this.loading = true;
-            axios
-            .post(MIDWIFERY_URL, {
-      				params: {
-      					dateFrom: this.date,
-      					dateTo: this.dateEnd,
-      					status: this.statusSelected
-      				}
-      			})
+            axios.post(MIDWIFERY_URL, {
+                params: {
+                    dateFrom: this.date,
+                    dateTo: this.dateEnd,
+                    status: this.statusSelected
+                }
+            })
             .then((resp) => {
                 this.items = resp.data.data;
                 this.itemsUnfiltered = resp.data.data;
@@ -252,14 +261,15 @@ export default {
             this.applyDisabled = false;
         },
         removeFilters() {
-          return this.date || this.dateEnd || this.statusSelected;
+            return this.date || this.dateEnd || this.statusSelected;
         },
         resetInputs() {
-    			this.date = null;
-    			this.dateEnd = null;
-    			this.statusSelected = null;
-    			this.getDataFromApi();
-    		},
+            this.date = null;
+            this.dateEnd = null;
+            this.statusSelected = null;
+            this.applyDisabled = true;
+            this.getDataFromApi();
+        },
         changeStatus(){
             let requests = [];
 			let checked = this.selected;
@@ -277,12 +287,11 @@ export default {
                     }
                 })
                 .then((resp) => {
+                    this.$refs.notifier.showSuccess(resp.data.message);
                     this.getDataFromApi();
                     this.selectedStatus = null;
                     this.flagAlert = true;
                     this.applyDisabled = true;
-                    this.alertMessage = resp.data.message;
-                    this.alertType = resp.data.type;
                 })
                 .catch((err) => console.error(err))
                 .finally(() => {
