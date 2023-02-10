@@ -109,7 +109,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact',
-                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD') as created_at, "+
+                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
                         "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
             )
             .whereRaw(sqlFilter)
@@ -583,8 +583,8 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
                 db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
                     "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
                     "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date,"+
-                    "to_char(midwifery_services.created_at, 'YYYY-MM-DD') as created_at,"+
-                    "to_char(midwifery_services.updated_at, 'YYYY-MM-DD') as updated_at")
+                    "to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                    "to_char(midwifery_services.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
             )
             .whereRaw(sqlFilter);
 

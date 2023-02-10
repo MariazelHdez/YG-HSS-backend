@@ -106,7 +106,7 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
                     'hipma_copy_health_information.description as CopyHealthInformation',
                     'hipma_situations.description as HipmaSituations',
                     db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
-                        "to_char(health_information.created_at, 'YYYY-MM-DD') as created_at")
+                        "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at")
             )
             .orderBy('health_information.created_at', 'asc');
 
@@ -577,8 +577,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                         'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest',
                     db.raw("to_char(health_information.date_from_, 'YYYY-MM-DD') as date_from_, "+
                         "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_to_,"+
-                        "to_char(health_information.created_at, 'YYYY-MM-DD') as created_at,"+
-                        "to_char(health_information.updated_at, 'YYYY-MM-DD') as updated_at")
+                        "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_of_birth,"+
+                        "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(health_information.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
                 )
                 .whereRaw(sqlFilter);
 
