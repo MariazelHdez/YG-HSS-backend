@@ -7,8 +7,19 @@
 			<v-col
 				cols="6"
 				sm="6"
-				md="4"
+				md="8"
+				class='d-flex'
 			>
+			<v-select
+				:items="itemsStatus"
+				:menu-props="{ maxHeight: '400' }"
+				label="Select"
+				multiple
+				persistent-hint
+				v-model="selectedStatus"
+				@change="changeSelect"
+				id="export-status-select"
+			></v-select>
 				<v-menu
 					ref="menu"
 					v-model="menu"
@@ -33,13 +44,6 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="6"
-				md="4"
-			>
 				<v-menu
 					ref="menuEnd"
 					v-model="menuEnd"
@@ -64,17 +68,14 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="12"
-				md="4">
+				<v-col sm="auto" id="reset-btn">
+			<v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+        </v-col>
 				<v-btn
 					:loading="loadingExport"
 					:disabled="loadingExport"
 					color="#F3A901"
-					class="white--text"
+					class="ma-2 white--text apply-btn"
 					@click="exportFile()"
 					id="export-btn"
 				>
@@ -87,11 +88,17 @@
 					</v-icon>
 				</v-btn>
 				&nbsp;
-				<v-btn
+				
+
+      
+      
+				<!--v-btn
+					:loading="loadingReset"
+					:disabled="loadingReset"
 					color="#F3A901"
-					class="white--text"
+					class="ma-2 white--text apply-btn"
 					@click="resetInputs()"
-					id="export-btn"
+					id="reset-btn"
 				>
 					Reset
 					<v-icon
@@ -100,9 +107,21 @@
 					>
 						mdi-restore
 					</v-icon>
-				</v-btn>
+				</v-btn-->
 			</v-col>
 		</v-row>
+		
+		
+		
+
+          
+		
+		
+		
+		
+		
+		
+		
 		<br>
 		<v-data-table
 			dense
@@ -132,6 +151,7 @@ export default {
 	data: () => ({
 		loading: false,
 		items: [],
+		itemsUnfiltered: [],
 		options: {},
 		flagAlert: false,
 		menu: false,
@@ -139,8 +159,11 @@ export default {
 		menuEnd: false,
 		dateEnd: null,
 		selected: [],
+		itemsStatus: [],
+		selectedStatus: null,
 		loader: null,
 		loadingExport: false,
+		loadingReset: false,
 		headers: [
 			{ text: "Preferred Name", value: "preferred_name", sortable: true},
 			{ text: "Phone", value: "preferred_phone", sortable: true},
@@ -167,7 +190,7 @@ export default {
 			const l = this.loader;
 			this[l] = !this[l];
 
-			setTimeout(() => (this[l] = false), 3000)
+			setTimeout(() => (this[l] = false), 2000)
 
 			this.loader = null;
 		},
@@ -178,26 +201,27 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-				var date = this.date;
-				var dateEnd = this.dateEnd;
-				let itemsDate = [];
-
-				this.items.forEach(function (value) {
-					if(value.created_at > date && value.created_at < dateEnd){
-						itemsDate.push(value);
-					}
-				});
-
-				this.items = itemsDate;
-			}
-		},
+			this.getDataFromApi();
+		}
+	},
+	changeSelect(){
+		this.getDataFromApi();
+    },
 		getDataFromApi() {
 		this.loading = true;
 
 			axios
-			.get(MIDWIFERY_URL)
+			.post(MIDWIFERY_URL, {
+				params: {
+					dateFrom: this.date,
+					dateTo: this.dateEnd,
+					status: this.selectedStatus
+				}
+			})
 			.then((resp) => {
 				this.items = resp.data.data;
+				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
+				this.itemsUnfiltered = resp.data.data;
 				//this.pagination.totalLength = resp.data.meta.count;
 				//this.totalLength = resp.data.meta.count;
 				this.loading = false;
@@ -214,11 +238,14 @@ export default {
 			: this.items
 		},
 		resetInputs() {
+			this.loader = 'loadingReset';
 			this.date = null;
 			this.dateEnd = null;
+			this.selectedStatus = null;
 			this.getDataFromApi();
 		},
 		exportFile () {
+			this.loader = 'loadingExport';
 			let requests = [];
 			let checked = this.selected;
 			console.log(checked.length);
@@ -233,7 +260,8 @@ export default {
 				params: {
 					requests: requests,
 					dateFrom: this.date,
-					dateTo: this.dateEnd
+					dateTo: this.dateEnd,
+					status: this.selectedStatus
 				}
 			})
 			.then((resp) => {
@@ -249,27 +277,36 @@ export default {
 					"Preferred name",
 					"Pronouns",
 					"Date of birth",
+					"Yukon health insurance",
+					"Need interpretation",
 					"Preferred phone",
 					"Preferred email",
+					"Is okay to leave message",
 					"When was the first day of your last period",
 					"Due date",
+					"Date confirmed",
+					"Is this your first pregnancy?",
 					"How many vaginal births",
 					"How many c-section births",
 					"Complications with previous",
 					"Provide details",
 					"Midwife before",
+					"Medical Concerns with Pregnancy",
 					"Provide details2",
+					"Have you had primary healthcare?",
 					"Menstrual cycle length",
+					"Family physician",
 					"Physician's name",
+					"Major medical conditions",
 					"Provide details3",
 					"Do you identify with one or more of these groups and communities",
 					"How did you find out about the midwifery clinic",
 					"Created at",
 					"Updated at",
-					"Community",
-					"Language",
-					"Birth locations",
-					"Preferred contact"
+					"Birth location",
+					"Preferred contact",
+					"Community located",
+					"Preferred language"
 				]], { origin: "A1" });
 
 				writeFileXLSX(wb, resp.data.fileName);
@@ -280,13 +317,6 @@ export default {
 			.finally(() => {
 				this.loading = false;
 			});
-
-
-			/*
-			console.log(this.date);
-			console.log(this.dateEnd);
-			console.log(this.selected);
-			*/
 		},
 	},
 };

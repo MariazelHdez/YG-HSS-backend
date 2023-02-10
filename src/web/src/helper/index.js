@@ -27,10 +27,34 @@ const setSubmissionsStatusData = (data, labelColor) => {
     }
 };
 
-const setSubmissionsData = (datasetData, labelColor) => {
+const setSubmissionsData = (resp) => {
+    const curData = resp.data
+    const datasets = [];
+    const labels = Object.entries(curData.labels).map((x) => x[0]);
+    Object.entries(curData.data).forEach((g) => {
+      const data = curData.data[g[0] ?? 0] ?? [];
+      console.log("data", data);
+      if (data) {
+        const ds = {
+          label:  g[1] &&  g[1][0] && g[1][0].department ?  g[1][0].department : g[0],
+          data: labels.map((x) => {
+            const filtered = data.filter((y) => y.date_code == x);
+            let result = "";
+            if (filtered.length > 0) {
+                result = filtered[0].submissions;
+            }
+            return result;
+          }),
+          backgroundColor:  data.map((x) => x.color),
+        };
+        datasets.push(ds);
+      }
+    });
+    console.log(labels);
+    console.log("datasets", datasets.map((x) => ({label: x.label, data: x.data, bkgColor: x.backgroundColor})));
     return {
-        labels: labelColor,
-        datasets: datasetData
+        labels: labels,
+        datasets: datasets
     }
 };
 

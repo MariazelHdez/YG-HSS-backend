@@ -78,8 +78,8 @@
       </v-col>
       <v-col>
         <v-btn
-          :loading="loadingExport"
-          :disabled="loadingExport"
+          :loading="loading"
+          :disabled="loading"
           color="#F3A901"
           class="pull-right white--text"
           @click="exportFile"
@@ -118,6 +118,7 @@ export default {
   name: "ConstellationIndex",
   data: () => ({
     loading: false,
+    selected: [],
     items: [],
     bulkActions: [],
     actionSelected: "",
@@ -212,10 +213,14 @@ export default {
       deep: true,
     },
     dateMin() {
-      this.dateFormattedMin = this.formatDate(this.dateMin);
+      if(this.dateMin){
+        this.dateFormattedMin = this.formatDate(this.dateMin);
+      }
     },
     dateMax() {
-      this.dateFormattedMax = this.formatDate(this.dateMax);
+      if(this.dateMax){
+        this.dateFormattedMax = this.formatDate(this.dateMax);
+      }
     },
     actionSelected() {
       let action = this.bulkActions.filter((element) => element.value == this.actionSelected);
@@ -239,7 +244,13 @@ export default {
     getDataFromApi() {
       this.loading = true;
       axios
-        .get(CONSTELLATION_URL)
+        .post(CONSTELLATION_URL, {
+            params: {
+                dateFrom: this.dateMin,
+                dateTo: this.dateMax,
+                status: this.actionSelected
+            }
+        })
         .then((resp) => {
           this.items = resp.data.data;
           this.bulkActions = resp.data.dataStatus.filter((element) => element.value != 4);
@@ -261,9 +272,10 @@ export default {
       return `${month}/${day}/${year}`;
     },
     setFilters() {
-      this.dateMin = "";
-      this.dateMax = "";
-      this.actionSelected = "";
+      this.dateMin = null;
+      this.dateMax = null;
+      this.actionSelected = null;
+      this.getDataFromApi();
     },
     exportFile() {
       var idArray = [];
@@ -271,8 +283,14 @@ export default {
         idArray.push(e.constellation_health_id);
       });
       axios
-        .post(CONSTELLATION_EXPORT_FILE_URL, {newStatus: idArray})
-        .then((resp) => {
+        .post(CONSTELLATION_EXPORT_FILE_URL, {
+				params: {
+					requests: idArray,
+					status: this.actionSelected,
+					dateFrom: this.dateMin,
+					dateTo: this.dateMax
+				}
+			}).then((resp) => {
           const ws = utils.json_to_sheet(resp.data.dataConstellation);
           const wb = utils.book_new();
           utils.book_append_sheet(wb, ws, "Constellation Requests");
@@ -289,7 +307,6 @@ export default {
                 "Date of birth",
                 "Do you have a Yukon health care card?",
                 "Health care card number",
-                "Health care card number",
                 "YHCIP",
                 "Postal code",
                 "Prefer to be contacted",
@@ -305,6 +322,35 @@ export default {
                 "Demographic groups",
                 "Include family members",
                 "created_at",
+              ],
+            ],
+            { origin: "A1" }
+          );
+          const ws2 = utils.json_to_sheet(resp.data.dataFamilyMembers);
+          utils.book_append_sheet(wb, ws2, "Const. Health Family Members");
+          utils.sheet_add_aoa(
+            ws2,
+            [
+              [
+                "Client name",
+                "First name family member",
+                "Last name family member",
+                "Legal name family member",
+                "Pronouns family member",
+                "Date of birth family member",
+                "Do you have a Yukon health care card?",
+                "Health care card number",
+                "Which province or territory is this card from?",
+                "YHCIP family member",
+                "Relationship",
+                "Language prefer to receive services",
+                "Other language",
+                "Interpretation support",
+                "Family physician",
+                "Current family physician",
+                "Accessing health care family member",
+                "Diagnosis or history family member",
+                "Demographic groups family member",
               ],
             ],
             { origin: "A1" }

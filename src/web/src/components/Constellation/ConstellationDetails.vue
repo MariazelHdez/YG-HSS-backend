@@ -2,7 +2,6 @@
   <div class="constellation-service details">
     <v-container>
       <v-row class="mb-6" no-gutters>
-        <v-col lg="1"></v-col>
         <v-col class="d-flex align-center">
           <span class="title-service">Constellation Health Request</span>
         </v-col>
@@ -10,6 +9,7 @@
           <v-select
             style="margin-top: 30px"
             :items="builkActions"
+            class="details-select"
             solo
             label="Update status"
             append-icon="mdi-chevron-down"
@@ -24,7 +24,7 @@
         <v-col md="auto" class="d-flex align-center">
           <v-btn
             color="#F3A901"
-            class="ma-2 white--text"
+            class="ma-2 white--text details-btn"
             id="apply-btn"
             @click="submitBuilk"
           >
@@ -34,7 +34,7 @@
         <v-col md="auto" class="d-flex align-center">
           <v-btn
             color="#F3A901"
-            class="ma-2 white--text"
+            class="ma-2 white--text details-btn"
             id="apply-btn"
             @click="exportToPDF"
           >
@@ -42,10 +42,9 @@
             Export Selected
           </v-btn>
         </v-col>
-        <v-col lg="2"> </v-col>
+        <v-col lg="1"> </v-col>
       </v-row>
       <v-row no-gutters>
-        <v-col lg="1"> </v-col>
         <v-col>
           <div id="constellationPanelInformation">
             <v-expansion-panels multiple v-model="panel">
@@ -249,7 +248,7 @@
             />
           </div>
         </v-col>
-        <v-col lg="2"> </v-col>
+        <v-col lg="1"> </v-col>
       </v-row>
     </v-container>
   </div>

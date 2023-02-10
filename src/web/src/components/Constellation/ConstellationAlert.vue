@@ -1,8 +1,5 @@
 <template>
-    <v-alert
-        prominent
-        :type="alertType"
-    >
+   <v-alert prominent :type="types">
     {{this.alertMessage}}
     </v-alert>
 </template>
@@ -10,9 +7,12 @@
 
 export default {
     name: 'ConstellationAlert',
-    props: ['alertMessage', 'alertType'],
-    data: () => ({
-    }),
+    props: ['alertMessage'],
+    data() {
+      return {
+        types: "success"
+      };
+    }
 }
 
 </script>

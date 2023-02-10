@@ -46,11 +46,14 @@ export default {
         immediate: true,
         handler(newData) {
           this.hasData = false;
-          newData.datasets.forEach((ds) => {
-            if (ds.data.length > 0) {
-              this.hasData = true;
-            }
-          });
+          if(newData.datasets){
+            newData.datasets.forEach((ds) => {
+              if (ds.data.length > 0) {
+                this.hasData = true;
+              }
+            });
+          }
+          
         }
     }
   },

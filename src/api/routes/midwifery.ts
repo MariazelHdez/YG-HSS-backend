@@ -23,10 +23,8 @@ const submissionStatusRepo = new SubmissionStatusRepository();
  * @param { action_value } action value.
  * @return json
  */
-midwiferyRouter.get("/submissions/:action_id/:action_value", [
-    param("action_id").notEmpty(), 
-    param("action_value").notEmpty()
-], async (req: Request, res: Response) => {
+midwiferyRouter.get("/submissions/:action_id/:action_value",[ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
 
     try {
 
@@ -58,10 +56,8 @@ midwiferyRouter.get("/submissions/:action_id/:action_value", [
  * @param { action_value } action value.
  * @return json
  */
-midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
-    param("action_id").notEmpty(), 
-    param("action_value").notEmpty()
-], async (req: Request, res: Response) => {
+midwiferyRouter.get("/submissions/status/:action_id/:action_value", [ param("action_id").notEmpty(), 
+  param("action_value").notEmpty()], async (req: Request, res: Response) => {
 
     try {
 
@@ -85,13 +81,25 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [
  *
  * @return json
  */
-midwiferyRouter.get("/", async (req: Request, res: Response) => {
+midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
     try {
 
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
+        var sqlFilter = "midwifery_services.status <> '4'";
+
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += "  AND midwifery_services.status IN ("+status_request+")";
+        }
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
@@ -100,19 +108,21 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
             .select('midwifery_services.*',
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
-            .whereNot('midwifery_status.description', 'Closed')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+            )
+            .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
-        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().then((rows: any) => {
-            let arrayResult = Array();
+        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().whereNot('description', 'Closed')
+            .then((rows: any) => {
+                let arrayResult = Array();
+                for (let row of rows) {
+                    arrayResult.push({text: row['description'], value: row['id']});
+                }
 
-            for (let row of rows) {
-                //arrayResult[row['id']] = row['field_value'];
-                arrayResult.push({text: row['description'], value: row['id']});
-            }
-
-            return arrayResult;
+                return arrayResult;
         });
 
         midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
@@ -138,9 +148,9 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
         });
 
         _.forEach(midwifery, function(value: any, key: any) {
-            value.first_pregnancy = !value.first_pregnancy ? ( midwiferyOptions[value.first_pregnancy] == 1 ? 'Yes' : 'No'): '' ;
-            value.medical_concerns = !value.medical_concerns ? ( midwiferyOptions[value.medical_concerns] == 1 ? 'Yes' : 'No'): '' ;
-            value.major_medical_conditions = !value.major_medical_conditions ? ( midwiferyOptions[value.major_medical_conditions] == 1 ? 'Yes' : 'No'): '' ;
+            value.first_pregnancy = value.first_pregnancy ? ( midwiferyOptions[value.first_pregnancy] == 1 ? 'Yes' : 'No'): '' ;
+            value.medical_concerns = value.medical_concerns ? ( midwiferyOptions[value.medical_concerns] == 1 ? 'Yes' : 'No'): '' ;
+            value.major_medical_conditions = value.major_medical_conditions ? ( midwiferyOptions[value.major_medical_conditions] == 1 ? 'Yes' : 'No'): '' ;
 
             if(value.due_date == 0) {
                 value.due_date =  "N/A";
@@ -168,9 +178,15 @@ midwiferyRouter.get("/", async (req: Request, res: Response) => {
 
                 value.do_you_identify_with_one_or_more_of_these_groups_and_communitie = dataString.replace(/,/g, ', ');
             }
-
-            value.created_at =  value.created_at.toLocaleString("en-CA");
-            value.due_date =  value.due_date.toLocaleString("en-CA");
+            value.created_at_format =  value.created_at.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+            /*
+                value.created_at =  value.created_at.toLocaleString("en-CA");
+                value.due_date =  value.due_date.toLocaleString("en-CA");
+            */
 
             value.showUrl = "midwifery/show/"+value.id;
         });
@@ -235,17 +251,19 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         let midwifery_id = Number(req.params.midwifery_id);
         var midwifery = Object();
         var midwiferyOptions = Object();
+        var communityLocations = Object();
+        var languages = Object();
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .leftJoin('bizont_edms_midwifery.midwifery_community_locations', 'midwifery_services.community_located', 'midwifery_community_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_languages', 'midwifery_services.preferred_language', 'midwifery_languages.id')
             .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
-                    'midwifery_community_locations.description as community',
-                    'midwifery_languages.description as language',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
+                        "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
+                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+            )
             .where("midwifery_services.id", midwifery_id)
             .first();
 
@@ -259,30 +277,70 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        if(!_.isNull(midwifery.date_of_birth)) {
-            midwifery.date_of_birth = midwifery.date_of_birth.toLocaleString("en-CA");
+        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        /*if(!_.isNull(midwifery.date_of_birth)) {
+            midwifery.date_of_birth =  midwifery.date_of_birth.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.date_of_birth == 0) {
             midwifery.date_of_birth = "N/A";
         }
 
         if(!_.isNull(midwifery.when_was_the_first_day_of_your_last_period_)) {
-            midwifery.when_was_the_first_day_of_your_last_period_ =  midwifery.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA");
+            midwifery.when_was_the_first_day_of_your_last_period_ =  midwifery.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.when_was_the_first_day_of_your_last_period_ == 0) {
             midwifery.when_was_the_first_day_of_your_last_period_ =  "N/A";
         }
 
         if(!_.isNull(midwifery.due_date)) {
-            midwifery.due_date =  midwifery.due_date.toLocaleString("en-CA");
+            midwifery.due_date =  midwifery.due_date.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
         }else if(midwifery.due_date == 0) {
             midwifery.due_date =  "N/A";
+        }*/
+
+        if(!_.isNull(midwifery.community_located)) {
+            if(communityLocations.hasOwnProperty(midwifery.community_located)){
+                midwifery.community = communityLocations[midwifery.community_located];
+            }else{
+                midwifery.community = midwifery.community_located;
+            }
         }
 
-        if(midwifery.community == null) {
-            midwifery.community = midwifery.community_located;
-        }
-
-        if(midwifery.language == null) {
-            midwifery.language = midwifery.preferred_language;
+        if(!_.isNull(midwifery.preferred_language)) {
+            if(languages.hasOwnProperty(midwifery.preferred_language)){
+                midwifery.language = languages[midwifery.preferred_language];
+            }else{
+                midwifery.language = midwifery.preferred_language;
+            }
         }
 
         /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
@@ -497,27 +555,37 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_status.description IN ('New/Unread', 'Entered', 'Declined')";
+        var sqlFilter = "midwifery_services.status <> 4";
 
         if(requests.length > 0){
             sqlFilter += " AND midwifery_services.id IN ("+requests+")";
-        }else if(dateFrom !== null && dateTo !== null){
-            sqlFilter += " AND midwifery_services.created_at >= '"+dateFrom+"' AND midwifery_services.created_at <= '"+dateTo+"'";
         }
+        
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        if(!_.isEmpty(status_request)){
+           sqlFilter += " AND midwifery_services.status IN ( "+status_request+")";
+        }
+
 
         midwifery = await db("bizont_edms_midwifery.midwifery_services")
             .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_community_locations', 'midwifery_services.community_located', 'midwifery_community_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_languages', 'midwifery_services.preferred_language', 'midwifery_languages.id')
             .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
             .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
-                    'midwifery_community_locations.description as community',
-                    'midwifery_languages.description as language',
                     'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact')
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
+                    "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
+                    "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date,"+
+                    "to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                    "to_char(midwifery_services.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
+            )
             .whereRaw(sqlFilter);
 
 
@@ -533,6 +601,8 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
 
         var communities = Object();
         var contact = Object();
+        var communityLocations = Object();
+        var languages = Object();
 
         communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
             let arrayResult = Object();
@@ -553,32 +623,76 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        midwifery.forEach(function (value: any) {
+        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+            let arrayResult = Object();
 
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        midwifery.forEach(function (value: any) {
+            /*
             if(!_.isNull(value.date_of_birth)) {
-                value.date_of_birth = value.date_of_birth.toLocaleString("en-CA");
+                value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.date_of_birth == 0) {
                 value.date_of_birth = "N/A";
             }
 
             if(!_.isNull(value.when_was_the_first_day_of_your_last_period_)) {
-                value.when_was_the_first_day_of_your_last_period_ =  value.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA");
+                value.when_was_the_first_day_of_your_last_period_ =  value.when_was_the_first_day_of_your_last_period_.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.when_was_the_first_day_of_your_last_period_ == 0) {
                 value.when_was_the_first_day_of_your_last_period_ =  "N/A";
             }
 
             if(!_.isNull(value.due_date)) {
-                value.due_date =  value.due_date.toLocaleString("en-CA");
+                value.due_date =  value.due_date.toLocaleString("en-CA", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
             }else if(value.due_date == 0) {
                 value.due_date =  "N/A";
             }
 
-            if(value.community == null) {
-                value.community = value.community_located;
+            value.created_at =   value.created_at.toLocaleString("en-CA");
+            value.updated_at =   value.updated_at.toLocaleString("en-CA");
+            */
+
+            if(!_.isNull(value.community_located)) {
+                if(communityLocations.hasOwnProperty(value.community_located)){
+                    value.community = communityLocations[value.community_located];
+                }else{
+                    value.community = value.community_located;
+                }
             }
 
-            if(value.language == null) {
-                value.language = value.preferred_language;
+            if(!_.isNull(value.preferred_language)) {
+                if(languages.hasOwnProperty(value.preferred_language)){
+                    value.language = languages[value.preferred_language];
+                }else{
+                    value.language = value.preferred_language;
+                }
             }
 
             if(!value.preferred_name || value.preferred_name == "") {
@@ -586,47 +700,47 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             }
 
             if(!_.isNull(value.okay_to_leave_message)){
-                value.okay_to_leave_message = midwiferyOptions[midwifery.okay_to_leave_message];
+                value.okay_to_leave_message = midwiferyOptions[value.okay_to_leave_message];
             }
 
             if(!_.isNull(value.yukon_health_insurance)){
-                value.yukon_health_insurance = midwiferyOptions[midwifery.yukon_health_insurance];
+                value.yukon_health_insurance = midwiferyOptions[value.yukon_health_insurance];
             }
 
             if(!_.isNull(value.need_interpretation)){
-                value.need_interpretation = midwiferyOptions[midwifery.need_interpretation];
+                value.need_interpretation = midwiferyOptions[value.need_interpretation];
             }
 
             if(!_.isNull(value.date_confirmed)){
-                value.date_confirmed = midwiferyOptions[midwifery.date_confirmed];
+                value.date_confirmed = midwiferyOptions[value.date_confirmed];
             }
 
             if(!_.isNull(value.first_pregnancy)){
-                value.first_pregnancy = midwiferyOptions[midwifery.first_pregnancy];
+                value.first_pregnancy = midwiferyOptions[value.first_pregnancy];
             }
 
             if(!_.isNull(value.complications_with_previous)){
-                value.complications_with_previous = midwiferyOptions[midwifery.complications_with_previous];
+                value.complications_with_previous = midwiferyOptions[value.complications_with_previous];
             }
 
             if(!_.isNull(value.midwife_before)){
-                value.midwife_before = midwiferyOptions[midwifery.midwife_before];
+                value.midwife_before = midwiferyOptions[value.midwife_before];
             }
 
             if(!_.isNull(value.medical_concerns)){
-                value.medical_concerns = midwiferyOptions[midwifery.medical_concerns];
+                value.medical_concerns = midwiferyOptions[value.medical_concerns];
             }
 
             if(!_.isNull(value.have_you_had_primary_health_care)){
-                value.have_you_had_primary_health_care = midwiferyOptions[midwifery.have_you_had_primary_health_care];
+                value.have_you_had_primary_health_care = midwiferyOptions[value.have_you_had_primary_health_care];
             }
 
             if(!_.isNull(value.family_physician)){
-                value.family_physician = midwiferyOptions[midwifery.family_physician];
+                value.family_physician = midwiferyOptions[value.family_physician];
             }
 
             if(!_.isNull(value.major_medical_conditions)){
-                value.major_medical_conditions = midwiferyOptions[midwifery.major_medical_conditions];
+                value.major_medical_conditions = midwiferyOptions[value.major_medical_conditions];
             }
 
             if(!_.isEmpty(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
@@ -705,7 +819,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         var midwifery_id = req.body.params.requests;
         var status_id = req.body.params.requestStatus;
 
-        var updateStatus = await db("bizont_edms_midwifery.midwifery_services").update({status: status_id}).whereIn("id", midwifery_id);
+        var updateStatus = await db("bizont_edms_midwifery.midwifery_services").update({status: status_id}).whereIn("midwifery_services.id", midwifery_id);
 
         if(updateStatus) {
             let type = "success";
@@ -718,7 +832,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         console.log(e);  // debug if needed
         res.send( {
             status: 400,
-            message: 'Request could not be processed'
+            message: 'Request could not be processed change'
         });
     }
 });
@@ -777,7 +891,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
         names.forEach(function (value: any, key: any) {
             if(!groups.hasOwnProperty(value)){
                 others = names[key];
-                //names.splice(key, 1);
+                names.splice(key, 1);
             }
         });
 
@@ -796,7 +910,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
         names.forEach(function (value: any, key: any) {
             if(!contact.hasOwnProperty(value)){
                 others = names[key];
-                //names.splice(key, 1);
+                names.splice(key, 1);
             }
         });
 

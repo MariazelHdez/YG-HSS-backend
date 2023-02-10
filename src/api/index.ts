@@ -48,7 +48,7 @@ app.use("/api/midwifery", midwiferyRouter);
 app.use("/api/hipma", hipmaRouter);
 app.use("/api/general", generalRouter);
 
-let baseWebPath = "/api";
+let baseWebPath = "/";
 
 
 /*if (config.NODE_ENV !== "production")

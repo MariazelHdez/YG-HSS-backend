@@ -5,6 +5,68 @@
 
         <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
+        <Notifications ref="notifier"></Notifications>
+
+        <v-row>
+          <v-col
+            class='d-flex'
+            cols="6"
+            sm="6"
+            md="6"
+          >
+            <v-menu
+                ref="menu"
+                v-model="menu"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+            >
+                <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                        v-model="date"
+                        label="From:"
+                        prepend-icon="mdi-calendar"
+                        v-bind="attrs"
+                        v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-date-picker
+                    v-model="date"
+                    no-title
+                    @input="menu = false"
+                    @change="updateDate"
+                ></v-date-picker>
+            </v-menu>
+            <v-menu
+                ref="menuEnd"
+                v-model="menuEnd"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+            >
+                <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                        v-model="dateEnd"
+                        label="To:"
+                        prepend-icon="mdi-calendar"
+                        v-bind="attrs"
+                        v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-date-picker
+                    v-model="dateEnd"
+                    no-title
+                    @input="menuEnd = false"
+                    @change="updateDate"
+                ></v-date-picker>
+            </v-menu>
+        </v-col>
+        <v-col sm="auto" v-if="removeFilters">
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+        </v-col>
+      </v-row>
         <v-row 
             align="center" 
             class="container-actions"
@@ -34,10 +96,10 @@
             >
                 <v-btn
                     color="#F3A901"
-                    class="ma-2 white--text"
+                    class="ma-2 white--text apply-btn"
                     :disabled="applyDisabled"
+                    :loading="loadingApply"
                     @click="changeStatus"
-                    id="apply-btn"
                 >
                     Apply
                 </v-btn>
@@ -69,6 +131,7 @@
 <script>
 const axios = require("axios");
 import HipmaAlert from './HipmaAlert.vue';
+import Notifications from "../Notifications.vue";
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
 
@@ -76,6 +139,10 @@ export default {
   name: "HipmaIndex",
   data: () => ({
     loading: false,
+    date: null,
+    menu: false,
+    dateEnd: null,
+    menuEnd: false,
     items: [],
     alertMessage: "",
     alertType: "",
@@ -89,6 +156,8 @@ export default {
         value: "closed"
     }],
     selectedStatus: null,
+    loader: null,
+    loadingApply: false,
     headers: [
         { text: "Confirmation Number", value: "confirmation_number", sortable: true},
         { text: "Request Type", value: "HipmaRequestType", sortable: true},
@@ -102,7 +171,8 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    HipmaAlert
+    HipmaAlert,
+    Notifications
   },
   watch: {
     options: {
@@ -117,23 +187,57 @@ export default {
       },
       deep: true,
     },
+    loader () {
+        const l = this.loader
+        this[l] = !this[l]
+
+        setTimeout(() => (this[l] = false), 2000)
+
+        this.loader = null
+    },
   },
     created(){
-        if (typeof this.$route.query.message !== 'undefined' && typeof this.$route.query.type !== 'undefined'){
-            this.flagAlert = true;
-            this.alertMessage = this.$route.query.message;
-            this.alertType = this.$route.query.type;
-        }
     },
     mounted() {
+
+        if (typeof this.$route.query.message !== undefined && typeof this.$route.query.type !== undefined){
+            if(this.$route.query.type == "success"){
+                this.$refs.notifier.showSuccess(this.$route.query.message);
+            }else{
+                this.flagAlert = true;
+                this.alertMessage = this.$route.query.message;
+                this.alertType = this.$route.query.type;
+            }
+        }
+
         this.getDataFromApi();
     },
     methods: {
+        updateDate(){
+            if(this.date !== null && this.dateEnd !== null){
+            this.getDataFromApi();
+            }
+        },
+        removeFilters() {
+            return this.date || this.dateEnd ;
+        },
+        resetInputs() {
+            this.date = null;
+            this.dateEnd = null;
+            this.selectedStatus = null;
+            this.applyDisabled = true;
+            this.getDataFromApi();
+        },
         getDataFromApi() {
             this.loading = true;
 
             axios
-            .get(HIPMA_URL)
+            .post(HIPMA_URL, {
+                params: {
+                    dateFrom: this.date,
+                    dateTo: this.dateEnd,
+                }
+            })
             .then((resp) => {
                 this.items = resp.data.data;
                 //this.pagination.totalLength = resp.data.meta.count;
@@ -158,6 +262,8 @@ export default {
             this.applyDisabled = false;
         },
         changeStatus(){
+            this.loader = 'loadingApply';
+            this.applyDisabled = false;
             let requests = [];
 			let checked = this.selected;
 

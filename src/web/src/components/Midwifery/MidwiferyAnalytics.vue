@@ -50,21 +50,7 @@ const getSubmissionsDataFromApi = (actionId, actionVal) => {
   axios
   .get(`${MIDWIFERY_SUBMISSIONS_URL}/${actionId}/${actionVal}`)
   .then((resp) => {
-    const curData = resp.data
-    const datasets = [];
-    const labels = Object.entries(curData.labels).map((x) => x[0]);
-    Object.entries(curData.data).forEach((g) => {
-      const data = curData.data[g[0] ?? 0] ?? [];
-      if (data) {
-        const ds = {
-          label: 'Midwifery',
-          data: data.map((x) => x.submissions),
-          backgroundColor:  data.map((x) => x.color),
-        };
-        datasets.push(ds);
-      }
-    })
-    sData.value = setSubmissionsData(datasets, labels);
+    sData.value = setSubmissionsData(resp);
   })
   .catch((err) => console.error(err));
 };
