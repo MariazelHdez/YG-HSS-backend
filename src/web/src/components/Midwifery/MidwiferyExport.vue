@@ -10,16 +10,16 @@
 				md="8"
 				class='d-flex'
 			>
-			  <v-select
-            :items="itemsStatus"
-            :menu-props="{ maxHeight: '400' }"
-            label="Select"
-            multiple
-            persistent-hint
-           v-model="selectedStatus"
-      			@change="changeSelect"
-      			id="export-status-select"
-          ></v-select>
+			<v-select
+				:items="itemsStatus"
+				:menu-props="{ maxHeight: '400' }"
+				label="Select"
+				multiple
+				persistent-hint
+				v-model="selectedStatus"
+				@change="changeSelect"
+				id="export-status-select"
+			></v-select>
 				<v-menu
 					ref="menu"
 					v-model="menu"
@@ -69,7 +69,7 @@
 					></v-date-picker>
 				</v-menu>
 				<v-col sm="auto" id="reset-btn">
-              <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+			<v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
         </v-col>
 				<v-btn
 					:loading="loadingExport"
@@ -201,23 +201,23 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-        this.getDataFromApi();
-      }
-		},
-		changeSelect(){
-      this.getDataFromApi();
+			this.getDataFromApi();
+		}
+	},
+	changeSelect(){
+		this.getDataFromApi();
     },
 		getDataFromApi() {
 		this.loading = true;
 
 			axios
 			.post(MIDWIFERY_URL, {
-  				params: {
-  					dateFrom: this.date,
-  					dateTo: this.dateEnd,
-  					status: this.selectedStatus
-  				}
-  			})
+				params: {
+					dateFrom: this.date,
+					dateTo: this.dateEnd,
+					status: this.selectedStatus
+				}
+			})
 			.then((resp) => {
 				this.items = resp.data.data;
 				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);

@@ -105,8 +105,9 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
                     'hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
                     'hipma_copy_health_information.description as CopyHealthInformation',
                     'hipma_situations.description as HipmaSituations',
-                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName")
-                    )
+                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
+                        "to_char(health_information.created_at, 'YYYY-MM-DD') as created_at")
+            )
             .orderBy('health_information.created_at', 'asc');
 
         hipma.forEach(function (value: any) {
@@ -115,7 +116,8 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
                 month: "2-digit",
                 day: "2-digit",
             });
-            value.created_at =  value.created_at.toLocaleString("en-CA");
+
+            //value.created_at =  value.created_at.toLocaleString("en-CA");
 
             value.showUrl = "hipma/show/"+value.id;
         });
@@ -572,7 +574,12 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                         'bizont_edms_hipma.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
                         'bizont_edms_hipma.hipma_copy_health_information.description as CopyHealthInformation',
                         'bizont_edms_hipma.hipma_situations.description as HipmaSituations',
-                        'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest')
+                        'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest',
+                    db.raw("to_char(health_information.date_from_, 'YYYY-MM-DD') as date_from_, "+
+                        "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_to_,"+
+                        "to_char(health_information.created_at, 'YYYY-MM-DD') as created_at,"+
+                        "to_char(health_information.updated_at, 'YYYY-MM-DD') as updated_at")
+                )
                 .whereRaw(sqlFilter);
 
         var socialServices = Object();
@@ -599,7 +606,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         });
 
         hipma.forEach(function (value: any) {
-
+            /*
             if(!_.isNull(value.date_from_)) {
                 value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
                     year: "numeric",
@@ -626,6 +633,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 
             value.created_at =   value.created_at.toLocaleString("en-CA");
             value.updated_at =   value.updated_at.toLocaleString("en-CA");
+            */
 
             if(value.date_range_is_unknown_or_i_need_help_identifying_the_date_range == 1){
                 value.needHelpIdentifyingDataRange = "YES";

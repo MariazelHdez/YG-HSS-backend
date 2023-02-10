@@ -1,121 +1,125 @@
 <template>
 	<div class="hipma-service details">
-    <v-container>
-      <v-row class="mb-6" no-gutters>
-        <v-col class="d-flex align-center">
-          <span class="title-service">Hipma Requests</span>
-        </v-col>
-        <v-col
-  			  cols="10"
-          sm="6"
-          md="10"
-          lg="2"
-          class="d-flex align-center"
-        >
-  				<v-dialog
-  				  v-model="dialog"
-            width="500"
-            >
-            <template v-slot:activator="{ on, attrs }">
-            <v-btn
-  							color="#F3A901"
-  							class="pull-right ma-2 white--text apply-btn"
-  							dark
-  							v-bind="attrs"
-  							v-on="on"
-  						>
-  
-  						Mark as closed
-  
-  						<v-icon
-  							right
-  							dark
-  						>
-  						mdi-check-circle-outline
-  						</v-icon>
-  
-  						</v-btn>
-  					</template>
-  
-  					<v-card>
-  						<v-card-title class="text-h5 white lighten-2">
-  							Mark as closed
-  						</v-card-title>
-  
-  						<v-card-text>
-  							Are you sure you want to mark this entry as closed?
-  						</v-card-text>
-  
-  						<v-divider></v-divider>
-  
-  						<v-card-actions>
-  							<v-spacer></v-spacer>
-  							<v-btn
-  							color="#757575"
-  							text
-  							@click="dialog = false"
-  							>
-  							No
-  							</v-btn>
-  
-  							<v-btn
-  							color="primary"
-  							text
-  							@click="changeStatus()"
-  							>
-  							Yes
-  							</v-btn>
-  						</v-card-actions>
-  					</v-card>
-  				</v-dialog>
-  			</v-col>
-  
-  			<v-col md="auto" class="d-flex align-center">
-  				<v-btn
-  					color="#F3A901"
-  					class="pull-right ma-2 white--text apply-btn"
-  					:loading="loadingExport"
-  					:disabled="loadingExport"
-  					@click="exportToPDF"
-  				>
-  
-  					Export selected
-  
-  					<v-icon
-  						right
-  						dark
-  					>
-  					mdi-file-move
-  					</v-icon>
-  				</v-btn>
-          </v-col>
-          <v-col lg="1"> </v-col>
-      </v-row>
-    </v-container>
-    <v-row no-gutters>
-      <v-col id="hipmaPanelInformation">
-        <HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+		<v-container>
+			<v-row class="mb-6" no-gutters>
+				<v-col class="d-flex align-center">
+					<span class="title-service">Hipma Requests</span>
+				</v-col>
+				<v-col
+					cols="10"
+					sm="6"
+					md="10"
+					lg="2"
+					class="d-flex align-center"
+				>
+					<v-dialog
+						v-model="dialog"
+						width="500"
+					>
+						<template v-slot:activator="{ on, attrs }">
+						<v-btn
+								color="#F3A901"
+								class="pull-right ma-2 white--text apply-btn"
+								dark
+								v-bind="attrs"
+								v-on="on"
+							>
 
-        <HipmaBehalf
-          v-if="itemsHipma.HipmaSituations
-          || itemsHipma.first_name_behalf
-          || itemsHipma.last_name_behalf
-          || itemsHipma.company_or_organization_optional_behalf
-          || itemsHipma.address_behalf
-          || itemsHipma.city_or_town_behalf
-          || itemsHipma.postal_code_behalf
-          || itemsHipma.email_address_behalf"
-          v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"
-          v-bind:panelModel="panelModel"
-        />
+							Mark as closed
 
-        <HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+							<v-icon
+								right
+								dark
+							>
+							mdi-check-circle-outline
+							</v-icon>
 
-        <HipmaAttachments v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles" v-bind:panelModel="panelModel"/>
-      </v-col>
-      <v-col lg="1"> </v-col>
-      </v-row>
-    </v-container>
+							</v-btn>
+						</template>
+
+							<v-card>
+								<v-card-title class="text-h5 white lighten-2">
+									Mark as closed
+								</v-card-title>
+
+								<v-card-text>
+									Are you sure you want to mark this entry as closed?
+								</v-card-text>
+
+								<v-divider></v-divider>
+
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn
+									color="#757575"
+									text
+									@click="dialog = false"
+									>
+									No
+									</v-btn>
+
+									<v-btn
+									color="primary"
+									text
+									@click="changeStatus()"
+									>
+									Yes
+									</v-btn>
+								</v-card-actions>
+							</v-card>
+					</v-dialog>
+				</v-col>
+
+				<v-col md="auto" class="d-flex align-center">
+					<v-btn
+						color="#F3A901"
+						class="pull-right ma-2 white--text apply-btn"
+						:loading="loadingExport"
+						:disabled="loadingExport"
+						@click="exportToPDF"
+					>
+
+						Export selected
+
+						<v-icon
+							right
+							dark
+						>
+						mdi-file-move
+						</v-icon>
+					</v-btn>
+				</v-col>
+				<v-col lg="1"> </v-col>
+			</v-row>
+		</v-container>
+		<v-container>
+			<v-row no-gutters>
+				<v-col id="hipmaPanelInformation">
+					<HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+
+					<HipmaBehalf
+						v-if="itemsHipma.HipmaSituations
+						|| itemsHipma.first_name_behalf
+						|| itemsHipma.last_name_behalf
+						|| itemsHipma.company_or_organization_optional_behalf
+						|| itemsHipma.address_behalf
+						|| itemsHipma.city_or_town_behalf
+						|| itemsHipma.postal_code_behalf
+						|| itemsHipma.email_address_behalf"
+						v-bind:hipma="itemsHipma" v-bind:hipmaFiles="itemsHipmaFiles"
+						v-bind:panelModel="panelModel"
+					/>
+
+					<HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
+
+					<HipmaAttachments v-bind:hipma="itemsHipma"
+						v-bind:hipmaFiles="itemsHipmaFiles"
+						v-bind:panelModel="panelModel"
+					/>
+				</v-col>
+				<v-col lg="1"> </v-col>
+			</v-row>
+		</v-container>
 	</div>
 </template>
 
@@ -207,7 +211,6 @@ export default {
 				}
             })
 			.then((resp) => {
-
 				this.$router.push({
 					path: '/hipma',
 					query: { message: resp.data.message, type: resp.data.type}
