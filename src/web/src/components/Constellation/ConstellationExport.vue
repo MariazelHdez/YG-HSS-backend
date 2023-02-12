@@ -2,7 +2,7 @@
   <div class="constellation-service">
     <span class="title-service">Constellation Health Requests</span>
 
-    <ConstellationAlert
+    <ModuleAlert
       v-show="flagAlert"
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
@@ -109,7 +109,7 @@
 
 <script>
 const axios = require("axios");
-import ConstellationAlert from "./ConstellationAlert.vue";
+import ModuleAlert from "../General/ModuleAlert.vue";
 import { CONSTELLATION_URL } from "../../urls.js";
 import { CONSTELLATION_EXPORT_FILE_URL } from "../../urls.js";
 import { utils, writeFileXLSX } from "xlsx";
@@ -196,7 +196,7 @@ export default {
     },
   },
   components: {
-    ConstellationAlert,
+    ModuleAlert,
   },
   watch: {
     options: {

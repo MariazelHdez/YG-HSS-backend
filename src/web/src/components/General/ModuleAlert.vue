@@ -9,7 +9,7 @@
 <script>
 
 export default {
-    name: 'HipmaAlert',
+    name: 'ModuleAlert',
     props: ['alertMessage', 'alertType'],
     data: () => ({
     }),

@@ -3,7 +3,7 @@
     <div class="midwifery-service">
         <span class="title-service">Midwifery Requests</span>
 
-        <MidwiferyAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <v-row
             align="center"
@@ -68,7 +68,7 @@
 
 <script>
 const axios = require("axios");
-import MidwiferyAlert from './MidwiferyAlert.vue';
+import ModuleAlert from '../General/ModuleAlert.vue';
 import { MIDWIFERY_URL } from "../../urls.js";
 import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 
@@ -105,7 +105,7 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    MidwiferyAlert
+    ModuleAlert
   },
   watch: {
     options: {
