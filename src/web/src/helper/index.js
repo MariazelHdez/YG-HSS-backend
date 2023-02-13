@@ -33,7 +33,6 @@ const setSubmissionsData = (resp) => {
     const labels = Object.entries(curData.labels).map((x) => x[0]);
     Object.entries(curData.data).forEach((g) => {
       const data = curData.data[g[0] ?? 0] ?? [];
-      console.log("data", data);
       if (data) {
         const ds = {
           label:  g[1] &&  g[1][0] && g[1][0].department ?  g[1][0].department : g[0],
@@ -50,8 +49,6 @@ const setSubmissionsData = (resp) => {
         datasets.push(ds);
       }
     });
-    console.log(labels);
-    console.log("datasets", datasets.map((x) => ({label: x.label, data: x.data, bkgColor: x.backgroundColor})));
     return {
         labels: labels,
         datasets: datasets

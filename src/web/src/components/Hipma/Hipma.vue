@@ -3,7 +3,7 @@
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
 
-        <HipmaAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <Notifications ref="notifier"></Notifications>
 
@@ -130,8 +130,8 @@
 
 <script>
 const axios = require("axios");
-import HipmaAlert from './HipmaAlert.vue';
 import Notifications from "../Notifications.vue";
+import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
 
@@ -171,8 +171,8 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    HipmaAlert,
     Notifications
+    ModuleAlert
   },
   watch: {
     options: {

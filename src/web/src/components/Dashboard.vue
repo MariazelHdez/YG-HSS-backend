@@ -11,7 +11,7 @@
             
       </div>
       <div class="col-md-5">
-       
+        <ActivityTimeline :title="'Activity Timeline'" :data="atData"></ActivityTimeline>
       </div>
     </div>
   </div>
@@ -21,9 +21,10 @@
 const axios = require("axios");
 import StatusChart from "./Chart/Status.vue";
 import SubmissionsChart from "./Chart/Submissions.vue";
+import ActivityTimeline from "./General/ActivityTimeline.vue";
 import { ref } from "vue";
 import { setSubmissionsStatusData, setSubmissionsData } from "../helper/index";
-import { SUBMISSION_STATUS_URL, SUBMISSION_URL } from "../urls";
+import { SUBMISSION_STATUS_URL, SUBMISSION_URL, AUDIT_TIMELINE_URL } from "../urls";
 
 const labelColors = [
   { label: "New/Unread", color: "#41b883" },
@@ -33,6 +34,7 @@ const labelColors = [
   {label: 'Open', color: '#0097A9'}
 ];
 
+const atData = ref([]);
 const scData = ref({});
 const sData = ref({});
 scData.value = setSubmissionsStatusData([0, 0, 0, 0], labelColors);
@@ -58,15 +60,26 @@ const getSubmissionsDataFromApi = (actionId, actionVal) => {
   .catch((err) => console.error(err));
 };
 
+const getAuditTimelineDataFromApi = () => {
+  axios
+  .get(`${AUDIT_TIMELINE_URL}`)
+  .then((resp) => {    
+    atData.value = resp.data.data;
+  })
+  .catch((err) => console.error(err));
+}
+
 export default {
   name: "Home",
   components: {
     StatusChart,
-    SubmissionsChart
+    SubmissionsChart,
+    ActivityTimeline
   },
   data: () => ({
     statusData: scData,
-    submissionsData: sData
+    submissionsData: sData,
+    atData: atData
   }),
   methods: {
     scFilterSelected: (val) => {
@@ -81,6 +94,7 @@ export default {
   mounted() {
     getSubmissionsStatusDataFromApi("week", "W20230130");
     getSubmissionsDataFromApi("week", "W20230130");
+    getAuditTimelineDataFromApi();
   },
 };
 </script>

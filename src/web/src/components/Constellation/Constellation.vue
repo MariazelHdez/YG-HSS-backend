@@ -1,13 +1,11 @@
 <template>
-    <div class="constellation-service">
-        <span class="title-service">Constellation Health Requests</span>
-
-    <ConstellationAlert
-        v-show="flagAlert"
-        v-bind:alertMessage="alertMessage"
-        v-bind:alertType="alertType"
+  <div class="constellation-service">
+    <span class="title-service">Constellation Health Requests</span>
+    <ModuleAlert
+      v-show="flagAlert"
+      v-bind:alertMessage="alertMessage"
+      v-bind:alertType="alertType"
     />
-
     <v-row>
         <v-col
             class='d-flex'
@@ -132,12 +130,12 @@
             <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
         </template>
     </v-data-table>
-    </div>
+  </div>
 </template>
 
 <script>
 const axios = require("axios");
-import ConstellationAlert from "./ConstellationAlert.vue";
+import ModuleAlert from "../General/ModuleAlert.vue";
 import { CONSTELLATION_URL } from "../../urls.js";
 
 export default {
@@ -190,7 +188,7 @@ export default {
     alignments: "center",
   }),
   components: {
-    ConstellationAlert,
+    ModuleAlert,
   },
   watch: {
     options: {
