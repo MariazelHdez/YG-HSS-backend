@@ -21,6 +21,7 @@ export const HIPMA_CHANGE_STATUS_URL = `${HIPMA_URL}/changeStatus/`
 export const HIPMA_EXPORT_FILE_URL = `${HIPMA_URL}/export`;
 export const HIPMA_SUBMISSIONS_URL = `${HIPMA_URL}/submissions`
 export const HIPMA_STATUS_URL = `${HIPMA_SUBMISSIONS_URL}/status`
+export const HIPMA_DELETE_FILE = `${HIPMA_URL}/deleteFile/`;
 
 export const GENERAL_URL = `${config.apiBaseUrl}/api/general`;
 export const SUBMISSION_URL = `${GENERAL_URL}/submissions`
