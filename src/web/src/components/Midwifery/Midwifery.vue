@@ -2,11 +2,8 @@
 <template>
     <div class="midwifery-service">
         <span class="title-service">Midwifery Requests</span>
-
         <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
         <Notifications ref="notifier"></Notifications>
-
         <v-row>
             <v-col
                 class='d-flex'
@@ -183,23 +180,23 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    Notifications
+    Notifications,
     ModuleAlert
   },
   watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
+      options: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
-    },
-    search: {
-      handler() {
-        this.getDataFromApi();
+      search: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
     },
-  },
     created(){
     },
     mounted() {
@@ -208,7 +205,6 @@ export default {
             if(this.$route.query.type == "success"){
                 this.$refs.notifier.showSuccess(this.$route.query.message);
             }else{
-                this.flagAlert = true;
                 this.alertMessage = this.$route.query.message;
                 this.alertType = this.$route.query.type;
             }
@@ -267,6 +263,7 @@ export default {
             this.date = null;
             this.dateEnd = null;
             this.statusSelected = null;
+            this.selectedStatus = null;
             this.applyDisabled = true;
             this.getDataFromApi();
         },

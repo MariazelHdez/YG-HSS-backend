@@ -2,71 +2,69 @@
 <template>
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
-
         <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
         <Notifications ref="notifier"></Notifications>
 
         <v-row>
-          <v-col
-            class='d-flex'
-            cols="6"
-            sm="6"
-            md="6"
-          >
-            <v-menu
-                ref="menu"
-                v-model="menu"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
+            <v-col
+                class='d-flex'
+                cols="6"
+                sm="6"
+                md="6"
             >
-                <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
+                <v-menu
+                    ref="menu"
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                >
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                            v-model="date"
+                            label="From:"
+                            prepend-icon="mdi-calendar"
+                            v-bind="attrs"
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
                         v-model="date"
-                        label="From:"
-                        prepend-icon="mdi-calendar"
-                        v-bind="attrs"
-                        v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-date-picker
-                    v-model="date"
-                    no-title
-                    @input="menu = false"
-                    @change="updateDate"
-                ></v-date-picker>
-            </v-menu>
-            <v-menu
-                ref="menuEnd"
-                v-model="menuEnd"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-            >
-                <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
+                        no-title
+                        @input="menu = false"
+                        @change="updateDate"
+                    ></v-date-picker>
+                </v-menu>
+                <v-menu
+                    ref="menuEnd"
+                    v-model="menuEnd"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                >
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                            v-model="dateEnd"
+                            label="To:"
+                            prepend-icon="mdi-calendar"
+                            v-bind="attrs"
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
                         v-model="dateEnd"
-                        label="To:"
-                        prepend-icon="mdi-calendar"
-                        v-bind="attrs"
-                        v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-date-picker
-                    v-model="dateEnd"
-                    no-title
-                    @input="menuEnd = false"
-                    @change="updateDate"
-                ></v-date-picker>
-            </v-menu>
-        </v-col>
-        <v-col sm="auto" v-if="removeFilters">
-          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
-        </v-col>
-      </v-row>
+                        no-title
+                        @input="menuEnd = false"
+                        @change="updateDate"
+                    ></v-date-picker>
+                </v-menu>
+            </v-col>
+            <v-col sm="auto" v-if="removeFilters">
+                <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+            </v-col>
+        </v-row>
         <v-row 
             align="center" 
             class="container-actions"
@@ -121,9 +119,9 @@
             :value="selected"
             @toggle-select-all="selectAll"
         >
-        <template v-slot:[`item.showUrl`]="{ item }">
-            <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
-        </template>
+            <template v-slot:[`item.showUrl`]="{ item }">
+                <v-icon @click="showDetails(item.showUrl)">mdi-eye</v-icon>
+            </template>
         </v-data-table>
     </div>
 </template>
@@ -131,6 +129,7 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
+
 import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
@@ -171,31 +170,31 @@ export default {
     iteamsPerPage: 10,
   }),
   components: {
-    Notifications
+    Notifications,
     ModuleAlert
   },
   watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
+      options: {
+          handler() {
+          this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
-    },
-    search: {
-      handler() {
-        this.getDataFromApi();
+      search: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
-    },
-    loader () {
-        const l = this.loader
-        this[l] = !this[l]
+      loader () {
+          const l = this.loader
+          this[l] = !this[l]
 
-        setTimeout(() => (this[l] = false), 2000)
+          setTimeout(() => (this[l] = false), 2000)
 
-        this.loader = null
+          this.loader = null
+      },
     },
-  },
     created(){
     },
     mounted() {
@@ -204,7 +203,6 @@ export default {
             if(this.$route.query.type == "success"){
                 this.$refs.notifier.showSuccess(this.$route.query.message);
             }else{
-                this.flagAlert = true;
                 this.alertMessage = this.$route.query.message;
                 this.alertType = this.$route.query.type;
             }
@@ -215,7 +213,7 @@ export default {
     methods: {
         updateDate(){
             if(this.date !== null && this.dateEnd !== null){
-            this.getDataFromApi();
+                this.getDataFromApi();
             }
         },
         removeFilters() {
@@ -282,7 +280,6 @@ export default {
             .then((resp) => {
                 this.getDataFromApi();
                 this.selectedStatus = null;
-                this.flagAlert = true;
                 this.applyDisabled = true;
                 this.alertMessage = resp.data.message;
                 this.alertType = resp.data.type;

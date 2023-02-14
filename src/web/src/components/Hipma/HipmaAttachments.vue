@@ -266,6 +266,7 @@
 <script>
 const axios = require("axios");
 import { HIPMA_DOWNLOAD_FILE_URL } from "../../urls.js";
+import { HIPMA_DELETE_FILE } from "../../urls.js";
 
 export default {
     name: 'HipmaAttachments',
@@ -276,14 +277,39 @@ export default {
 		}
 	},
 	methods: {
+		generateDownload(file){
+			axios({
+				url: '/'+file,
+				method: 'GET',
+				responseType: 'blob',
+			}).then((response) => {
+				// create file link in browser's memory
+				const href = URL.createObjectURL(response.data);
+
+				// create "a" HTML element with href to file & click
+				const link = document.createElement('a');
+				link.href = href;
+				link.setAttribute('download', file);
+				document.body.appendChild(link);
+				link.click();
+
+				// clean up "a" element & remove ObjectURL
+				document.body.removeChild(link);
+				URL.revokeObjectURL(href);
+
+				//delete generated file for download
+				axios.post(HIPMA_DELETE_FILE, {
+					params: {
+						file: file
+					}
+				});
+			});
+		},
 		downloadFile (idDownload) {
 			axios
 			.get(HIPMA_DOWNLOAD_FILE_URL+idDownload)
 			.then((resp) => {
-				var a = document.createElement("a"); //Create dummy <a>
-				a.href = "data:file/"+resp.data.fileType+";base64," + resp.data.fileData;
-				a.download =  resp.data.fileName;
-				a.click(); //Downloaded file
+				this.generateDownload(resp.data.fileName);
 			})
 			.catch((err) => console.error(err))
 			.finally(() => {

@@ -6,6 +6,7 @@
       v-bind:alertMessage="alertMessage"
       v-bind:alertType="alertType"
     />
+    <Notifications ref="notifier"></Notifications>
     <v-row>
         <v-col
             class='d-flex'
@@ -13,107 +14,107 @@
             sm="6"
             md="6"
         >
-        <v-select
-            v-model="statusSelected"
-            :items="statusFilter"
-            :menu-props="{ maxHeight: '400' }"
-            label="Select"
-            multiple
-            persistent-hint
-            @change="changeStatusSelect"
-            ></v-select>
-            <v-menu
-                ref="menu"
-                v-model="menu"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-            >
-                <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
+                <v-select
+                    v-model="statusSelected"
+                    :items="statusFilter"
+                    :menu-props="{ maxHeight: '400' }"
+                    label="Select"
+                    multiple
+                    persistent-hint
+                    @change="changeStatusSelect"
+                ></v-select>
+                <v-menu
+                    ref="menu"
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                >
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                            v-model="date"
+                            label="From:"
+                            prepend-icon="mdi-calendar"
+                            v-bind="attrs"
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
                         v-model="date"
-                        label="From:"
-                        prepend-icon="mdi-calendar"
-                        v-bind="attrs"
-                        v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-date-picker
-                    v-model="date"
-                    no-title
-                    @input="menu = false"
-                    @change="updateDate"
-                ></v-date-picker>
-            </v-menu>
-            <v-menu
-                ref="menuEnd"
-                v-model="menuEnd"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-            >
-                <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
+                        no-title
+                        @input="menu = false"
+                        @change="updateDate"
+                    ></v-date-picker>
+                </v-menu>
+                <v-menu
+                    ref="menuEnd"
+                    v-model="menuEnd"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                >
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                            v-model="dateEnd"
+                            label="To:"
+                            prepend-icon="mdi-calendar"
+                            v-bind="attrs"
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
                         v-model="dateEnd"
-                        label="To:"
-                        prepend-icon="mdi-calendar"
-                        v-bind="attrs"
-                        v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-date-picker
-                    v-model="dateEnd"
-                    no-title
-                    @input="menuEnd = false"
-                    @change="updateDate"
-                ></v-date-picker>
-            </v-menu>
-        </v-col>
-        <v-col sm="auto" v-if="removeFilters">
-            <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
-        </v-col>
-
-    </v-row>
+                        no-title
+                        @input="menuEnd = false"
+                        @change="updateDate"
+                    ></v-date-picker>
+                </v-menu>
+            </v-col>
+            <v-col sm="auto" v-if="removeFilters">
+                <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+            </v-col>
+        </v-row>
     <v-row
         align="center" 
         class="container-actions"
     >
-    <v-col
-        cols="12"
-        sm="3"
-        class="actions"
-    >
-        <v-select
-            :items="bulkActions"
-            solo
-            label="Bulk Actions"
-            append-icon="mdi-chevron-down"
-            prepend-inner-icon="mdi-layers-triple"
-            color="grey lighten-2"
-            item-color="grey lighten-2"
-            @change="enterBulkAction"
-            id="bulk-accion-select"
+        <v-col
+            cols="12"
+            sm="3"
+            class="actions"
         >
-        </v-select>
-    </v-col>
-    <v-col
-        class="align-start"
-        cols="12"
-        sm="3"
-    >
-        <v-btn
-            color="#F3A901"
-            class="ma-2 white--text"
-            id="apply-btn"
-            @click="submitBulk"
+            <v-select
+                :items="bulkActions"
+                v-model="bulkSelected"
+                solo
+                label="Bulk Actions"
+                append-icon="mdi-chevron-down"
+                prepend-inner-icon="mdi-layers-triple"
+                color="grey lighten-2"
+                item-color="grey lighten-2"
+                @change="enterBulkAction"
+                id="bulk-accion-select"
+            >
+            </v-select>
+        </v-col>
+        <v-col
+            class="align-start"
+            cols="12"
+            sm="3"
         >
-            Apply
-        </v-btn>
-    </v-col>
+            <v-btn
+                color="#F3A901"
+                class="ma-2 white--text apply-btn"
+                id="apply-btn"
+                :disabled="applyDisabled"
+                @click="submitBulk"
+            >
+                Apply
+            </v-btn>
+        </v-col>
     </v-row>
-
     <v-data-table
         dense
         v-model="selected"
@@ -137,6 +138,7 @@
 const axios = require("axios");
 import ModuleAlert from "../General/ModuleAlert.vue";
 import { CONSTELLATION_URL } from "../../urls.js";
+import Notifications from "../Notifications.vue";
 
 export default {
   name: "ConstellationIndex",
@@ -188,108 +190,116 @@ export default {
     alignments: "center",
   }),
   components: {
+    Notifications,
     ModuleAlert,
   },
   watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
+      options: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
-    },
-    search: {
-      handler() {
-        this.getDataFromApi();
+      search: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
       },
-      deep: true,
-    },
   },
   created() {
-        if (
-            typeof this.$route.query.message !== "undefined" &&
-            typeof this.$route.query.type !== "undefined"
-        ) {
-            this.flagAlert = true;
-            this.alertMessage = this.$route.query.message;
-            this.alertType = this.$route.query.type;
-        }
   },
   mounted() {
-    this.getDataFromApi();
+
+      if (typeof this.$route.query.message !== undefined && typeof this.$route.query.type !== undefined){
+          if(this.$route.query.type == "success"){
+              this.$refs.notifier.showSuccess(this.$route.query.message);
+          }else{
+              this.alertMessage = this.$route.query.message;
+              this.alertType = this.$route.query.type;
+          }
+      }
+
+      this.getDataFromApi();
   },
   methods: {
-    changeStatusSelect(){
-      this.getDataFromApi();
-    },
-    updateDate(){
-        if(this.date !== null && this.dateEnd !== null){
-            this.getDataFromApi();
-        }
-    },
-    removeFilters() {
-        return this.date || this.dateEnd || this.statusSelected;
-    },
-    resetInputs() {
-			this.date = null;
-			this.dateEnd = null;
-			this.statusSelected = null;
-			this.getDataFromApi();
-		},
-    getDataFromApi() {
-        this.loading = true;
-        axios
-        .post(CONSTELLATION_URL, {
-            params: {
-                dateFrom: this.date,
-                dateTo: this.dateEnd,
-                status: this.statusSelected
-            }
-        })
-        .then((resp) => {
-            this.items = resp.data.data;
-            this.bulkActions = resp.data.dataStatus;
-            this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
-            this.loading = false;
-        })
-        .catch((err) => console.error(err))
-        .finally(() => {
-            this.loading = false;
-        });
-    },
-    showDetails(route) {
-      this.$router.push({ path: route });
-    },
-    enterSelect() {
-      this.itemsSelected = this.selected;
-    },
-    enterBulkAction(value) {
-      this.actionSelected = value;
-    },
-    submitBulk() {
-      if (this.actionSelected != "") {
-        let requests = [];
-        this.itemsSelected.forEach((element) => {
-          requests.push(element.id);
-        });
+      changeStatusSelect(){
+          this.getDataFromApi();
+      },
+      updateDate(){
+          if(this.date !== null && this.dateEnd !== null){
+              this.getDataFromApi();
+          }
+      },
+      removeFilters() {
+          return this.date || this.dateEnd || this.statusSelected;
+      },
+      resetInputs() {
+          this.date = null;
+          this.dateEnd = null;
+          this.statusSelected = null;
+          this.bulkSelected = null;
+          this.applyDisabled = true;
+          this.getDataFromApi();
+      },
+      getDataFromApi() {
+          this.loading = true;
+          axios
+          .post(CONSTELLATION_URL, {
+              params: {
+                  dateFrom: this.date,
+                  dateTo: this.dateEnd,
+                  status: this.statusSelected
+              }
+          })
+          .then((resp) => {
+              this.items = resp.data.data;
+              this.bulkActions = resp.data.dataStatus;
+              this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
+              this.loading = false;
+          })
+          .catch((err) => console.error(err))
+          .finally(() => {
+              this.loading = false;
+          });
+      },
+      showDetails(route) {
+          this.$router.push({ path: route });
+      },
+      enterSelect() {
+          this.itemsSelected = this.selected;
+      },
+      enterBulkAction(value) {
+          this.actionSelected = value;
+          this.applyDisabled = false;
+      },
+      submitBulk() {
+          this.applyDisabled = false;
+          if (this.actionSelected != "") {
+              let requests = [];
+              this.itemsSelected.forEach((element) => {
+                  requests.push(element.id);
+              });
 
-        if(requests.length > 0){
-          let patchUrl = CONSTELLATION_URL + "/changeStatus/";
-          axios.patch(patchUrl, {
-                params: {
-                    requests: requests,
-                    requestStatus: this.actionSelected
-                }
-            })
-            .then(() => {
-                this.getDataFromApi();
-            })
-            .catch((err) => console.error(err))
-            .finally(() => {
-                this.loading = false;
-            });
-        }
-      }
-    },
+              if(requests.length > 0){
+                  let patchUrl = CONSTELLATION_URL + "/changeStatus/";
+                  axios.patch(patchUrl, {
+                      params: {
+                          requests: requests,
+                          requestStatus: this.actionSelected
+                      }
+                  })
+                  .then((resp) => {
+                      this.$refs.notifier.showSuccess(resp.data.message);
+                      this.getDataFromApi();
+                  })
+                  .catch((err) => console.error(err))
+                  .finally(() => {
+                      this.loading = false;
+                  });
+              }
+          }
+      },
   },
 };
 </script>

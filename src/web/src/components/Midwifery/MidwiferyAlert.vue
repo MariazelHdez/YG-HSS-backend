@@ -19,7 +19,7 @@
 <script>
 
 export default {
-    name: 'ModuleAlert',
+    name: 'MidwiferyAlert',
     props: ['alertMessage', 'alertType'],
     data: () => ({
         visible: false,
