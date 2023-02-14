@@ -11,6 +11,7 @@ var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
 const submissionStatusRepo = new SubmissionStatusRepository();
+const path = require('path');
 export const hipmaRouter = express.Router();
 
 /**
@@ -514,20 +515,20 @@ hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 
     try {
-        var path = "";
-        //var fs = require("fs");
+        var pathFile = "";
+        var fs = require("fs");
+
         var hipmaFile_id = Number(req.params.hipmaFile_id);
         var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("id", hipmaFile_id).select().first();
-        var buffer = Buffer.from(hipmaFiles.file_data, 'base64')
-        var file = buffer.toString();
-        let name = hipmaFiles.file_name;
-        let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+name;
-        path = __dirname+'/'+safeName+"."+hipmaFiles.file_type;
+        var buffer = Buffer.from(hipmaFiles.file_data, 'base64');
+        let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+hipmaFiles.file_name;
+        let pathPublicFront = path.join(__dirname, "../../");
+        pathFile = pathPublicFront+"/web/public/"+safeName+"."+hipmaFiles.file_type;
 
-        //fs.writeFileSync(path, buffer);
+        fs.writeFileSync(pathFile, buffer);
 
         if(hipmaFiles) {
-            res.json({ fileData: hipmaFiles.file_data , fileName: safeName+"."+hipmaFiles.file_type, fileType: hipmaFiles.file_type});
+            res.json({ fileName: safeName+"."+hipmaFiles.file_type, fileType: hipmaFiles.file_type, filePath: pathFile});
         }
 
     } catch(e) {
@@ -716,6 +717,32 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 });
 
 /**
+ * Deletes downloaded file
+ *
+ * @param {file} name of file
+ */
+hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
+    try {
+
+        var fs = require("fs");
+        var file = req.body.params.file;
+        let pathPublicFront = path.join(__dirname, "../../");
+        var filePath = pathPublicFront+"/web/public/"+file;
+
+        if(fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
  * Generate a new confirmation number similar to php's uniqid()
  *
  * @return id confirmation number
@@ -752,6 +779,7 @@ function uniqid(prefix = "", random = false) {
 function saveFile(field_name: any, data: any){
     var path = "";
     var fs = require("fs");
+    const allowedExtensions = ["pdf", "doc", "docx", "jpg", "jpeg", "png"]
 
     if(data[field_name] !== 'undefined' && (data[field_name]) && data[field_name]['data'] !== 'undefined'){
 
@@ -774,7 +802,13 @@ function saveFile(field_name: any, data: any){
 
         filesHipma["description"] = field_name;
         filesHipma["file_name"] = fileName[0];
-        filesHipma["file_type"] = extension[1];
+
+        if(!allowedExtensions.includes(extension[1])){
+            filesHipma["file_type"] = fileName[1];
+        }else{
+            filesHipma["file_type"] = extension[1];
+        }
+
         filesHipma["file_size"] = fileSizeInMegabytes;
         filesHipma["file_data"] = data[field_name]['data'];
 

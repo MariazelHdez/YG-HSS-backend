@@ -77,7 +77,7 @@ generalRouter.get("/submissions/:action_id/:action_value", [
  * @param { event_type } event type.
  * @return json
  */
-generalRouter.get("/audit/:event_type", [
+generalRouter.get("/audit/data/:event_type", [
     param("event_type").notEmpty()
 ], async (req: Request, res: Response) => {
 
@@ -85,6 +85,27 @@ generalRouter.get("/audit/:event_type", [
 
         const event_type = parseInt(req.params.event_type);
         const result = await auditRepo.getAudit(event_type);
+        res.send({ data: result });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Obtain data to show the audit timeline data.
+ *
+ * @return json
+ */
+generalRouter.get("/audit/timeline", async (req: Request, res: Response) => {
+
+    try {
+
+        const result = await auditRepo.getAuditTimeline();
         res.send({ data: result });
 
     } catch(e) {

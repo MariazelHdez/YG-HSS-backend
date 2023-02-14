@@ -19,10 +19,6 @@ export const FRONTEND_URL = process.env.FRONTEND_URL || "";
 export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || process.env.FRONTEND_URL || "";
 export const NODE_ENV = process.env.NODE_ENV;
 
-export const DB_NAME_CONSTELLATION = process.env.DB_NAME_CONSTELLATION || '';
-export const DB_NAME_MIDWIFERY = process.env.DB_NAME_MIDWIFERY || '';
-export const DB_NAME_HIPMA = process.env.DB_NAME_HIPMA || '';
-
 export const DB_USER = process.env.DB_USER || '';
 export const DB_PASS = process.env.DB_PASS || '';
 export const DB_HOST = process.env.DB_HOST || '';
