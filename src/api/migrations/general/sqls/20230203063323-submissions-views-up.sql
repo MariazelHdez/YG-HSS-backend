@@ -37,24 +37,24 @@ AS SELECT 'bizont_edms_constellation_health'::text AS id,
     '#DC4405' AS color,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW'::text) AS date_code,
-    to_char(ch.created_at, 'yyyymm'::text) AS monthid
+    to_char(ch.created_at, 'yyyy-mm'::text) AS monthid
    FROM bizont_edms_constellation_health.constellation_health ch
-  GROUP BY (to_char(ch.created_at, 'yyyymm'::text)), (to_char(ch.created_at, 'WW'::text))
+  GROUP BY (to_char(ch.created_at, 'yyyy-mm'::text)), (to_char(ch.created_at, 'WW'::text))
 UNION
  SELECT 'bizont_edms_hipma'::text AS id,
     'Hipma'::text AS department,
     '#522A44' AS color,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW'::text) AS date_code,
-    to_char(ch.created_at, 'yyyymm'::text) AS monthid
+    to_char(ch.created_at, 'yyyy-mm'::text) AS monthid
    FROM bizont_edms_hipma.health_information ch
-  GROUP BY (to_char(ch.created_at, 'yyyymm'::text)), (to_char(ch.created_at, 'WW'::text))
+  GROUP BY (to_char(ch.created_at, 'yyyy-mm'::text)), (to_char(ch.created_at, 'WW'::text))
 UNION
  SELECT 'bizont_edms_midwifery'::text AS id,
     'Midwifery Services'::text AS department,
     '#0097A9' AS color,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW'::text) AS date_code,
-    to_char(ch.created_at, 'yyyymm'::text) AS monthid
+    to_char(ch.created_at, 'yyyy-mm'::text) AS monthid
    FROM bizont_edms_midwifery.midwifery_services ch
-  GROUP BY (to_char(ch.created_at, 'yyyymm'::text)), (to_char(ch.created_at, 'WW'::text));
+  GROUP BY (to_char(ch.created_at, 'yyyy-mm'::text)), (to_char(ch.created_at, 'WW'::text));
