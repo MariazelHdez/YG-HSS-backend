@@ -7,6 +7,7 @@ export const LOGOUT_URL = `${config.apiBaseUrl}/api/auth/logout`;
 export const PROFILE_URL = `${config.apiBaseUrl}/api/user`;
 
 export const CONSTELLATION_URL = `${config.apiBaseUrl}/api/constellation`;
+export const CONSTELLATION_CHANGE_STATUS_URL = `${CONSTELLATION_URL}/changeStatus/`;
 export const CONSTELLATION_SHOW_URL = `${CONSTELLATION_URL}/show/`;
 export const CONSTELLATION_VALIDATE_URL = `${CONSTELLATION_URL}/validateRecord/`;
 export const CONSTELLATION_EXPORT_FILE_URL = `${CONSTELLATION_URL}/export`;

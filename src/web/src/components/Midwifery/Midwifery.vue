@@ -144,7 +144,7 @@ export default {
   name: "MidwiferyIndex",
   data: () => ({
     loading: false,
-    statusSelected:null,
+    statusSelected: [1],
     date: null,
     menu: false,
     dateEnd: null,

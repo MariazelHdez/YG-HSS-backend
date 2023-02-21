@@ -144,8 +144,9 @@ export default {
   name: "ConstellationIndex",
   data: () => ({
     loading: false,
+    bulkSelected: [],
     items: [],
-    statusSelected:null,
+    statusSelected: [1],
     date: null,
     menu: false,
     dateEnd: null,
@@ -158,6 +159,7 @@ export default {
     alertMessage: "",
     alertType: "",
     search: "",
+    applyDisabled: true,
     options: {},
     flagAlert: false,
     headers: [
