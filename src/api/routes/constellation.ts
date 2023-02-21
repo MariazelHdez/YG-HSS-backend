@@ -7,6 +7,7 @@ import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy } from "../utils/groupBy";
+import { checkPermissions } from "../middleware/permissions";
 var _ = require('lodash');
 
 //let { RequireServerAuth, RequireAdmin } = require("../auth")
@@ -212,7 +213,7 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
  * @param {constellationHealth_id} id of request
  * @return json
  */
-constellationRouter.get("/show/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+constellationRouter.get("/show/:constellationHealth_id", checkPermissions("constellation_view"), [param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
     try {
         var constellationHealth_id = Number(req.params.constellationHealth_id);
         var constellationHealth = Object();
