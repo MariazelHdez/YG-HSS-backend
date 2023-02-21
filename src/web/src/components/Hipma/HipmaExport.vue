@@ -6,8 +6,9 @@
 		<v-row>
 			<v-col
 				cols="6"
-				sm="6"
-				md="4"
+				sm="12"
+				md="6"
+				class="d-flex"
 			>
 				<v-menu
 					ref="menu"
@@ -33,13 +34,6 @@
 						@change="updateDate"
 					></v-date-picker>
 				</v-menu>
-			</v-col>
-
-			<v-col
-				cols="6"
-				sm="6"
-				md="4"
-			>
 				<v-menu
 					ref="menuEnd"
 					v-model="menuEnd"
@@ -65,6 +59,9 @@
 					></v-date-picker>
 				</v-menu>
 			</v-col>
+			<v-col sm="auto">
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+      </v-col>
 			<v-col
 				cols="6"
 				sm="12"
@@ -73,7 +70,7 @@
 					:loading="loadingExport"
 					:disabled="loadingExport"
 					color="#F3A901"
-					class="white--text"
+					class="pull-right ma-2 white--text apply-btn"
 					@click="exportFile()"
 					id="export-btn"
 				>
@@ -86,9 +83,11 @@
 					</v-icon>
 				</v-btn>
 				&nbsp;
-				<v-btn
+				<!--v-btn
+					:loading="loadingReset"
+					:disabled="loadingReset"
 					color="#F3A901"
-					class="white--text"
+					class="pull-right ma-2 white--text apply-btn"
 					@click="resetInputs()"
 					id="export-btn"
 				>
@@ -99,7 +98,7 @@
 					>
 						mdi-restore
 					</v-icon>
-				</v-btn>
+				</v-btn-->
 			</v-col>
 
 		</v-row>
@@ -132,6 +131,7 @@ export default {
 	data: () => ({
 		loading: false,
 		items: [],
+		itemsUnfiltered: [],
 		options: {},
 		flagAlert: false,
 		menu: false,
@@ -141,6 +141,7 @@ export default {
 		selected: [],
 		loader: null,
 		loadingExport: false,
+		loadingReset: false,
 		headers: [
 			{ text: "Confirmation Number", value: "confirmation_number", sortable: true},
 			{ text: "Request Type", value: "HipmaRequestType", sortable: true},
@@ -163,7 +164,7 @@ export default {
 			const l = this.loader;
 			this[l] = !this[l];
 
-			setTimeout(() => (this[l] = false), 3000)
+			setTimeout(() => (this[l] = false), 2000)
 
 			this.loader = null;
 		},
@@ -174,26 +175,22 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-				var date = this.date;
-				var dateEnd = this.dateEnd;
-				let itemsDate = [];
-
-				this.items.forEach(function (value) {
-					if(value.created_at > date && value.created_at < dateEnd){
-						itemsDate.push(value);
-					}
-				});
-
-				this.items = itemsDate;
+				this.getDataFromApi();
 			}
 		},
 		getDataFromApi() {
 		this.loading = true;
 
 			axios
-			.get(HIPMA_URL)
+			.post(HIPMA_URL, {
+				params: {
+					dateFrom: this.date,
+					dateTo: this.dateEnd,
+				}
+			})
 			.then((resp) => {
 				this.items = resp.data.data;
+				this.itemsUnfiltered = resp.data.data;
 				//this.pagination.totalLength = resp.data.meta.count;
 				//this.totalLength = resp.data.meta.count;
 				this.loading = false;
@@ -210,11 +207,13 @@ export default {
 			: this.items
 		},
 		resetInputs() {
+			this.loader = 'loadingReset';
 			this.date = null;
 			this.dateEnd = null;
 			this.getDataFromApi();
 		},
 		exportFile () {
+			this.loader = 'loadingExport';
 			let requests = [];
 			let checked = this.selected;
 
@@ -256,7 +255,6 @@ export default {
 					"Postal code",
 					"Email address",
 					"Phone number",
-					"Get a copy of your health information ",
 					"Name of health and social services program area optional ",
 					"Indicate the hss system s you would like a record of user activity",
 					"Provide details about your request ",
@@ -267,7 +265,7 @@ export default {
 					"Updated at",
 					"Request Type",
 					"Access Personal Health Information",
-					"Get a copy of Health Information",
+					"Get a copy of your health information",
 					"Situations",
 					"Copy activity request",
 					"Need help identifying data range",

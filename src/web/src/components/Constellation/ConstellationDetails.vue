@@ -1,22 +1,23 @@
 <template>
   <div class="constellation-service details">
-    <v-container>
+      <Notifications ref="notifier"></Notifications>
       <v-row class="mb-6" no-gutters>
-        <v-col lg="1"></v-col>
-        <v-col class="d-flex align-center">
+        <v-col class="d-flex align-top">
           <span class="title-service">Constellation Health Request</span>
         </v-col>
         <v-col lg="2" class="d-flex align-center">
           <v-select
+            v-model="selectAction"
             style="margin-top: 30px"
-            :items="builkActions"
+            :items="bulkActions"
+            class="details-select"
             solo
             label="Update status"
             append-icon="mdi-chevron-down"
             prepend-inner-icon="mdi-layers-triple"
             color="grey lighten-2"
             item-color="grey lighten-2"
-            @change="enterBuilkAction"
+            @change="enterBulkAction"
             id="bulk-accion-select"
           >
           </v-select>
@@ -24,9 +25,9 @@
         <v-col md="auto" class="d-flex align-center">
           <v-btn
             color="#F3A901"
-            class="ma-2 white--text"
+            class="ma-2 white--text details-btn"
             id="apply-btn"
-            @click="submitBuilk"
+            @click="submitBulk"
           >
             Apply
           </v-btn>
@@ -34,18 +35,17 @@
         <v-col md="auto" class="d-flex align-center">
           <v-btn
             color="#F3A901"
-            class="ma-2 white--text"
-            id="apply-btn"
+            class="ma-2 white--text details-btn"
+            id="export-btn"
             @click="exportToPDF"
           >
             <v-icon left>mdi-export</v-icon>
             Export Selected
           </v-btn>
         </v-col>
-        <v-col lg="2"> </v-col>
+        <v-col lg="1"> </v-col>
       </v-row>
       <v-row no-gutters>
-        <v-col lg="1"> </v-col>
         <v-col>
           <div id="constellationPanelInformation">
             <v-expansion-panels multiple v-model="panel">
@@ -249,9 +249,8 @@
             />
           </div>
         </v-col>
-        <v-col lg="2"> </v-col>
+        <v-col lg="1"> </v-col>
       </v-row>
-    </v-container>
   </div>
 </template>
 
@@ -259,20 +258,16 @@
 const axios = require("axios");
 import ConstellationFamilyMembers from "./ConstellationFamilyMembers.vue";
 import ConstellationNoFamilyMembers from "./ConstellationNoFamily.vue";
-import { CONSTELLATION_SHOW_URL } from "../../urls.js";
-import { CONSTELLATION_VALIDATE_URL } from "../../urls.js";
-import { CONSTELLATION_URL } from "../../urls.js";
+import { CONSTELLATION_SHOW_URL, CONSTELLATION_VALIDATE_URL, CONSTELLATION_CHANGE_STATUS_URL} from "../../urls.js";
 import html2pdf from "html2pdf.js";
+import Notifications from "../Notifications.vue";
 
 export default {
   name: "Grid",
   data: () => ({
     loading: false,
-    builkActions: [
-      "Entered into EMR content",
-      "Declined content",
-      "Closed content",
-    ],
+    bulkActions: [],
+    selectAction:[],
     actionSelected: "",
     itemsConstellation: [],
     itemsConstellationFamily: [],
@@ -282,6 +277,7 @@ export default {
     validateFamily: ""
   }),
   components: {
+    Notifications,
     ConstellationFamilyMembers,
     ConstellationNoFamilyMembers,
   },
@@ -294,7 +290,7 @@ export default {
     this.validateRecord();
   },
   mounted() {
-    this.getDataFromApi();
+    this.validateRecord();
   },
   methods: {
     validateRecord() {
@@ -308,6 +304,8 @@ export default {
               path: "/constellation",
               query: { message: resp.data.message, type: resp.data.type },
             });
+          }else{
+            this.getDataFromApi();
           }
         })
         .catch((err) => console.error(err))
@@ -321,38 +319,36 @@ export default {
           this.validateFamily = resp.data.dataConstellation.include_family_members
           this.itemsConstellationFamily = resp.data.dataConstellationFamily;
           this.fileName = resp.data.fileName;
+          this.bulkActions = resp.data.dataStatus;
+          this.selectAction = resp.data.dataConstellation.status;
         })
         .catch((err) => console.error(err))
         .finally(() => {});
     },
-    enterBuilkAction(value) {
+    enterBulkAction(value) {
       this.actionSelected = value;
     },
-    submitBuilk() {
-      let statusSelected = {
-        "Entered into EMR content": "Entered",
-        "Declined content": "Declined",
-        "Closed content": "Closed",
-      };
+    submitBulk() {
       if (this.actionSelected != "") {
-        let postUrl =
-          CONSTELLATION_URL +
-          "/changeStatus/" +
-          this.$route.params.constellationHealth_id;
-        let setStatus = statusSelected[this.actionSelected];
-        axios
-          .patch(postUrl, { newStatus: setStatus })
-          .then((resp) => {
-            this.loading = false;
+        //Sent it as an array to use the same function for both single and bulk status changes
+        var constellationId = [Number(this.$route.params.constellationHealth_id)];
+        axios.patch(CONSTELLATION_CHANGE_STATUS_URL, {
+          params: {
+            requests: constellationId,
+            requestStatus: this.actionSelected
+          }
+        })
+        .then((resp) => {
+          if(this.actionSelected == 4){
             this.$router.push({
-              path: "/constellation",
-              query: { message: resp.data.message, type: resp.data.type },
+              path: '/constellation',
+              query: { message: resp.data.message, type: resp.data.type}
             });
-          })
-          .catch((err) => console.error(err))
-          .finally(() => {
-            this.loading = false;
-          });
+          }else{
+            this.$refs.notifier.showSuccess(resp.data.message);
+          }
+        })
+        .catch((err) => console.error(err))
       }
     },
     exportToPDF() {

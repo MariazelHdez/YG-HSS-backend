@@ -55,7 +55,7 @@ for (const url in routes) {
   app.use(url, routes[url]);
 }
 
-let baseWebPath = "/api";
+let baseWebPath = "/";
 
 /*if (config.NODE_ENV !== "production")
   baseWebPath = "/dist/web";
