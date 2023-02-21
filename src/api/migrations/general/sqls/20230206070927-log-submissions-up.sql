@@ -8,6 +8,7 @@ AS $function$
 		if TG_OP = 'INSERT' then		
 			insert into bizont_edms_general.events (schema_name, table_name, entity_id, event_type, title, event_by, entity_data)
 			values (TG_TABLE_SCHEMA, TG_TABLE_NAME, new.id, 1, 'INSERT', 'system', row_to_json(new.*)::jsonb);
+			
 			return new;
 		elseif TG_OP = 'UPDATE' then
 			insert into bizont_edms_general.events (schema_name, table_name, entity_id, event_type, title, event_by, entity_data)
