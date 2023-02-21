@@ -1,9 +1,11 @@
+import { UserPermissionRepository } from './../repository/UserPermissionRepository';
 import { Express, NextFunction, Request, Response } from "express"
 import * as ExpressSession from "express-session";
 import { AuthUser } from "../models/auth";
 import { AUTH_REDIRECT, FRONTEND_URL } from "../config";
 
 const {auth} = require('express-openid-connect')
+const userRepo = new UserPermissionRepository();
 
 export function configureAuthentication(app: Express) {
   app.use(ExpressSession.default({
@@ -29,7 +31,10 @@ export function configureAuthentication(app: Express) {
 
   app.use("/", async (req: Request, res: Response, next: NextFunction) => {
       if (req.oidc.isAuthenticated()) {
-          req.user = AuthUser.fromOpenId(req.oidc.user);
+          req.user = {
+            oid_user: AuthUser.fromOpenId(req.oidc.user),
+            db_user: await userRepo.getUserByEmail(req.oidc.user.email)
+          };
           (req.session as any).user = req.user;
       }
 
@@ -39,7 +44,10 @@ export function configureAuthentication(app: Express) {
   app.get("/", async (req: Request, res: Response) => {
       if (req.oidc.isAuthenticated()) {
           let user = AuthUser.fromOpenId(req.oidc.user) as AuthUser;
-          req.user = user;
+          req.user = {
+            oid_user: user,
+            db_user: await userRepo.getUserByEmail(req.oidc.user.email)
+          };
 
           res.redirect(AUTH_REDIRECT);
       }
@@ -51,11 +59,11 @@ export function configureAuthentication(app: Express) {
   });
 
   app.get("/api/auth/isAuthenticated", (req: Request, res: Response) => {
-      if (req.oidc.isAuthenticated()) {
-          return res.send({ data: req.user });
-      }
+    if (req.oidc.isAuthenticated()) {
+        return res.send({ data: req.user });
+    }
 
-      return res.status(401).send();
+    return res.status(401).send();
   });
 
   app.get('/api/auth/logout', async (req: any, res) => {

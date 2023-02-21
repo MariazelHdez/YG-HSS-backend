@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { User } from "../models";
+import { AuthUser } from "../models";
 
 
 const USER_ACTIVE_STATUS = "Active";
@@ -14,7 +14,7 @@ export const UserRoleOptions = [
 
 export function authorize(roles: string[] = [], allowPending: boolean = false) {
     return (req: Request, res: Response, next: NextFunction) => {
-        let currentUser = req.user as User;
+        let currentUser = req.user as AuthUser;
 
         if (!req.oidc.isAuthenticated() || !currentUser)
             return res.status(401).send('Not authenticated');

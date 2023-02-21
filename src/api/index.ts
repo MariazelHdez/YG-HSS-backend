@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, Router } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { userRouter, constellationRouter, midwiferyRouter, hipmaRouter, generalRouter } from "./routes";
@@ -7,6 +7,14 @@ import { doHealthCheck } from "./utils/healthCheck";
 import { configureAuthentication } from "./routes/auth"
 
 const app = express();
+
+const routes: Record<string, Router> = {
+  "/api/user": userRouter,
+  "/api/constellation": constellationRouter,
+  "/api/midwifery": midwiferyRouter,
+  "/api/hipma": hipmaRouter,
+  "/api/general": generalRouter
+};
 
 const maxRequestBodySize = '10mb';
 app.use(express.json({limit: maxRequestBodySize})) // for parsing application/json
@@ -42,14 +50,12 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(res);
 });
 
-app.use("/api/user", userRouter);
-app.use("/api/constellation", constellationRouter);
-app.use("/api/midwifery", midwiferyRouter);
-app.use("/api/hipma", hipmaRouter);
-app.use("/api/general", generalRouter);
+// Adding routes.
+for (const url in routes) {
+  app.use(url, routes[url]);
+}
 
 let baseWebPath = "/api";
-
 
 /*if (config.NODE_ENV !== "production")
   baseWebPath = "/dist/web";

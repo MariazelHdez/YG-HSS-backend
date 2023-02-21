@@ -8,12 +8,13 @@ const state = {
 const getters = {
     isAuthenticated: state => !!state.user,
     fullName: state => { return state.fullName },
+    dbUser: state => { return state.user.db_user }
 };
 const actions = {
     async checkAuthentication({ commit }) {
         await axios.get(AUTH_CHECK_URL)
-            .then(resp => {
-                commit("setUser", resp.data);
+            .then(resp => {                
+                commit("setUser", resp.data.data);
             }).catch(() => {
                 commit("clearUser");
             });
@@ -30,7 +31,7 @@ const actions = {
 const mutations = {
     setUser(state, user) {
         state.user = user;
-        state.fullName = user.displayName;
+        state.fullName = user.oid_user.displayName;
     },
     clearUser(state) {
         state.user = null;
