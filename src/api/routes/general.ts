@@ -25,7 +25,8 @@ generalRouter.get("/submissions/status/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await submissionStatusRepo.getSubmissionsStatus(actionId, actionVal);
+        const permissions = req.user?.db_user.permissions ?? [];
+        const result = await submissionStatusRepo.getSubmissionsStatus(actionId, actionVal, permissions);
         res.send({data: result});
 
     } catch(e) {
