@@ -14,3 +14,6 @@ CREATE INDEX user_data_user_name_idx ON bizont_edms_general.user_data USING btre
 
 ALTER TABLE bizont_edms_general.user_data OWNER TO postgres;
 GRANT ALL ON TABLE bizont_edms_general.user_data TO postgres;
+
+INSERT INTO bizont_edms_general.user_data (id, user_name, user_email) VALUES(1, 'Mario', 'mario@bizont.ca');
+INSERT INTO bizont_edms_general.user_data (id, user_name, user_email) VALUES(2, 'Lebron', 'lebron@bizont.ca');

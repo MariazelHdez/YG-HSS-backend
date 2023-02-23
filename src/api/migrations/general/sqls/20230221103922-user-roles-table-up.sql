@@ -16,3 +16,8 @@ CREATE INDEX user_roles_user_id_role_id_idx ON bizont_edms_general.user_roles US
 
 ALTER TABLE bizont_edms_general.user_roles OWNER TO postgres;
 GRANT ALL ON TABLE bizont_edms_general.user_roles TO postgres;
+
+INSERT INTO bizont_edms_general.user_roles (id, user_id, role_id) VALUES(1, 1, 4);
+INSERT INTO bizont_edms_general.user_roles (id, user_id, role_id) VALUES(2, 1, 2);
+INSERT INTO bizont_edms_general.user_roles (id, user_id, role_id) VALUES(3, 2, 3);
+INSERT INTO bizont_edms_general.user_roles (id, user_id, role_id) VALUES(4, 1, 6);

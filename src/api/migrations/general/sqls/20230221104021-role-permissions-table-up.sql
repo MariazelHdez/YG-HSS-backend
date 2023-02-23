@@ -36,3 +36,15 @@ INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VA
 INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(17, 3, 1);
 INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(18, 3, 3);
 INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(19, 3, 4);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(20, 4, 8);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(21, 1, 13);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(22, 2, 13);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(24, 6, 9);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(25, 6, 10);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(26, 6, 11);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(27, 6, 12);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(28, 4, 5);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(29, 4, 6);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(30, 4, 7);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(32, 4, 13);
+INSERT INTO bizont_edms_general.role_permissions (id, role_id, permission_id) VALUES(33, 6, 13);
