@@ -202,27 +202,27 @@ export default {
 	},
 	methods: {
 		updateDate(){
-			if(this.date !== null && this.dateEnd !== null){
-			  this.getDataFromApi();
-		  }
-	  },
-	  changeSelect(){
-		  this.getDataFromApi();
+			if(this.date !== null && this.dateEnd !== null) {
+        this.getDataFromApi();
+      }
+    },
+    changeSelect(){
+      this.getDataFromApi();
     },
     getDataFromApi() {
       this.loading = true;
       axios
         .post(CONSTELLATION_URL, {
           params: {
-  					dateFrom: this.date,
-  					dateTo: this.dateEnd,
-  					status: this.selectedStatus
-  				}
+            dateFrom: this.date,
+            dateTo: this.dateEnd,
+            status: this.selectedStatus
+          }
         })
         .then((resp) => {
           this.items = resp.data.data;
-  				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
-  				this.loading = false;
+          this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
+          this.loading = false;
 
         })
         .catch((err) => console.error(err))
