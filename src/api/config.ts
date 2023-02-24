@@ -78,6 +78,13 @@ export const DB_CONFIG_GENERAL = {
     database: DB_NAME,
     port: parseInt(DB_PORT),
     schema: SCHEMA_GENERAL,
+    timezone: "America/Whitehorse",
   },
-
+  pool: {
+    afterCreate: function(connection: any, callback: any): void {
+      connection.query("SET timezone = 'America/Whitehorse';", function(err: any) {
+        callback(err, connection);
+      });
+    }
+ }
 };

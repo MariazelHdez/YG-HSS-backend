@@ -1,5 +1,7 @@
 FROM oraclelinux:7-slim
 
+ENV TZ="America/Whitehorse"
+
 RUN yum upgrade -y && yum install yum-utils
 RUN  yum -y install oracle-release-el7 && \
      yum-config-manager --enable ol7_oracle_instantclient && \

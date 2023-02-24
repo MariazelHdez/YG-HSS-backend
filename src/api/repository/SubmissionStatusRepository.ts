@@ -26,11 +26,12 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
         
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select('status', 'color', 'permissions')
+                .select('status', 'color')
                 .sum("submissions", { as: "submissions"} )
+                .max("permissions", { as: "permissions"} )
                 .where(whereClause)
                 .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .groupBy('status', 'color', 'permissions')
+                .groupBy('status', 'color')
                 .orderBy('status', 'asc');
         }
         
@@ -59,11 +60,12 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
 
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select('status', 'color', 'permissions')
+                .select('status', 'color')
                 .sum("submissions", { as: "submissions"} )
+                .max("permissions", { as: "permissions"} )
                 .where(whereClause)
                 .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .groupBy('status', 'color', 'permissions')
+                .groupBy('status', 'color')
                 .orderBy('status', 'asc');
         }
         
@@ -72,7 +74,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
         return this.loadResults(general);
     }
 
-    async getSubmissions(actionId: string, actionVal: string): Promise<SubmissionsTotalDTO[]> {
+    async getSubmissions(actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
         let viewName = "bizont_edms_general.submissions_week_v";
         let whereClause = (builder: any) => {
@@ -94,7 +96,9 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
                 .select("date_code")
                 .select("submissions")
                 .select("color")
+                .select("permissions")
                 .where(whereClause)
+                .whereIn("permissions", permissions.map((x) => x.permission_name))
                 .orderBy('date_code', 'asc');
         }
         
@@ -103,7 +107,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
         return this.loadResults(general);
     }
 
-    async getModuleSubmissions(module: string, actionId: string, actionVal: string): Promise<SubmissionsTotalDTO[]> {
+    async getModuleSubmissions(module: string, actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
         let viewName = "bizont_edms_general.submissions_week_v";
         let whereClause = (builder: any) => {
@@ -127,7 +131,9 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
                 .select("date_code")
                 .select("submissions")
                 .select("color")
+                .select("permissions")
                 .where(whereClause)
+                .whereIn("permissions", permissions.map((x) => x.permission_name))
                 .orderBy('date_code', 'asc');
         }
         
