@@ -1,8 +1,7 @@
 <template>
 	<div class="hipma-service details">
-		<v-container>
 			<v-row class="mb-6" no-gutters>
-				<v-col class="d-flex align-center">
+				<v-col class="d-flex align-top">
 					<span class="title-service">Hipma Requests</span>
 				</v-col>
 				<v-col
@@ -91,8 +90,6 @@
 				</v-col>
 				<v-col lg="1"> </v-col>
 			</v-row>
-		</v-container>
-		<v-container>
 			<v-row no-gutters>
 				<v-col id="hipmaPanelInformation">
 					<HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
@@ -119,7 +116,6 @@
 				</v-col>
 				<v-col lg="1"> </v-col>
 			</v-row>
-		</v-container>
 	</div>
 </template>
 

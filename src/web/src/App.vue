@@ -24,25 +24,31 @@
       <v-divider></v-divider>
       <v-list dense nav style="" class="mt-1 pb-0 pt-1"
         v-for='(section) in sections' :key="section.header">
-          <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
-          <img v-if="mini && section.icon" :src="section.icon" height="36px" width="36px" />
-        <v-list-item
-          link
-          nav
-          v-bind:title="detail.name"
-          v-bind:to="detail.url"
-          v-for="detail in section.data"
-          v-bind:key="detail.name"
-          color= "white"
-          class="mb-0"
-        >
-          <v-list-item-icon>
-            <v-icon>{{ detail.icon }}</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>{{ detail.name }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+          <div class="section-container" v-if="checkPermissions(section.permissions)">
+            <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
+            <img v-if="mini && section.icon" :src="section.icon" height="36px" width="36px" />
+            <v-list-item-group
+              v-for="detail in section.data"
+              v-bind:key="detail.name"
+              color= "white"
+              class="mb-0"
+            >
+              <v-list-item
+              link
+              nav
+              v-bind:title="detail.name"
+              v-bind:to="detail.url"
+              v-if="checkPermissions(detail.permissions)"
+              >
+                <v-list-item-icon>
+                <v-icon>{{ detail.icon }}</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>{{ detail.name }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </div>
       </v-list>
     </v-navigation-drawer>
 
@@ -152,6 +158,7 @@ import router from "./router";
 import store from "./store";
 import * as config from "./config";
 import { mapState } from "vuex";
+
 export default {
   name: "App",
   components: {},
@@ -171,6 +178,7 @@ export default {
     drawerRight: null,
     headerShow: false,
     menuShow: false,
+    dbUser: null,
     loadingClass: "d-none",
     applicationName: config.applicationName,
     applicationIcon: config.applicationIcon,
@@ -182,6 +190,7 @@ export default {
   created: async function() {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
+    this.dbUser = store.getters.dbUser;
     if (!this.isAuthenticated) this.hasSidebar = false;
     else this.hasSidebar = config.hasSidebar;
   },
@@ -211,6 +220,15 @@ export default {
     forceRerender() {
       this.componentKey += 1;
     },
+    checkPermissions(permissions) {
+      const userPermissions = this.dbUser?.permissions;
+      if (userPermissions) {
+        return permissions.every((x) => {
+            return userPermissions.find((p) => p.permission_name === x) !== undefined;
+        });   
+      }
+      return false;
+    }
   }
 };
 </script>

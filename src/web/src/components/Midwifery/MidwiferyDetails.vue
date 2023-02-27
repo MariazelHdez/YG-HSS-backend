@@ -1,73 +1,43 @@
 <template>
-	<div class="midwifery-service details">
-	<v-container>
-		<v-row class="mb-6" no-gutters>
-			<v-col class="d-flex align-center">
-			<span class="title-service">Midwifery Requests</span>
-			</v-col>
-			<v-col
-				cols="10"
-				sm="6"
-				md="10"
-				lg="2"
-				class="d-flex align-center"
-			>
-					<v-dialog
-						v-model="dialog"
-						width="500"
-					>
-						<template v-slot:activator="{ on, attrs }">
-							<v-btn
-								color="#F3A901"
-								class="pull-right"
-								dark
-								v-bind="attrs"
-								v-on="on"
-							>
-
-							Mark as closed
-
-							<v-icon
-								right
-								dark
-							>
-							mdi-check-circle-outline
-							</v-icon>
-
-							</v-btn>
-						</template>
-
-						<v-card>
-							<v-card-title class="text-h5 white lighten-2">
-								Mark as closed
-							</v-card-title>
-
-							<v-card-text>
-								Are you sure you want to mark this entry as closed?
-							</v-card-text>
-
-							<v-divider></v-divider>
-
-							<v-card-actions>
-								<v-spacer></v-spacer>
-								<v-btn
-								color="#757575"
-								text
-								@click="dialog = false"
-								>
-								No
-								</v-btn>
-
-								<v-btn
-								color="primary"
-								text
-								@click="changeStatus()"
-								>
-								Yes
-								</v-btn>
-							</v-card-actions>
-						</v-card>
-					</v-dialog>
+  <div class="midwifery-service details">
+<!--     <v-container> -->
+      <Notifications ref="notifier"></Notifications>
+      <v-row class="mb-6" no-gutters>
+        <v-col class="d-flex align-top">
+          <span class="title-service">Midwifery Requests</span>
+        </v-col>
+        <v-col
+          cols="10"
+          sm="6"
+          md="10"
+          lg="2"
+          class="d-flex align-center"
+        >
+          <v-select
+            v-model="selectAction"
+            style="margin-top: 30px"
+            :items="bulkActions"
+            class="details-select"
+            solo
+            label="Update status"
+            append-icon="mdi-chevron-down"
+            prepend-inner-icon="mdi-layers-triple"
+            color="grey lighten-2"
+            item-color="grey lighten-2"
+            @change="enterBulkAction"
+            id="bulk-accion-select"
+          >
+          </v-select>
+        </v-col>
+        <v-col md="auto" class="d-flex align-center">
+          <v-btn
+            color="#F3A901"
+            class="ma-2 white--text details-btn"
+            id="apply-btn"
+            @click="changeStatus"
+          >
+              Apply
+          </v-btn>
 			</v-col>
 
 				<v-col 
@@ -96,8 +66,10 @@
 			</v-col>
 			<v-col lg="1"> </v-col>
 		</v-row>
+<!--
     </v-container>
     <v-container>
+-->
 		<v-row no-gutters>
 			<v-col id="midwiferyPanels">
 				<MidwiferyInformation v-bind:midwifery="itemsMidwifery" v-bind:options="optionsMidwifery"
@@ -130,7 +102,7 @@
 				</v-col>
 			<v-col lg="1"> </v-col>
 		</v-row>
-    </v-container>
+<!--     </v-container> -->
 	</div>
 </template>
 
@@ -145,19 +117,23 @@ import { MIDWIFERY_SHOW_URL } from "../../urls.js";
 import { MIDWIFERY_VALIDATE_URL } from "../../urls.js";
 import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 import html2pdf from "html2pdf.js";
+import Notifications from "../Notifications.vue";
 
 export default {
 	name: "MidwiferyDetails",
 	data: () => ({
 		loading: false,
+		selectAction:[],
 		itemsMidwifery: [],
 		optionsMidwifery: [],
 		dialog: false,
 		panelModel: [0],
 		fileName: "",
+		bulkActions: [],
 		idStatusClosed: null,
 	}),
 	components: {
+    Notifications,
 		MidwiferyInformation,
 		MidwiferyContactInformation,
 		MidwiferyMedicalInformation,
@@ -192,17 +168,20 @@ export default {
 			axios
 			.get(MIDWIFERY_SHOW_URL+this.$route.params.midwifery_id)
 			.then((resp) => {
-
 				this.itemsMidwifery = resp.data.midwifery;
 				this.optionsMidwifery = resp.data.options;
 				this.fileName = resp.data.fileName;
 				this.idStatusClosed = resp.data.midwiferyStatusClosed;
-
+				this.bulkActions = resp.data.dataStatus;
+        this.selectAction = resp.data.midwifery.status;
 			})
 			.catch((err) => console.error(err))
 			.finally(() => {
 			});
 		},
+		enterBulkAction(value) {
+      this.actionSelected = value;
+    },
 		changeStatus(){
 			//Sent it as an array to use the same function for both single and bulk status changes
 			var midwiferyId = [Number(this.$route.params.midwifery_id)];
@@ -211,16 +190,20 @@ export default {
 			.patch(MIDWIFERY_CHANGE_STATUS_URL, {
                 params: {
 					requests: midwiferyId,
-					requestStatus: this.idStatusClosed
+					requestStatus: this.actionSelected
 				}
             })
 			.then((resp) => {
 
-				this.$router.push({
-					path: '/midwifery',
-					query: { message: resp.data.message, type: resp.data.type}
-				});
-			})
+        if(this.actionSelected == this.idStatusClosed){
+          this.$router.push({
+            path: '/midwifery',
+            query: { message: resp.data.message, type: resp.data.type}
+          });
+        }else{
+          this.$refs.notifier.showSuccess(resp.data.message);
+        }
+      })
 			.catch((err) => console.error(err))
 		},
 		exportToPDF() {

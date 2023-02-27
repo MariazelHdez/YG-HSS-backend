@@ -1,4 +1,4 @@
-import { AuditDTO } from './../models/general/index';
+import { AuditDTO, AuditTimelineDTO } from './../models/general/index';
 import { DB_CONFIG_GENERAL } from '../config';
 import { BaseRepository } from './BaseRepository';
 import knex, { Knex } from "knex";
@@ -13,6 +13,14 @@ export class AuditRepository extends BaseRepository<AuditDTO> {
         general = await this.mainDb("bizont_edms_general.audit_v")
             .where("event_type", "=", event_type);
                 
+        return this.loadResults(general);
+    }
+
+    async getAuditTimeline(): Promise<AuditTimelineDTO[]> {
+        let general = Object();
+        
+        general = await this.mainDb("bizont_edms_general.audit_timeline_v");
+        
         return this.loadResults(general);
     }
 

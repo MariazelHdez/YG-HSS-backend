@@ -69,7 +69,7 @@
 					></v-date-picker>
 				</v-menu>
 				<v-col sm="auto" id="reset-btn">
-			<v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
         </v-col>
 				<v-btn
 					:loading="loadingExport"
@@ -87,42 +87,8 @@
 						mdi-cloud-download
 					</v-icon>
 				</v-btn>
-				&nbsp;
-				
-
-      
-      
-				<!--v-btn
-					:loading="loadingReset"
-					:disabled="loadingReset"
-					color="#F3A901"
-					class="ma-2 white--text apply-btn"
-					@click="resetInputs()"
-					id="reset-btn"
-				>
-					Reset
-					<v-icon
-						right
-						dark
-					>
-						mdi-restore
-					</v-icon>
-				</v-btn-->
 			</v-col>
 		</v-row>
-		
-		
-		
-
-          
-		
-		
-		
-		
-		
-		
-		
-		<br>
 		<v-data-table
 			dense
 			v-model="selected"
@@ -135,7 +101,6 @@
 			:value="selected"
 			@toggle-select-all="selectAll"
 		>
-
 		</v-data-table>
 	</div>
 </template>
@@ -151,7 +116,6 @@ export default {
 	data: () => ({
 		loading: false,
 		items: [],
-		itemsUnfiltered: [],
 		options: {},
 		flagAlert: false,
 		menu: false,
@@ -173,6 +137,7 @@ export default {
 			{ text: "Preferred Birth Location", value: "birth_locations", sortable: true},
 			{ text: "Medical Concerns with Pregnancy", value: "medical_concerns", sortable: true},
 			{ text: "Major Medical Conditions", value: "major_medical_conditions", sortable: true},
+			{ text: "Status", value: "status_description", sortable: true},
 			{ text: "Created", value: "created_at", sortable: true},
 		],
 		page: 1,
@@ -201,15 +166,14 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-			this.getDataFromApi();
-		}
-	},
-	changeSelect(){
-		this.getDataFromApi();
+			  this.getDataFromApi();
+		  }
+	  },
+	  changeSelect(){
+		  this.getDataFromApi();
     },
 		getDataFromApi() {
-		this.loading = true;
-
+		  this.loading = true;
 			axios
 			.post(MIDWIFERY_URL, {
 				params: {
@@ -221,9 +185,6 @@ export default {
 			.then((resp) => {
 				this.items = resp.data.data;
 				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
-				this.itemsUnfiltered = resp.data.data;
-				//this.pagination.totalLength = resp.data.meta.count;
-				//this.totalLength = resp.data.meta.count;
 				this.loading = false;
 			})
 			.catch((err) => console.error(err))
@@ -232,7 +193,6 @@ export default {
 			});
 		},
 		selectAll() {
-			//event.value - boolen value if needed
 			this.selected = this.selected.length === this.items.length
 			? []
 			: this.items

@@ -7,6 +7,7 @@ import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy } from "../utils/groupBy";
+import { checkPermissions } from "../middleware/permissions";
 var _ = require('lodash');
 
 //let { RequireServerAuth, RequireAdmin } = require("../auth")
@@ -96,7 +97,7 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
             sqlFilter += "  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
 
-        if(!_.isEmpty(status_request)){
+        if(status_request){
            sqlFilter += "  AND constellation_health.status IN ("+status_request+")";
         }
 
@@ -159,17 +160,7 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
             value.showUrl = "constellation/show/"+value.constellation_health_id;
         });
 
-        var constellationStatus = Array();
-        constellationStatus = await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
-            let arrayResult = Array();
-
-            for (let row of rows) {
-                //arrayResult[row['id']] = row['field_value'];
-                arrayResult.push({text: row['description'], value: row['id']});
-            }
-            return arrayResult;
-        });
-
+        var constellationStatus = await getAllStatus();
         res.send({data: constellationHealth, dataStatus: constellationStatus});
     } catch(e) {
         console.log(e);  // debug if needed
@@ -208,7 +199,7 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
 
         res.json({ status: 200, flagConstellation: flagExists, message: message, type: type});
     } catch(e) {
-        console.log(e);  // debug if needed
+        console.log(e);
         res.send( {
             status: 400,
             message: 'Request could not be processed'
@@ -222,7 +213,7 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
  * @param {constellationHealth_id} id of request
  * @return json
  */
-constellationRouter.get("/show/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+constellationRouter.get("/show/:constellationHealth_id", checkPermissions("constellation_view"), [param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
     try {
         var constellationHealth_id = Number(req.params.constellationHealth_id);
         var constellationHealth = Object();
@@ -317,7 +308,10 @@ constellationRouter.get("/show/:constellationHealth_id",[param("constellationHea
         let todayDate = mm+'_'+dd+'_'+yyyy;
         let fileName = 'constellation_request_details_'+todayDate+".pdf";
 
-        res.json({ status: 200, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily, fileName:fileName});
+        var constellationStatus = await getAllStatus();
+
+        
+        res.json({ status: 200, dataStatus: constellationStatus, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily, fileName:fileName});
     } catch(e) {
         console.log(e);  // debug if needed
 
@@ -599,7 +593,7 @@ constellationRouter.patch("/changeStatus", async (req: Request, res: Response) =
         var updateStatus = await db("bizont_edms_constellation_health.constellation_health").update({status: status_id}).whereIn("id", constellation_id);
         if(updateStatus) {
             let type = "success";
-            let message = "Request status changed successfully.";
+            let message = "Status changed successfully.";
 
             res.json({ status:200, message: message, type: type });
         }
@@ -698,6 +692,17 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
     return familyMembersInsert;
 }
 
+async function getAllStatus(){
+  var constellationStatus = Array();
+  constellationStatus = await db("bizont_edms_constellation_health.constellation_status").select().then((rows: any) => {
+    let arrayResult = Array();
+    for (let row of rows) {
+        arrayResult.push({text: row['description'], value: row['id']});
+    }
+    return arrayResult;
+  });
+  return constellationStatus;
+}
 /**
  * Transforms given array to the allowed database array format and replaces information with catalogue data.
  *

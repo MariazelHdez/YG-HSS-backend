@@ -1,144 +1,130 @@
 <template>
   <div class="constellation-service">
     <span class="title-service">Constellation Health Requests</span>
-
-    <ConstellationAlert
-      v-show="flagAlert"
-      v-bind:alertMessage="alertMessage"
-      v-bind:alertType="alertType"
-    />
-    <v-row align="center" class="container-actions">
-      <v-col cols="12" sm="2">
-        <v-select
-          :items="bulkActions"
-          v-model="actionSelected"
-          label="Status"
-          append-icon="mdi-chevron-down"
-          prepend-inner-icon="mdi-layers-triple"
-          color="grey lighten-2"
-          item-color="grey lighten-2"
-          id="bulk-accion-select"
-        >
-        </v-select>
-      </v-col>
-      <v-col class="align-start" cols="12" sm="2">
-        <v-menu
-          ref="menu1"
-          v-model="menu1"
-          :close-on-content-click="false"
-          transition="scale-transition"
-          offset-y
-          max-width="290px"
-          min-width="auto"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-text-field
-              v-model="dateFormattedMin"
-              label="From:"
-              prepend-icon="mdi-calendar"
-              v-bind="attrs"
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="dateMin"
-            no-title
-            @input="menu1 = false"
-          ></v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col class="align-start" cols="12" sm="2">
-        <v-menu
-          ref="menu2"
-          v-model="menu2"
-          :close-on-content-click="false"
-          transition="scale-transition"
-          offset-y
-          max-width="290px"
-          min-width="auto"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-text-field
-              v-model="dateFormattedMax"
-              label="To:"
-              prepend-icon="mdi-calendar"
-              v-bind="attrs"
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="dateMax"
-            no-title
-            @input="menu2 = false"
-          ></v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col sm="auto" v-if="removeFilters">
-        <v-icon @click="setFilters"> mdi-filter-remove </v-icon>
-      </v-col>
-      <v-col>
-        <v-btn
-          :loading="loading"
-          :disabled="loading"
-          color="#F3A901"
-          class="pull-right white--text"
-          @click="exportFile"
-          id="export-btn"
-        >
-          Export
-          <v-icon right dark> mdi-cloud-download </v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-data-table
-      dense
-      v-model="selected"
-      show-select
-      item-key="constellation_health_id"
-      :items="items"
-      :headers="headers"
-      :options.sync="options"
-      :loading="loading"
-      :search="search"
-      @input="enterSelect"
-    >
-    </v-data-table>
+    <v-row>
+			<v-col
+				cols="6"
+				sm="6"
+				md="8"
+				class='d-flex'
+			>
+			<v-select
+				:items="itemsStatus"
+				:menu-props="{ maxHeight: '400' }"
+				label="Select"
+				multiple
+				persistent-hint
+				v-model="selectedStatus"
+				@change="changeSelect"
+				id="export-status-select"
+			></v-select>
+				<v-menu
+					ref="menu"
+					v-model="menu"
+					:close-on-content-click="false"
+					transition="scale-transition"
+					offset-y
+					min-width="auto"
+				>
+					<template v-slot:activator="{ on, attrs }">
+						<v-text-field
+							v-model="date"
+							label="From:"
+							prepend-icon="mdi-calendar"
+							v-bind="attrs"
+							v-on="on"
+						></v-text-field>
+					</template>
+					<v-date-picker
+						v-model="date"
+						no-title
+						@input="menu = false"
+						@change="updateDate"
+					></v-date-picker>
+				</v-menu>
+				<v-menu
+					ref="menuEnd"
+					v-model="menuEnd"
+					:close-on-content-click="false"
+					transition="scale-transition"
+					offset-y
+					min-width="auto"
+				>
+					<template v-slot:activator="{ on, attrs }">
+						<v-text-field
+							v-model="dateEnd"
+							label="To:"
+							prepend-icon="mdi-calendar"
+							v-bind="attrs"
+							v-on="on"
+						></v-text-field>
+					</template>
+					<v-date-picker
+						v-model="dateEnd"
+						no-title
+						@input="menuEnd = false"
+						@change="updateDate"
+					></v-date-picker>
+				</v-menu>
+				<v-col sm="auto" id="reset-btn">
+          <v-icon @click="resetInputs"> mdi-filter-remove </v-icon>
+        </v-col>
+				<v-btn
+					:loading="loadingExport"
+					:disabled="loadingExport"
+					color="#F3A901"
+					class="ma-2 white--text apply-btn"
+					@click="exportFile()"
+					id="export-btn"
+				>
+					Export
+					<v-icon
+						right
+						dark
+					>
+						mdi-cloud-download
+					</v-icon>
+				</v-btn>
+			</v-col>
+		</v-row>
+		<v-data-table
+			dense
+			v-model="selected"
+			item-key="constellation_health_id"
+			show-select
+			:items="items"
+			:headers="headers"
+			:options.sync="options"
+			:loading="loading"
+			checkbox-color="black"
+			:value="selected"
+			@toggle-select-all="selectAll"
+		>
+		</v-data-table>
   </div>
 </template>
 
 <script>
 const axios = require("axios");
-import ConstellationAlert from "./ConstellationAlert.vue";
-import { CONSTELLATION_URL } from "../../urls.js";
-import { CONSTELLATION_EXPORT_FILE_URL } from "../../urls.js";
+import { CONSTELLATION_URL, CONSTELLATION_EXPORT_FILE_URL } from "../../urls.js";
 import { utils, writeFileXLSX } from "xlsx";
-
 export default {
   name: "ConstellationIndex",
   data: () => ({
     loading: false,
-    selected: [],
-    items: [],
-    bulkActions: [],
-    actionSelected: "",
-    actionToFilter: "",
-    itemsSelected: [],
-    alertMessage: "",
-    alertType: "",
-    search: "",
-    options: {},
-    flagAlert: false,
-    page: 1,
-    pageCount: 0,
-    iteamsPerPage: 10,
-    alignments: "center",
-    dateMin: "",
-    dateFormattedMin: "",
-    dateMax: "",
-    dateFormattedMax: "",
-    menu1: false,
-    menu2: false,
+		items: [],
+		options: {},
+		flagAlert: false,
+		menu: false,
+		date: null,
+		menuEnd: false,
+		dateEnd: null,
+		selected: [],
+		itemsStatus: [],
+		selectedStatus: null,
+		loader: null,
+		loadingExport: false,
+		loadingReset: false, 
   }),
   computed: {
     headers() {
@@ -192,94 +178,73 @@ export default {
         },
       ];
     },
-    removeFilters() {
-      return this.dateMin || this.dateMax || this.actionToFilter;
-    },
   },
   components: {
-    ConstellationAlert,
   },
   watch: {
-    options: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
+		options: {
+			handler() {
+				this.getDataFromApi();
+			},
+			deep: true,
+		},
+		loader () {
+			const l = this.loader;
+			this[l] = !this[l];
+
+			setTimeout(() => (this[l] = false), 2000)
+
+			this.loader = null;
+		},
+	},
+	mounted() {
+		this.getDataFromApi();
+	},
+	methods: {
+		updateDate(){
+			if(this.date !== null && this.dateEnd !== null){
+			  this.getDataFromApi();
+		  }
+	  },
+	  changeSelect(){
+		  this.getDataFromApi();
     },
-    search: {
-      handler() {
-        this.getDataFromApi();
-      },
-      deep: true,
-    },
-    dateMin() {
-      if(this.dateMin){
-        this.dateFormattedMin = this.formatDate(this.dateMin);
-      }
-    },
-    dateMax() {
-      if(this.dateMax){
-        this.dateFormattedMax = this.formatDate(this.dateMax);
-      }
-    },
-    actionSelected() {
-      let action = this.bulkActions.filter((element) => element.value == this.actionSelected);
-      this.actionToFilter = action[0].text;
-    },
-  },
-  created() {
-    if (
-      typeof this.$route.query.message !== "undefined" &&
-      typeof this.$route.query.type !== "undefined"
-    ) {
-      this.flagAlert = true;
-      this.alertMessage = this.$route.query.message;
-      this.alertType = this.$route.query.type;
-    }
-  },
-  mounted() {
-    this.getDataFromApi();
-  },
-  methods: {
     getDataFromApi() {
       this.loading = true;
       axios
         .post(CONSTELLATION_URL, {
-            params: {
-                dateFrom: this.dateMin,
-                dateTo: this.dateMax,
-                status: this.actionSelected
-            }
+          params: {
+  					dateFrom: this.date,
+  					dateTo: this.dateEnd,
+  					status: this.selectedStatus
+  				}
         })
         .then((resp) => {
           this.items = resp.data.data;
-          this.bulkActions = resp.data.dataStatus.filter((element) => element.value != 4);
+  				this.itemsStatus = resp.data.dataStatus.filter((element) => element.value != 4);
+  				this.loading = false;
+
         })
         .catch((err) => console.error(err))
         .finally(() => {
           this.loading = false;
         });
     },
-    showDetails(route) {
-      this.$router.push({ path: route });
-    },
-    enterSelect() {
-      this.itemsSelected = this.selected;
-    },
-    formatDate(date) {
-      if (!date) return null;
-      const [year, month, day] = date.split("-");
-      return `${month}/${day}/${year}`;
-    },
-    setFilters() {
-      this.dateMin = null;
-      this.dateMax = null;
-      this.actionSelected = null;
-      this.getDataFromApi();
-    },
-    exportFile() {
+    selectAll() {
+			this.selected = this.selected.length === this.items.length
+			? []
+			: this.items
+		},
+		resetInputs() {
+			this.loader = 'loadingReset';
+			this.date = null;
+			this.dateEnd = null;
+			this.selectedStatus = null;
+			this.getDataFromApi();
+		},
+		exportFile () {
       var idArray = [];
-      this.itemsSelected.forEach((e) => {
+      this.selected.forEach((e) => {
         idArray.push(e.constellation_health_id);
       });
       axios

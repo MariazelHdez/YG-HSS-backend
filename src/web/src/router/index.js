@@ -63,7 +63,10 @@ const routes = [
     name: "Constellation Health",
     component: Constellation,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "constellation_view"
+      ]
     }
   },
   {
@@ -71,7 +74,10 @@ const routes = [
     name: "Constellation Health",
     component: ConstellationDetails,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "constellation_view"
+      ]
     }
   },
   {
@@ -79,7 +85,10 @@ const routes = [
     name: "Constellation Export",
     component: ConstellationExport,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "constellation_view"
+      ]
     }
   },
   {
@@ -87,7 +96,10 @@ const routes = [
     name: "Constellation Analytics",
     component: ConstellationAnalytics,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "constellation_view"
+      ]
     }
   },
   {
@@ -95,7 +107,10 @@ const routes = [
     name: "Health Information",
     component: Hipma,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
     }
   },
   {
@@ -103,7 +118,10 @@ const routes = [
     name: "Health Information Details",
     component: HipmaDetails,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
     }
   },
   {
@@ -111,7 +129,10 @@ const routes = [
     name: "Health Information Export",
     component: HipmaExport,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
     }
   },
   {
@@ -119,7 +140,10 @@ const routes = [
     name: "Hipma Analytics",
     component: HipmaAnalytics,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
     }
   },
   {
@@ -127,7 +151,10 @@ const routes = [
     name: "Midwifery",
     component: Midwifery,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
     }
   },
   {
@@ -135,7 +162,10 @@ const routes = [
     name: "Midwifery Details",
     component: MidwiferyDetails,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
     }
   },
   {
@@ -143,7 +173,10 @@ const routes = [
     name: "Midwifery Export",
     component: MidwiferyExport,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
     }
   },
   {
@@ -151,7 +184,10 @@ const routes = [
     name: "Midwifery Analytics",
     component: MidwiferyAnalytics,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
     }
   },
   {
@@ -170,8 +206,6 @@ const routes = [
       requiresAuth: true
     }
   },
-  
-  
 ];
 
 const router = new VueRouter({
@@ -181,9 +215,10 @@ const router = new VueRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  var requiresAuth = to.meta.requiresAuth || false;
+  const requiresAuth = to.meta.requiresAuth || false;
+  const permissions = to.meta?.permissions ?? [];
 
-  if (!requiresAuth) {
+  if (!requiresAuth && permissions.length === 0) {
     return next();
   }
 

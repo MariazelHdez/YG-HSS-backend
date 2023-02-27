@@ -248,6 +248,7 @@ midwiferyRouter.get("/validateRecord/:midwifery_id",[param("midwifery_id").isInt
 midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpty()], async (req: Request, res: Response) => {
 
     try {
+        var midwiferyStatus = Array();
         let midwifery_id = Number(req.params.midwifery_id);
         var midwifery = Object();
         var midwiferyOptions = Object();
@@ -295,6 +296,16 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             }
 
             return arrayResult;
+        });
+
+        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select()
+            .then((rows: any) => {
+                let arrayResult = Array();
+                for (let row of rows) {
+                    arrayResult.push({text: row['description'], value: row['id']});
+                }
+
+                return arrayResult;
         });
 
         /*if(!_.isNull(midwifery.date_of_birth)) {
@@ -415,7 +426,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         let todayDate = mm+'_'+dd+'_'+yyyy;
         let fileName = 'midwifery_request_details_'+todayDate+".pdf";
 
-        res.json({ midwifery: midwifery, options: midwiferyOptions, fileName:fileName, midwiferyStatusClosed: statusMidwifery.id });
+        res.json({ midwifery: midwifery, options: midwiferyOptions, fileName:fileName, midwiferyStatusClosed: statusMidwifery.id ,  dataStatus: midwiferyStatus});
 
     } catch(e) {
         console.log(e);  // debug if needed
@@ -823,7 +834,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
         if(updateStatus) {
             let type = "success";
-            let message = "Request status changed successfully.";
+            let message = "Status changed successfully.";
 
             res.json({ status:200, message: message, type: type });
         }
