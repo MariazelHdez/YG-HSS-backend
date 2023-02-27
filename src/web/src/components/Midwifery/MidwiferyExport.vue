@@ -166,14 +166,14 @@ export default {
 	methods: {
 		updateDate(){
 			if(this.date !== null && this.dateEnd !== null){
-			  this.getDataFromApi();
-		  }
-	  },
-	  changeSelect(){
-		  this.getDataFromApi();
-    },
+				this.getDataFromApi();
+			}
+		},
+		changeSelect(){
+			this.getDataFromApi();
+		},
 		getDataFromApi() {
-		  this.loading = true;
+			this.loading = true;
 			axios
 			.post(MIDWIFERY_URL, {
 				params: {

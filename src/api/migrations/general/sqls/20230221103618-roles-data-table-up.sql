@@ -18,3 +18,4 @@ INSERT INTO bizont_edms_general.roles_data (id, role_name) VALUES(2, 'Constellat
 INSERT INTO bizont_edms_general.roles_data (id, role_name) VALUES(3, 'Contellation Editor');
 INSERT INTO bizont_edms_general.roles_data (id, role_name) VALUES(4, 'Hipma Admin');
 INSERT INTO bizont_edms_general.roles_data (id, role_name) VALUES(5, 'Hipma Editor');
+INSERT INTO bizont_edms_general.roles_data (id, role_name) VALUES(6, 'Midwifery Admin');

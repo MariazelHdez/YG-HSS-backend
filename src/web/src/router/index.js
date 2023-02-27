@@ -224,10 +224,25 @@ router.beforeEach(async (to, from, next) => {
 
   await store.dispatch("checkAuthentication");
   var isAuthenticated = store.getters.isAuthenticated;
+  const userPermissions = store.getters.dbUser.permissions ?? [];
 
+  // Validate authentication
   if (requiresAuth && !isAuthenticated) {
     console.log("You aren't authenticatd, redirecting to sign-in")
     next("/sign-in");
+    return;
+  }
+
+  // Validate permissions
+  let validate = false;
+  if (userPermissions.length > 0) {
+    validate = permissions.every((x) => {
+      return userPermissions.find((p) => p.permission_name === x) !== undefined;
+    });
+  }
+  
+  if (!validate) {
+    next("/");
     return;
   }
 
