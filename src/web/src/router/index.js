@@ -14,6 +14,8 @@ import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
 import HipmaExport from "../components/Hipma/HipmaExport";
 import HipmaAnalytics from "../components/Hipma/HipmaAnalytics";
+import HipmaWarnings from "../components/Hipma/HipmaWarnings";
+import HipmaWarningsDetails from "../components/Hipma/HipmaWarningsDetails";
 import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
@@ -188,7 +190,22 @@ const routes = [
       ]
     }
   },
-  
+  {
+    path: "/hipmaWarnings",
+    name: "Hipma Warnings",
+    component: HipmaWarnings,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/hipmaWarnings/details/:duplicate_id",
+    name: "Hipma Warnings Details",
+    component: HipmaWarningsDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
 ];
 
 const router = new VueRouter({

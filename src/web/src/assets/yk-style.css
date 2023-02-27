@@ -324,6 +324,12 @@ button.details-btn.v-btn{
 div.row.container-actions.align-center{
   margin-top: 0px;
 }
+
+#duplicateDatatable tbody tr.row-duplicate-number{
+    background-color: #244C5A;
+    color: #FFFFFF;
+}
+
 @-moz-keyframes loader {
     from {
         transform: rotate(0);

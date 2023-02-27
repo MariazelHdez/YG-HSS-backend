@@ -71,6 +71,11 @@ export const sections = [
                 ]
             },
             {
+                name: "Warnings",
+                url: "/hipmaWarnings",
+                icon: "fa-regular fa-rectangle-list"
+            },
+            {
                 name: "Analytics",
                 url: "/hipmaAnalytics",
                 icon: "fa-solid fa-chart-line",
