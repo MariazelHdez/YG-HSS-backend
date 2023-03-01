@@ -23,8 +23,6 @@ export class AuditRepository extends BaseRepository<AuditDTO> {
         general = await this.mainDb("bizont_edms_general.audit_timeline_v")
         .whereIn("permissions", permissions.map((x) => x.permission_name));
 
-        console.log(general);
-        
         return this.loadResults(general);
     }
 
