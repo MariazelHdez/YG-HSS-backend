@@ -22,7 +22,7 @@ AS SELECT m.id,
             jsonb_each_text(enew.entity_data) AS e1,
             jsonb_each_text(eold.entity_data) AS e2
            FROM bizont_edms_general.events enew
-             JOIN bizont_edms_general.events eold ON enew.entity_id = eold.entity_id AND enew.table_name::text = eold.table_name::text AND enew.event_type = 2 AND eold.event_type = 3) m
+             JOIN bizont_edms_general.events eold ON enew.entity_id = eold.entity_id AND enew.table_name::text = eold.table_name::text AND enew.guid = eold.guid AND enew.event_type = 2 AND eold.event_type = 3) m
   WHERE m.e1 <> m.e2 AND (m.e1).key = 'status'::text
   GROUP BY m.id, m.event_type, m.event_date, m.schema_name, m.table_name, m.entity_id, m.e1, m.e2
 UNION

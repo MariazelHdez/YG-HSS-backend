@@ -53,12 +53,28 @@
         </v-card>
       </div>
     </div>
+
+    <h2>Roles</h2>
+    <div class="row">
+      <div class="col-md-12" v-for="role in allRoles" :key="role.id">
+        <v-checkbox
+          :label="role.role_name"
+          :input-value="role.selected"
+          disabled
+        ></v-checkbox>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { ref } from "vue";
 import { mapState } from "vuex";
 import store from "../store";
+import axios from "axios";
+import { ROLES_OPTIONS } from "../urls";
+
+const allRoles = ref([]);
 
 export default {
   name: "Profile",
@@ -71,9 +87,12 @@ export default {
       "teams"
     ])
   },
-  data: () => ({}),
+  data: () => ({
+    allRoles
+  }),
   async created() {
     await store.dispatch("profile/loadProfile");
+    allRoles.value = await axios.get(ROLES_OPTIONS).then((res) => res.data.data);
   }
 };
 </script>

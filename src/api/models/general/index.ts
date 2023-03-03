@@ -2,6 +2,8 @@ export interface SubmissionsDTO {
     id: string;
     department: string;
     submissions: number;
+    color: string;
+    permissions: string;
 }
 export interface SubmissionStatusDTO extends SubmissionsDTO {
     status: string;
