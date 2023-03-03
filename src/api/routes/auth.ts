@@ -2,7 +2,7 @@ import { UserPermissionRepository } from './../repository/UserPermissionReposito
 import { Express, NextFunction, Request, Response } from "express"
 import * as ExpressSession from "express-session";
 import { AuthUser } from "../models/auth";
-import { AUTH_REDIRECT, FRONTEND_URL, LOGOUT_REDIRECT } from "../config";
+import { AUTH_REDIRECT, FRONTEND_URL } from "../config";
 import axios from 'axios';
 
 const {auth} = require('express-openid-connect')
