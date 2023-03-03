@@ -1,5 +1,6 @@
 import axios from "axios";
 import { AUTH_CHECK_URL, LOGOUT_URL } from "../urls";
+import router from "../router";
 
 const state = {
     user: null,
@@ -20,9 +21,13 @@ const actions = {
             });
     },
     async signOut({ commit }) {
-        await axios.get(LOGOUT_URL)
-            .then(() => {
-                commit("clearUser");
+        axios.get(LOGOUT_URL)
+            .then((resp) => {
+                const data = resp.data.data;
+                if (data.logout) {
+                    commit("clearUser");
+                    router.push("/sign-in");
+                }
             }).catch(err => {
                 console.error(err);
             });
