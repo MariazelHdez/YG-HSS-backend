@@ -1,9 +1,9 @@
 <template>
-	<div class="hipma-warnings details">
+	<div class="midwifery-warnings details">
 		<v-container>
 			<v-row class="mb-6" no-gutters>
 				<v-col class="align-center" cols="6">
-					<span class="title-service">Hipma Warnings Details</span>
+					<span class="title-service">Midwifery Warnings Details</span>
 				</v-col>
 				<v-col
 					cols="3"
@@ -141,7 +141,7 @@
 		</v-container>
 		<v-container fluid>
 			<v-row no-gutters>
-				<v-col id="hipmaPanelInformation">
+				<v-col>
 					<v-radio-group
 						v-model="primaryValue"
 						inline
@@ -165,30 +165,40 @@
 						></v-radio>
 					</v-radio-group>
 
-					<HipmaInformation
-						v-bind:hipma="itemsHipma"
-						v-bind:hipmaDuplicated="itemsHipmaDuplicated"
-						v-bind:panelModel="panelModel"/>
-
-					<HipmaBehalf
-						v-bind:hipma="itemsHipma"
-						v-bind:hipmaDuplicated="itemsHipmaDuplicated"
-						v-bind:hipmaFiles="itemsHipmaFiles"
+					<MidwiferyInformation
+						v-bind:midwifery="itemsMidwifery"
+						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
+						v-bind:options="optionsMidwifery"
 						v-bind:panelModel="panelModel"
 					/>
 
-					<HipmaApplicant
-						v-bind:hipma="itemsHipma"
-						v-bind:hipmaDuplicated="itemsHipmaDuplicated"
+					<MidwiferyContactInformation
+						v-bind:midwifery="itemsMidwifery"
+						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
+						v-bind:options="optionsMidwifery"
 						v-bind:panelModel="panelModel"
 					/>
 
-					<HipmaAttachments v-bind:hipma="itemsHipma"
-						v-bind:hipmaDuplicated="itemsHipmaDuplicated"
-						v-bind:hipmaFiles="itemsHipmaFiles"
-						v-bind:hipmaFilesDuplicated="itemsHipmaFilesDuplicated"
+					<MidwiferyMedicalInformation
+						v-bind:midwifery="itemsMidwifery"
+						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
+						v-bind:options="optionsMidwifery"
 						v-bind:panelModel="panelModel"
 					/>
+
+					<MidwiferyOtherMedicalInformation
+						v-bind:midwifery="itemsMidwifery"
+						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
+						v-bind:options="optionsMidwifery"
+						v-bind:panelModel="panelModel"
+					/>
+
+					<MidwiferyDemographicInformation
+						v-bind:midwifery="itemsMidwifery"
+						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
+						v-bind:panelModel="panelModel"
+					/>
+
 				</v-col>
 				<v-col lg="1"> </v-col>
 			</v-row>
@@ -198,24 +208,23 @@
 
 <script>
 const axios = require("axios");
-import HipmaInformation from './HipmaInformation.vue';
-import HipmaBehalf from './HipmaBehalf.vue';
-import HipmaApplicant from './HipmaApplicant.vue';
-import HipmaAttachments from './HipmaAttachments.vue';
-
-import { HIPMA_DUPLICATES_DETAILS } from "../../urls.js";
-import { HIPMA_VALIDATE_WARNING_URL } from "../../urls.js";
-import { HIPMA_DUPLICATES_PRIMARY } from "../../urls.js";
+import MidwiferyInformation from './MidwiferyInformation.vue';
+import MidwiferyContactInformation from './MidwiferyContactInformation.vue';
+import MidwiferyMedicalInformation from './MidwiferyMedicalInformation.vue';
+import MidwiferyOtherMedicalInformation from './MidwiferyOtherMedicalInformation.vue';
+import MidwiferyDemographicInformation from './MidwiferyDemographicInformation.vue';
+import { MIDWIFERY_DUPLICATES_DETAILS } from "../../urls.js";
+import { MIDWIFERY_VALIDATE_WARNING_URL } from "../../urls.js";
+import { MIDWIFERY_DUPLICATES_PRIMARY } from "../../urls.js";
 
 export default {
-	name: "HipmaDetails",
+	name: "MidwiferyWarningsDetails",
 	data: () => ({
 		loader: null,
 		loadingReject: false,
-		itemsHipma: [],
-		itemsHipmaFiles: [],
-		itemsHipmaDuplicated: [],
-		itemsHipmaFilesDuplicated: [],
+		itemsMidwifery: [],
+		itemsMidwiferyDuplicated: [],
+		optionsMidwifery: [],
 		dialog: false,
 		dialogReject: false,
 		panelModel: [0],
@@ -228,10 +237,11 @@ export default {
 	}),
 
 	components: {
-		HipmaInformation,
-		HipmaBehalf,
-		HipmaApplicant,
-		HipmaAttachments
+		MidwiferyInformation,
+		MidwiferyContactInformation,
+		MidwiferyMedicalInformation,
+		MidwiferyOtherMedicalInformation,
+		MidwiferyDemographicInformation
 	},
 	created(){
 
@@ -256,11 +266,11 @@ export default {
         },
 		validateRecord() {
 			axios
-			.get(HIPMA_VALIDATE_WARNING_URL+this.$route.params.duplicate_id)
+			.get(MIDWIFERY_VALIDATE_WARNING_URL+this.$route.params.duplicate_id)
 			.then((resp) => {
 				if(!resp.data.flagWarning){
 					this.$router.push({
-						path: '/hipmaWarnings',
+						path: '/midwiferyWarnings',
 						query: { message: resp.data.message, type: resp.data.type}
 					});
 				}else{
@@ -273,17 +283,12 @@ export default {
 		},
 		getDataFromApi() {
 			axios
-			.get(HIPMA_DUPLICATES_DETAILS+this.$route.params.duplicate_id)
+			.get(MIDWIFERY_DUPLICATES_DETAILS+this.$route.params.duplicate_id)
 			.then((resp) => {
 
-				this.itemsHipma = resp.data.hipma;
-				this.itemsHipmaFiles = resp.data.hipmaFiles;
-				this.itemsHipmaDuplicated = resp.data.hipmaDuplicate;
-				this.itemsHipmaFilesDuplicated = resp.data.hipmaFilesDuplicated;
-				this.originalRequest = resp.data.hipma.id;
-				this.duplicatedRequest = resp.data.hipmaDuplicate.id;
-
-				this.fileName = resp.data.fileName;
+				this.itemsMidwifery = resp.data.midwifery;
+				this.itemsMidwiferyDuplicated = resp.data.midwiferyDuplicate;
+				this.optionsMidwifery = resp.data.options;
 
 			})
 			.catch((err) => console.error(err))
@@ -294,7 +299,7 @@ export default {
 			var duplicateId = this.$route.params.duplicate_id;
 
 			axios
-			.patch(HIPMA_DUPLICATES_PRIMARY, {
+			.patch(MIDWIFERY_DUPLICATES_PRIMARY, {
                 params: {
 					warning: duplicateId,
 					request: this.primaryValue,
@@ -314,7 +319,7 @@ export default {
 			var duplicateId = this.$route.params.duplicate_id;
 
 			axios
-			.patch(HIPMA_DUPLICATES_PRIMARY, {
+			.patch(MIDWIFERY_DUPLICATES_PRIMARY, {
                 params: {
 					warning: duplicateId,
 					request: this.primaryValue,

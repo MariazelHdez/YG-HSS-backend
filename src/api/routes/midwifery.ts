@@ -837,6 +837,357 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
     }
 });
 
+midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
+
+    try {
+
+        var midwiferyOriginal = Object();
+        var midwiferyDuplicate = Object();
+        var midwifery = Array();
+        var sqlFilter = "midwifery_services.status <> '4'";
+
+        midwiferyOriginal = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+            .join('bizont_edms_midwifery.midwifery_services', 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
+            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
+            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
+            .select('midwifery_services.id as midwifery_services_id',
+                    'midwifery_services.first_name',
+                    'midwifery_services.last_name',
+                    'midwifery_services.preferred_email',
+                    'midwifery_services.preferred_phone',
+                    'midwifery_duplicated_requests.id',
+                    'midwifery_duplicated_requests.midwifery_services_original_id',
+                    'midwifery_duplicated_requests.midwifery_services_duplicated_id',
+                    'midwifery_status.description as status_description',
+                    'midwifery_birth_locations.description as birth_locations',
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
+            )
+            .whereRaw(sqlFilter)
+            .orderBy("midwifery_services.created_at").then((rows: any) => {
+                let arrayResult = Object();
+
+                for (let row of rows) {
+                    arrayResult[row['midwifery_services_original_id']] = row;
+                }
+
+                return arrayResult;
+            });
+
+        midwiferyDuplicate = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+            .join('bizont_edms_midwifery.midwifery_services', 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
+            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
+            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
+            .select('midwifery_services.id as midwifery_services_id',
+                    'midwifery_services.first_name',
+                    'midwifery_services.last_name',
+                    'midwifery_services.preferred_email',
+                    'midwifery_services.preferred_phone',
+                    'midwifery_duplicated_requests.id',
+                    'midwifery_duplicated_requests.midwifery_services_original_id',
+                    'midwifery_duplicated_requests.midwifery_services_duplicated_id',
+                    'midwifery_status.description as status_description',
+                    'midwifery_birth_locations.description as birth_locations',
+                    'midwifery_preferred_contact_types.description as preferred_contact',
+                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
+            )
+            .whereRaw(sqlFilter)
+            .orderBy("midwifery_services.created_at");
+
+        let index = 0;
+
+        midwiferyDuplicate.forEach(function (value: any) {
+
+            let url = "midwiferyWarnings/details/"+value.id;
+
+            midwifery.push({
+                midwifery_services_id: null,
+                id: null,
+                midwifery_services_original_id: null,
+                midwifery_services_duplicated_id: null,
+                first_name: 'Duplicated #'+(index+1),
+                last_name: null,
+                preferred_email: null,
+                preferred_phone: null,
+                date_of_birth: null,
+                status_description: null,
+                created_at: 'ACTIONS:',
+                showUrl: url
+            });
+
+            midwifery.push(midwiferyOriginal[value.midwifery_services_original_id]);
+            midwifery.push(value);
+            index = index + 1;
+        });
+        console.log(midwifery);
+        res.send({data: midwifery});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+
+});
+
+/**
+ * Obtain data to show in details view
+ *
+ * @param id of request
+ * @return json
+ */
+midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+
+        let duplicate_id = Number(req.params.duplicate_id);
+        var midwifery = Object();
+        var midwiferyDuplicate = Object();
+        var midwiferyEntries = Object();
+        var midwiferyOptions = Object();
+        var communityLocations = Object();
+        var languages = Object();
+        var communities = Object();
+        var contact = Object();
+
+        var duplicateEntry = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+        .where("id", duplicate_id).then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult.original = row['midwifery_services_original_id'];
+                arrayResult.duplicated = row['midwifery_services_duplicated_id'];
+            }
+
+            return arrayResult;
+        });
+
+        midwiferyEntries = await db("bizont_edms_midwifery.midwifery_services")
+        .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
+        .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
+        .select('midwifery_services.*',
+                'midwifery_birth_locations.description as birth_locations',
+                'midwifery_preferred_contact_types.description as preferred_contact',
+                db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
+                    "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
+                    "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+        )
+        .whereIn("midwifery_services.id", [duplicateEntry.original, duplicateEntry.duplicated])
+        .whereNot('midwifery_services.status', '4');
+
+        communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        contact =  await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
+            let arrayResult = Object();
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        if(midwiferyEntries){
+            midwiferyEntries.forEach(function (value: any) {
+
+                if(!_.isNull(value.community_located)) {
+                    if(communityLocations.hasOwnProperty(value.community_located)){
+                        value.community = communityLocations[value.community_located];
+                    }else{
+                        value.community = value.community_located;
+                    }
+                }
+
+                if(!_.isNull(value.preferred_language)) {
+                    if(languages.hasOwnProperty(value.preferred_language)){
+                        value.language = languages[value.preferred_language];
+                    }else{
+                        value.language = value.preferred_language;
+                    }
+                }
+
+                if(!_.isEmpty(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
+
+                    var dataString = "";
+                    _.forEach(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie, function(valueCommunity: any) {
+                        if(!isNaN(valueCommunity) && communities.hasOwnProperty(valueCommunity)) {
+                            dataString += communities[valueCommunity]+",";
+                        }else{
+                            dataString += valueCommunity+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ","){
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.do_you_identify_with_one_or_more_of_these_groups_and_communitie = dataString.replace(/,/g, ', ');
+
+                }
+
+                if(!_.isEmpty(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that)){
+                    var dataString = "";
+                    _.forEach(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that, function(valueContact: any) {
+                        if(!isNaN(valueContact) && contact.hasOwnProperty(valueContact)) {
+                            dataString += contact[valueContact]+",";
+                        }else{
+                            dataString += valueContact+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ","){
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that = dataString.replace(/,/g, ', ');
+
+                }
+
+                if(value.id == duplicateEntry.original){
+                    midwifery = value;
+                }else if(value.id == duplicateEntry.duplicated){
+                    midwiferyDuplicate = value;
+                }
+
+            });
+        }
+
+        res.json({ midwifery: midwifery, midwiferyDuplicate: midwiferyDuplicate, options: midwiferyOptions});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Validate if warning is non existant
+ *
+ * @param {duplicate_id} id of warning
+ * @return json
+ */
+midwiferyRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+        var duplicate_id = Number(req.params.duplicate_id);
+        var warning = Object();
+        var flagExists = true;
+        var message = "";
+        var type = "error";
+
+        warning = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+            .where('id', duplicate_id)
+            .select()
+            .first();
+
+        if(!warning){
+            flagExists = false;
+            message = "The request you are consulting is non existant, please choose a valid request.";
+        }
+
+        res.json({ status: 200, flagWarning: flagExists, message: message, type: type});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Reject duplicate warning
+ *
+ * @param {warning}
+ * @param {request}
+ * @return json
+ */
+midwiferyRouter.patch("/duplicates/primary", async (req: Request, res: Response) => {
+
+    try {
+
+        var warning = Number(req.body.params.warning);
+        var request = Number(req.body.params.request);
+        var type = req.body.params.type;
+        var updateRequest = Object();
+        var rejectWarning = Object();
+
+        if(!request){
+            rejectWarning = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).del();
+        }else{
+            var warningRequest = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).first();
+
+            if(type == 'O'){
+                updateRequest = await db("bizont_edms_midwifery.midwifery_services").update({status: "4"}).where("id", warningRequest.midwifery_services_duplicated_id);
+            }else if(type == 'D'){
+                updateRequest = await db("bizont_edms_midwifery.midwifery_services").update({status: "4"}).where("id", warningRequest.midwifery_services_original_id);
+            }
+
+            if(updateRequest){
+                rejectWarning = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).del();
+            }
+        }
+
+        if(rejectWarning) {
+            let type = "success";
+            let message = "Warning updated successfully.";
+            res.json({ status:200, message: message, type: type });
+        }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
 /**
  * Generate a new confirmation number similar to php's uniqid()
  *

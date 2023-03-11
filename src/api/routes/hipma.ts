@@ -1050,7 +1050,7 @@ hipmaRouter.patch("/duplicates/primary", async (req: Request, res: Response) => 
 
         if(rejectWarning) {
             let type = "success";
-            let message = "Warning rejected successfully.";
+            let message = "Warning updated successfully.";
             res.json({ status:200, message: message, type: type });
         }
 

@@ -20,6 +20,8 @@ import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
 import MidwiferyAnalytics from "../components/Midwifery/MidwiferyAnalytics";
+import MidwiferyWarnings from "../components/Midwifery/MidwiferyWarnings";
+import MidwiferyWarningsDetails from "../components/Midwifery/MidwiferyWarningsDetails";
 
 import Dashboard from "../components/Dashboard.vue";
 
@@ -170,7 +172,22 @@ const routes = [
       requiresAuth: true
     }
   },
-  
+  {
+    path: "/midwiferyWarnings",
+    name: "Midwifery Warnings",
+    component: MidwiferyWarnings,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/midwiferyWarnings/details/:duplicate_id",
+    name: "Midwifery Warnings Details",
+    component: MidwiferyWarningsDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
   
 ];
 

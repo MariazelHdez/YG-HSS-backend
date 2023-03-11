@@ -34,4 +34,4 @@ $BODY$;
 create trigger duplicated_requests before
 insert
     on
-    bizont_edms_hipma.health_information for each row execute function bizont_edms_general.duplicated_requests();
+    bizont_edms_hipma.health_information for each row execute function bizont_edms_hipma.duplicated_requests();

@@ -73,6 +73,11 @@ export const sections = [
                 icon: "fa-regular fa-rectangle-list"
             },
             {
+                name: "Warnings",
+                url: "/midwiferyWarnings",
+                icon: "fa-regular fa-rectangle-list"
+            },
+            {
                 name: "Analytics",
                 url: "/midwiferyAnalytics",
                 icon: "fa-solid fa-chart-line"
