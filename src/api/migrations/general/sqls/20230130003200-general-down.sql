@@ -1,2 +1,2 @@
 /* Replace with your SQL commands */
-CREATE SCHEMA bizont_edms_general;
+DROP EXTENSION uuid-ossp;

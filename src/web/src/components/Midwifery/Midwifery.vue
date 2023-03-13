@@ -2,11 +2,8 @@
 <template>
     <div class="midwifery-service">
         <span class="title-service">Midwifery Requests</span>
-
-        <Alert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
-
         <v-row>
             <v-col
                 class='d-flex'
@@ -139,66 +136,66 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
-import Alert from "../Alert.vue";
+import ModuleAlert from '../General/ModuleAlert.vue';
 import { MIDWIFERY_URL } from "../../urls.js";
 import { MIDWIFERY_CHANGE_STATUS_URL } from "../../urls.js";
 
 export default {
-    name: "MidwiferyIndex",
-    data: () => ({
-        loading: false,
-        statusSelected:null,
-        date: null,
-        menu: false,
-        dateEnd: null,
-        menuEnd: false,
-        items: [],
-        itemsUnfiltered: [],
-        alertMessage: null,
-        alertType: null,
-        search: "",
-        options: {},
-        flagAlert: false,
-        selected: [],
-        statusFilter: [],
-        applyDisabled: true,
-        itemsBulk: [],
-        selectedStatus: null,
-        headers: [
-            { text: "Preferred Name", value: "preferred_name", sortable: true},
-            { text: "Phone", value: "preferred_phone", sortable: true},
-            { text: "Email", value: "preferred_email", sortable: true},
-            { text: "Is this your first pregnancy?", value: "first_pregnancy", sortable: true},
-            { text: "Due Date", value: "due_date", sortable: true},
-            { text: "Preferred Birth Location", value: "birth_locations", sortable: true},
-            { text: "Medical Concerns with Pregnancy", value: "medical_concerns", sortable: true},
-            { text: "Major Medical Conditions", value: "major_medical_conditions", sortable: true},
-            { text: "Do you identify with any of these groups and communities?", value: "do_you_identify_with_one_or_more_of_these_groups_and_communitie", sortable: true},
-            { text: "Created", value: "created_at", sortable: true},
-            { text: "", value: "status_description", sortable: true},
-            { text: "", value: "showUrl", sortable: false},
-        ],
-        page: 1,
-        pageCount: 0,
-        iteamsPerPage: 10,
-    }),
-    components: {
-        Notifications,
-        Alert
-    },
-    watch: {
-        options: {
-            handler() {
-                this.getDataFromApi();
-            },
-            deep: true,
-        },
-        search: {
-            handler() {
-                this.getDataFromApi();
-            },
-            deep: true,
-        },
+  name: "MidwiferyIndex",
+  data: () => ({
+    loading: false,
+    statusSelected: [1],
+    date: null,
+    menu: false,
+    dateEnd: null,
+    menuEnd: false,
+    items: [],
+    itemsUnfiltered: [],
+    alertMessage: "",
+    alertType: "",
+    search: "",
+    options: {},
+    flagAlert: false,
+    selected: [],
+    statusFilter: [],
+    applyDisabled: true,
+    itemsBulk: [],
+    selectedStatus: null,
+    headers: [
+        { text: "Preferred Name", value: "preferred_name", sortable: true},
+        { text: "Phone", value: "preferred_phone", sortable: true},
+        { text: "Email", value: "preferred_email", sortable: true},
+        { text: "Is this your first pregnancy?", value: "first_pregnancy", sortable: true},
+        { text: "Due Date", value: "due_date", sortable: true},
+        { text: "Preferred Birth Location", value: "birth_locations", sortable: true},
+        { text: "Medical Concerns with Pregnancy", value: "medical_concerns", sortable: true},
+        { text: "Major Medical Conditions", value: "major_medical_conditions", sortable: true},
+        { text: "Do you identify with any of these groups and communities?", value: "do_you_identify_with_one_or_more_of_these_groups_and_communitie", sortable: true},
+        { text: "Created", value: "created_at", sortable: true},
+        { text: "", value: "status_description", sortable: true},
+        { text: "", value: "showUrl", sortable: false},
+    ],
+    page: 1,
+    pageCount: 0,
+    iteamsPerPage: 10,
+  }),
+  components: {
+    Notifications,
+    ModuleAlert
+  },
+  watch: {
+      options: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
+      },
+      search: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
+      },
     },
     created(){
     },

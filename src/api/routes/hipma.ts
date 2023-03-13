@@ -30,7 +30,8 @@ hipmaRouter.get("/submissions/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_HIPMA, actionId, actionVal);
+        const permissions = req.user?.db_user.permissions ?? [];
+        const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_HIPMA, actionId, actionVal, permissions);
         const groupedId = groupBy(result, i => i.id);
         const labels = groupBy(result, i => i.date_code);
                         
@@ -65,7 +66,8 @@ hipmaRouter.get("/submissions/status/:action_id/:action_value", [
 
         const actionId = req.params.action_id;
         const actionVal = req.params.action_value;
-        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_HIPMA, actionId, actionVal);
+        const permissions = req.user?.db_user.permissions ?? [];
+        const result = await submissionStatusRepo.getModuleSubmissionsStatus(SCHEMA_HIPMA, actionId, actionVal, permissions);
                         
         res.send({data: result});
 

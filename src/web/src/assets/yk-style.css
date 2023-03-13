@@ -312,12 +312,13 @@ div.row.container-actions > .actions{
     margin-top: 25px;
 }
 .v-input.details-select.theme--light.v-text-field  label.v-label.theme--light,
-.details .v-list-item__title{
-  font-size: 12px;
-  min-height: inherit;
+.details .v-list-item__title,
+.v-btn,
+.v-text-field .v-input__slot{
+  border-radius: 0px;
+  min-height: 40px;
 }
 button.details-btn.v-btn{
-  font-size: 12px;
   border-radius: 0px;
 }
 div.row.container-actions.align-center{

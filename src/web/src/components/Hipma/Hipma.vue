@@ -2,9 +2,7 @@
 <template>
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
-
-        <Alert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
 
         <v-row>
@@ -131,69 +129,71 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
-import Alert from "../Alert.vue";
+
+import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
 
 export default {
-    name: "HipmaIndex",
-    data: () => ({
-        loading: false,
-        date: null,
-        menu: false,
-        dateEnd: null,
-        menuEnd: false,
-        items: [],
-        alertMessage: null,
-        alertType: null,
-        search: "",
-        options: {},
-        selected: [],
-        applyDisabled: true,
-        itemsBulk: [{
-            text: "Mark as closed",
-            value: "closed"
-        }],
-        selectedStatus: null,
-        loader: null,
-        loadingApply: false,
-        headers: [
-            { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-            { text: "Request Type", value: "HipmaRequestType", sortable: true},
-            { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-            { text: "Applicant", value: "applicantfullname", sortable: true},
-            { text: "Created", value: "created_at", sortable: true},
-            { text: "", value: "showUrl", sortable: false},
-        ],
-        page: 1,
-        pageCount: 0,
-        iteamsPerPage: 10,
-    }),
-    components: {
-        Notifications,
-        Alert
-    },
-    watch: {
-        options: {
-            handler() {
-            this.getDataFromApi();
-            },
-            deep: true,
-        },
-        search: {
-            handler() {
-                this.getDataFromApi();
-            },
-            deep: true,
-        },
-        loader () {
-            const l = this.loader
-            this[l] = !this[l]
+  name: "HipmaIndex",
+  data: () => ({
+    loading: false,
+    date: null,
+    menu: false,
+    dateEnd: null,
+    menuEnd: false,
+    items: [],
+    alertMessage: "",
+    alertType: "",
+    search: "",
+    options: {},
+    flagAlert: false,
+    selected: [],
+    applyDisabled: true,
+    itemsBulk: [{
+        text: "Mark as closed",
+        value: "closed"
+    }],
+    selectedStatus: null,
+    loader: null,
+    loadingApply: false,
+    headers: [
+        { text: "Confirmation Number", value: "confirmation_number", sortable: true},
+        { text: "Request Type", value: "HipmaRequestType", sortable: true},
+        { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
+        { text: "Applicant", value: "applicantfullname", sortable: true},
+        { text: "Created", value: "created_at", sortable: true},
+        { text: "", value: "showUrl", sortable: false},
+    ],
+    page: 1,
+    pageCount: 0,
+    iteamsPerPage: 10,
+  }),
+  components: {
+    Notifications,
+    ModuleAlert
+  },
+  watch: {
+      options: {
+          handler() {
+          this.getDataFromApi();
+          },
+          deep: true,
+      },
+      search: {
+          handler() {
+              this.getDataFromApi();
+          },
+          deep: true,
+      },
+      loader () {
+          const l = this.loader
+          this[l] = !this[l]
 
-            setTimeout(() => (this[l] = false), 2000)
+          setTimeout(() => (this[l] = false), 2000)
 
-            this.loader = null
-        },
+          this.loader = null
+      },
     },
     created(){
     },
