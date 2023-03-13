@@ -15,12 +15,27 @@
 								<b>Field</b>
                             </th>
                             <th>
-								<b>Value</b>
+								<b>Value<span v-if="midwiferyDuplicated">&nbsp;(Original Request)</span></b>
                             </th>
+							<th v-if="midwiferyDuplicated">
+								<b>Value&nbsp;(Duplicated Request)</b>
+							</th>
                         </tr>
                         </thead>
-                        <tbody>
+						<tbody v-if="midwiferyDuplicated">
+							<tr>
+								<td>Do you identify with any of these groups and communities?</td>
+								<td>{{ midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie }}</td>
+								<td>{{ midwiferyDuplicated.do_you_identify_with_one_or_more_of_these_groups_and_communitie }}</td>
+							</tr>
 
+							<tr>
+								<td>How did you find out about the program?</td>
+								<td>{{ midwifery.how_did_you_find_out_about_the_midwifery_clinic_select_all_that }}</td>
+								<td>{{ midwiferyDuplicated.how_did_you_find_out_about_the_midwifery_clinic_select_all_that }}</td>
+							</tr>
+						</tbody>
+                        <tbody v-else >
 							<tr v-if="midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie">
 								<td>Do you identify with any of these groups and communities?</td>
 								<td>{{ midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie }}</td>
@@ -30,7 +45,6 @@
 								<td>How did you find out about the program?</td>
 								<td>{{ midwifery.how_did_you_find_out_about_the_midwifery_clinic_select_all_that }}</td>
 							</tr>
-
                         </tbody>
                     </template>
 				</v-simple-table>
@@ -43,7 +57,7 @@
 <script>
 export default {
     name: 'MidwiferyDemographicInformation',
-    props: ['midwifery', 'panelModel'],
+    props: ['midwifery', 'midwiferyDuplicated', 'panelModel'],
 	data() {
 		return {
 			modelPanel: this.panelModel

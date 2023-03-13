@@ -26,6 +26,8 @@ export const HIPMA_STATUS_URL = `${HIPMA_SUBMISSIONS_URL}/status`
 export const HIPMA_DELETE_FILE = `${HIPMA_URL}/deleteFile/`;
 export const HIPMA_DUPLICATES = `${HIPMA_URL}/duplicates`;
 export const HIPMA_DUPLICATES_DETAILS = `${HIPMA_DUPLICATES}/details/`;
+export const HIPMA_DUPLICATES_PRIMARY = `${HIPMA_DUPLICATES}/primary/`;
+export const HIPMA_VALIDATE_WARNING_URL = `${HIPMA_DUPLICATES}/validateWarning/`;
 
 export const GENERAL_URL = `${config.apiBaseUrl}/api/general`;
 export const SUBMISSION_URL = `${GENERAL_URL}/submissions`;
@@ -40,5 +42,10 @@ export const MIDWIFERY_VALIDATE_URL = `${MIDWIFERY_URL}/validateRecord/`;
 export const MIDWIFERY_DOWNLOAD_FILE_URL = `${MIDWIFERY_URL}/downloadFile/`;
 export const MIDWIFERY_CHANGE_STATUS_URL = `${MIDWIFERY_URL}/changeStatus/`;
 export const MIDWIFERY_EXPORT_FILE_URL = `${MIDWIFERY_URL}/export`;
-export const MIDWIFERY_SUBMISSIONS_URL = `${MIDWIFERY_URL}/submissions`;
-export const MIDWIFERY_STATUS_URL = `${MIDWIFERY_SUBMISSIONS_URL}/status`;
+export const MIDWIFERY_SUBMISSIONS_URL = `${MIDWIFERY_URL}/submissions`
+export const MIDWIFERY_STATUS_URL = `${MIDWIFERY_SUBMISSIONS_URL}/status`
+export const MIDWIFERY_DUPLICATES = `${MIDWIFERY_URL}/duplicates`;
+export const MIDWIFERY_DUPLICATES_DETAILS = `${MIDWIFERY_DUPLICATES}/details/`;
+export const MIDWIFERY_DUPLICATES_PRIMARY = `${MIDWIFERY_DUPLICATES}/primary/`;
+export const MIDWIFERY_VALIDATE_WARNING_URL = `${MIDWIFERY_DUPLICATES}/validateWarning/`;
+

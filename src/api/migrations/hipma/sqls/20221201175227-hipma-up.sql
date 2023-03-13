@@ -55,10 +55,10 @@ CREATE INDEX health_information_name_idx ON bizont_edms_hipma.health_information
 CREATE TABLE IF NOT EXISTS bizont_edms_hipma.hipma_duplicated_requests
 (
     id SERIAL PRIMARY KEY,
-    health_information_id int,
+    health_information_original_id integer,
+    health_information_duplicated_id integer,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT hipma_duplicated_requests_pkey PRIMARY KEY (id)
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 )
 
 TABLESPACE pg_default;

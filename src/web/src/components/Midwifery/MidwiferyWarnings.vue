@@ -1,7 +1,7 @@
 
 <template>
-    <div class="hipma-service">
-        <p class="title-service mb-6">HIPMA Possible Duplicates</p>
+    <div class="midwifery-service">
+        <p class="title-service mb-6">Midwifery Possible Duplicates</p>
 
         <Alert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
@@ -29,10 +29,10 @@
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
 import Alert from "../Alert.vue";
-import { HIPMA_DUPLICATES } from "../../urls.js";
+import { MIDWIFERY_DUPLICATES } from "../../urls.js";
 
 export default {
-    name: "HipmaIndex",
+    name: "MidwiferyWarning",
     data: () => ({
         loading: false,
         date: null,
@@ -54,10 +54,12 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "Applicant", value: "applicantfullname", sortable: true},
+			{ text: "First Name", value: "first_name", sortable: true},
+            { text: "Last Name", value: "last_name", sortable: true},
+            { text: "Preferred Email", value: "preferred_email", sortable: true},
+            { text: "Preferred Phone", value: "preferred_phone", sortable: true},
 			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
-            { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-            { text: "Request Type", value: "HipmaRequestType", sortable: true},
+            { text: "Status", value: "status_description", sortable: true},
             { text: "Created", value: "created_at", sortable: true},
             { text: "", value: "showUrl", sortable: false},
 			{ title: '', key: 'data-table-expand' },
@@ -134,7 +136,7 @@ export default {
             this.loading = true;
 
             axios
-            .post(HIPMA_DUPLICATES, {
+            .post(MIDWIFERY_DUPLICATES, {
                 params: {
                     dateFrom: this.date,
                     dateTo: this.dateEnd,

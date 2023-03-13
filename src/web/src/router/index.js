@@ -20,6 +20,8 @@ import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
 import MidwiferyAnalytics from "../components/Midwifery/MidwiferyAnalytics";
+import MidwiferyWarnings from "../components/Midwifery/MidwiferyWarnings";
+import MidwiferyWarningsDetails from "../components/Midwifery/MidwiferyWarningsDetails";
 
 import Dashboard from "../components/Dashboard.vue";
 
@@ -195,7 +197,10 @@ const routes = [
     name: "Hipma Warnings",
     component: HipmaWarnings,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
     }
   },
   {
@@ -203,7 +208,32 @@ const routes = [
     name: "Hipma Warnings Details",
     component: HipmaWarningsDetails,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
+    }
+  },
+  {
+    path: "/midwiferyWarnings",
+    name: "Midwifery Warnings",
+    component: MidwiferyWarnings,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
+    }
+  },
+  {
+    path: "/midwiferyWarnings/details/:duplicate_id",
+    name: "Midwifery Warnings Details",
+    component: MidwiferyWarningsDetails,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
     }
   },
 ];

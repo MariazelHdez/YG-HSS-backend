@@ -847,19 +847,23 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
     try {
 
         let duplicate_id = Number(req.params.duplicate_id);
+        var hipma = Object();
+        var hipmaDuplicate = Object();
+        var hipmaEntries = Object();
 
         var duplicateEntry = await db("bizont_edms_hipma.hipma_duplicated_requests")
         .where("id", duplicate_id).then((rows: any) => {
-            let arrayResult = Array();
+            let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult.push(row['id']);
+                arrayResult.original = row['health_information_original_id'];
+                arrayResult.duplicated = row['health_information_duplicated_id'];
             }
 
             return arrayResult;
         });
 
-        var hipma = await db("bizont_edms_hipma.health_information")
+        hipmaEntries = await db("bizont_edms_hipma.health_information")
         .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
         .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
         .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
@@ -871,117 +875,139 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
                 'bizont_edms_hipma.hipma_copy_health_information.description as CopyHealthInformation',
                 'bizont_edms_hipma.hipma_situations.description as HipmaSituations',
                 'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest')
-        .whereIn("health_information.id", duplicateEntry)
-        .first();
+        .whereIn("health_information.id", [duplicateEntry.original, duplicateEntry.duplicated])
+        .where("health_information.status", "1");
 
-        if(!_.isNull(hipma.date_from_)) {
-            hipma.date_from_ =  hipma.date_from_.toLocaleString("en-CA", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });
-        }
+        var socialServices = Object();
+        var hssSystems = Object();
 
-        if(!_.isNull(hipma.date_to_)) {
-            hipma.date_to_ =  hipma.date_to_.toLocaleString("en-CA", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });
-        }
+        socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
+            let arrayResult = Object();
 
-        if(!_.isNull(hipma.date_of_birth)) {
-            hipma.date_of_birth =  hipma.date_of_birth.toLocaleString("en-CA", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });
-        }
-
-        if(!_.isEmpty(hipma.name_of_health_and_social_services_program_area_optional_)) {
-            var dataString = "";
-            var socialServices = Object();
-
-            socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
-                let arrayResult = Object();
-
-                for (let row of rows) {
-                    arrayResult[row['id']] = row['description'];
-                }
-
-                return arrayResult;
-            });
-
-            _.forEach(hipma.name_of_health_and_social_services_program_area_optional_, function(value: any, key: any) {
-                if(socialServices.hasOwnProperty(value)) {
-                    dataString += socialServices[value]+",";
-                }else{
-                    dataString += value+",";
-                }
-            });
-
-            if(dataString.substr(-1) == ",") {
-                dataString = dataString.slice(0, -1);
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
             }
 
-            hipma.name_of_health_and_social_services_program_area_optional_ = dataString.replace(/,/g, ', ');
-        }
+            return arrayResult;
+        });
 
-        if(!_.isEmpty(hipma.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ)) {
-            var dataString = "";
-            var hssSystems = Object();
+        hssSystems = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
+            let arrayResult = Object();
 
-            hssSystems = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
-                let arrayResult = Object();
-
-                for (let row of rows) {
-                    arrayResult[row['id']] = row['description'];
-                }
-
-                return arrayResult;
-            });
-
-            _.forEach(hipma.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ, function(value: any, key: any) {
-                if(hssSystems.hasOwnProperty(value)) {
-                    dataString += hssSystems[value]+",";
-                }else{
-                    dataString += value+",";
-                }
-            });
-
-            if(dataString.substr(-1) == ",") {
-                dataString = dataString.slice(0, -1);
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
             }
 
-            hipma.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
+            return arrayResult;
+        });
+
+        if(hipmaEntries){
+            hipmaEntries.forEach(function (value: any) {
+                if(!_.isNull(value.date_from_)) {
+                    value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isNull(value.date_to_)) {
+                    value.date_to_ =  value.date_to_.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isNull(value.date_of_birth)) {
+                    value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isEmpty(value.name_of_health_and_social_services_program_area_optional_)) {
+                    var dataString = "";
+
+                    _.forEach(value.name_of_health_and_social_services_program_area_optional_, function(value: any, key: any) {
+                        if(socialServices.hasOwnProperty(value)) {
+                            dataString += socialServices[value]+",";
+                        }else{
+                            dataString += value+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ",") {
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.name_of_health_and_social_services_program_area_optional_ = dataString.replace(/,/g, ', ');
+                }
+
+                if(!_.isEmpty(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ)) {
+                    var dataString = "";
+
+                    _.forEach(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ, function(value: any, key: any) {
+                        if(hssSystems.hasOwnProperty(value)) {
+                            dataString += hssSystems[value]+",";
+                        }else{
+                            dataString += value+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ",") {
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
+                }
+
+                if(value.id == duplicateEntry.original){
+                    hipma = value;
+                }else if(value.id == duplicateEntry.duplicated){
+                    hipmaDuplicate = value;
+                }
+
+            });
         }
 
-        var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("duplicate_id", duplicate_id).select();
+        var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("hipma_id", duplicateEntry.original).select();
+        var hipmaFilesDuplicated = await db("bizont_edms_hipma.hipma_files").where("hipma_id", duplicateEntry.duplicated).select();
         var files = Object();
+        var filesDuplicated = Object();
 
         if(!_.isEmpty(hipmaFiles)){
 
-            _.forEach(hipmaFiles, function(value: any) {
+            _.forEach(hipmaFiles, function(valueFiles: any) {
 
-                files[value.description] = { id: value.id,
-                                            file_name: value.file_name,
-                                            file_type: value.file_type,
-                                            file_size: value.file_size,
-                                            file_fullName: value.file_name+"."+value.file_type,
-                                            file_data: value.file_data
+                files[valueFiles.description] = { id: valueFiles.id,
+                                            file_name: valueFiles.file_name,
+                                            file_type: valueFiles.file_type,
+                                            file_size: valueFiles.file_size,
+                                            file_fullName: valueFiles.file_name+"."+valueFiles.file_type,
+                                            file_data: valueFiles.file_data
                                         };
 
             });
         }
 
-        let today = new Date();
-        let dd = String(today.getDate()).padStart(2, '0');
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let yyyy = today.getFullYear();
-        let todayDate = mm+'_'+dd+'_'+yyyy;
-        let fileName = 'hipma_request_details_'+todayDate+".pdf";
+        if(!_.isEmpty(hipmaFilesDuplicated)){
 
-        res.json({ hipma: hipma, hipmaFiles: files, fileName:fileName });
+            _.forEach(hipmaFilesDuplicated, function(valueFilesDup: any) {
+
+                filesDuplicated[valueFilesDup.description] = { id: valueFilesDup.id,
+                                            file_name: valueFilesDup.file_name,
+                                            file_type: valueFilesDup.file_type,
+                                            file_size: valueFilesDup.file_size,
+                                            file_fullName: valueFilesDup.file_name+"."+valueFilesDup.file_type,
+                                            file_data: valueFilesDup.file_data
+                                        };
+
+            });
+        }
+
+        res.json({ hipma: hipma, hipmaDuplicate: hipmaDuplicate, hipmaFiles: files, hipmaFilesDuplicated: filesDuplicated});
 
     } catch(e) {
         console.log(e);  // debug if needed
@@ -992,6 +1018,88 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
     }
 });
 
+/**
+ * Reject duplicate warning
+ *
+ * @param {duplicate_id} id of request
+ * @return json
+ */
+hipmaRouter.patch("/duplicates/primary", async (req: Request, res: Response) => {
+
+    try {
+
+        var warning = Number(req.body.params.warning);
+        var request = Number(req.body.params.request);
+        var type = req.body.params.type;
+        var updateRequest = Object();
+        var rejectWarning = Object();
+
+        if(!request){
+            rejectWarning = await db("bizont_edms_hipma.hipma_duplicated_requests").where("id", warning).del();
+        }else{
+            var warningRequest = await db("bizont_edms_hipma.hipma_duplicated_requests").where("id", warning).first();
+
+            if(type == 'O'){
+                updateRequest = await db("bizont_edms_hipma.health_information").update({status: "2"}).where("id", warningRequest.health_information_duplicated_id);
+            }else if(type == 'D'){
+                updateRequest = await db("bizont_edms_hipma.health_information").update({status: "2"}).where("id", warningRequest.health_information_original_id);
+            }
+
+            if(updateRequest){
+                rejectWarning = await db("bizont_edms_hipma.hipma_duplicated_requests").where("id", warning).del();
+            }
+        }
+
+        if(rejectWarning) {
+            let type = "success";
+            let message = "Warning updated successfully.";
+            res.json({ status:200, message: message, type: type });
+        }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Validate if warning is non existant
+ *
+ * @param {hipma_id} id of warning
+ * @return json
+ */
+hipmaRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+        var duplicate_id = Number(req.params.duplicate_id);
+        console.log(duplicate_id);
+        var warning = Object();
+        var flagExists = true;
+        var message = "";
+        var type = "error";
+
+        warning = await db("bizont_edms_hipma.hipma_duplicated_requests")
+            .where('id', duplicate_id)
+            .select()
+            .first();
+
+        if(!warning){
+            flagExists = false;
+            message = "The request you are consulting is non existant, please choose a valid request.";
+        }
+
+        res.json({ status: 200, flagWarning: flagExists, message: message, type: type});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
 
 /**
  * Generate a new confirmation number similar to php's uniqid()

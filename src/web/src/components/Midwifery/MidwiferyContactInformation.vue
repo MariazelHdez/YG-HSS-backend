@@ -10,16 +10,44 @@
                 <v-simple-table>
                     <template v-slot:default>
                         <thead class="table-details-header">
-                        <tr>
-                            <th>
-								<b>Field</b>
-                            </th>
-                            <th>
-								<b>Value</b>
-                            </th>
-                        </tr>
+							<tr>
+								<th>
+									<b>Field</b>
+								</th>
+								<th>
+									<b>Value<span v-if="midwiferyDuplicated">&nbsp;(Original Request)</span></b>
+								</th>
+								<th v-if="midwiferyDuplicated">
+									<b>Value&nbsp;(Duplicated Request)</b>
+								</th>
+							</tr>
                         </thead>
-                        <tbody>
+						<tbody v-if="midwiferyDuplicated">
+							<tr>
+								<td>Your preferred phone number</td>
+								<td>{{ midwifery.preferred_phone }}</td>
+								<td>{{ midwiferyDuplicated.preferred_phone }}</td>
+							</tr>
+
+							<tr>
+								<td>Your preferred email address</td>
+								<td>{{ midwifery.preferred_email }}</td>
+								<td>{{ midwiferyDuplicated.preferred_email }}</td>
+							</tr>
+
+							<tr>
+								<td>Is it okay to leave a message at this phone number?</td>
+								<td>{{ options[midwifery.okay_to_leave_message] }}</td>
+								<td>{{ options[midwiferyDuplicated.okay_to_leave_message] }}</td>
+							</tr>
+
+							<tr>
+								<td>How would you prefer to be contacted?</td>
+								<td>{{ midwifery.preferred_contact }}</td>
+								<td>{{ midwiferyDuplicated.preferred_contact }}</td>
+							</tr>
+						</tbody>
+                        <tbody v-else >
 							<tr v-if="midwifery.preferred_phone">
 								<td>Your preferred phone number</td>
 								<td>{{ midwifery.preferred_phone }}</td>
@@ -51,7 +79,7 @@
 <script>
 export default {
     name: 'MidwiferyContactInformation',
-    props: ['midwifery', 'options','panelModel'],
+    props: ['midwifery', 'midwiferyDuplicated', 'options', 'panelModel'],
 	data() {
 		return {
 			modelPanel: this.panelModel

@@ -330,6 +330,50 @@ div.row.container-actions.align-center{
     color: #FFFFFF;
 }
 
+.btn-download-duplicate{
+    float: left;
+}
+
+.display-inline-block,
+#warning-radio-group{
+    display: inline-block !important;
+}
+
+#warning-radio-group .v-radio label{
+    vertical-align: text-bottom;
+}
+
+.btn-radio{
+    background-color: transparent;
+    /*border-color: rgb(243, 169, 1);*/
+    border-style: solid;
+    border-width: 2px;
+    height: 36px;
+    min-width: 64px;
+    padding: 5px 16px 0px 22px;
+}
+
+#warning-radio-group .v-radio label{
+    color: black;
+}
+
+.btn-radio.v-item--active{
+    background-color: rgb(243, 169, 1);
+    border-color: rgb(243, 169, 1);
+    height: 36px;
+    min-width: 64px;
+    padding: 5px 16px 0px 22px;
+}
+
+#warning-radio-group .v-radio.btn-radio.v-item--active label{
+    color: white;
+}
+
+#warning-radio-group .v-radio{
+    margin-bottom: 0px;
+    margin-right: 10px;
+}
+
 @-moz-keyframes loader {
     from {
         transform: rotate(0);
