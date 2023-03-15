@@ -114,7 +114,10 @@ export const sections = [
             {
                 name: "Warnings",
                 url: "/midwiferyWarnings",
-                icon: "fa-regular fa-rectangle-list"
+                icon: "fa-regular fa-rectangle-list",
+                permissions: [
+                    "midwifery_view"
+                ]
             },
             {
                 name: "Analytics",
