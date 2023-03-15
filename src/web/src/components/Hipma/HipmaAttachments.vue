@@ -9,6 +9,20 @@
 			<v-expansion-panel-content>
                 <v-simple-table>
                     <template v-slot:default>
+						<thead class="table-details-header">
+							<tr>
+								<th>
+									<b>Field</b>
+								</th>
+								<th>
+									<b>Value<span v-if="hipmaDuplicated">&nbsp;(Original Request)</span></b>
+								</th>
+								<th v-if="hipmaDuplicated">
+									<b>Value&nbsp;(Duplicated Request)</b>
+								</th>
+								<th v-else></th>
+							</tr>
+                        </thead>
 						<tbody v-if="hipmaDuplicated">
 							<tr>
 								<td>Declaration of Parental or Guardianship Status</td>

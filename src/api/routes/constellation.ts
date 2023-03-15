@@ -609,6 +609,338 @@ constellationRouter.patch("/changeStatus", async (req: Request, res: Response) =
     }
 });
 
+constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
+
+    try {
+
+        var constellationOriginal = Object();
+        var constellationDuplicate = Object();
+        var constellation = Array();
+        var sqlFilter = "constellation_health.status <> '4'";
+
+        constellationOriginal =  await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+            .join('bizont_edms_constellation_health.constellation_health', 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
+            .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
+            .select('constellation_health.your_legal_name',
+                    'constellation_health.id',
+                    'constellation_status.description as status_description',
+                    'constellation_health.id as constellation_health_id',
+                    db.raw("to_char(constellation_health.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                        "to_char(constellation_health.date_of_birth, 'YYYY-MM-DD') as date_of_birth"))
+            .whereRaw(sqlFilter)
+            .orderBy("constellation_health.created_at").then((rows: any) => {
+                let arrayResult = Object();
+
+                for (let row of rows) {
+                    arrayResult[row['constellation_health_original_id']] = row;
+                }
+
+                return arrayResult;
+            });
+
+        constellationDuplicate = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+        .join('bizont_edms_constellation_health.constellation_health', 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
+        .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
+        .select('constellation_health.your_legal_name',
+                'constellation_duplicated_requests.id',
+                'constellation_status.description as status_description',
+                'constellation_health.id as constellation_health_id',
+                db.raw("to_char(constellation_health.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+                    "to_char(constellation_health.date_of_birth, 'YYYY-MM-DD') as date_of_birth"))
+        .whereRaw(sqlFilter)
+        .orderBy("constellation_health.created_at");
+
+        let index = 0;
+
+        constellationDuplicate.forEach(function (value: any) {
+
+            let url = "constellationWarnings/details/"+value.id;
+
+            constellation.push({
+                constellation_health_id: null,
+                id: null,
+                constellation_health_original_id: null,
+                constellation_health_duplicated_id: null,
+                your_legal_name: 'Duplicated #'+(index+1),
+                date_of_birth: null,
+                status_description: null,
+                created_at: 'ACTIONS:',
+                showUrl: url
+            });
+
+            constellation.push(constellationOriginal[value.constellation_health_original_id]);
+            constellation.push(value);
+            index = index + 1;
+        });
+
+        res.send({data: constellation});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+
+});
+
+
+/**
+ * Obtain data to show in details view
+ *
+ * @param id of request
+ * @return json
+ */
+constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+
+        let duplicate_id = Number(req.params.duplicate_id);
+        var constellation = Object();
+        var constellationDuplicate = Object();
+        var constellationEntries = Object();
+        var communityLocations = Object();
+        var constellationFamilyOriginal = Object();
+        var constellationFamilyDuplicated = Object();
+
+        var duplicateEntry = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+        .where("id", duplicate_id).then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult.original = row['constellation_health_original_id'];
+                arrayResult.duplicated = row['constellation_health_duplicated_id'];
+            }
+
+            return arrayResult;
+        });
+
+        constellationEntries = await db("bizont_edms_constellation_health.constellation_health")
+            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
+            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
+            //.where('constellation_health.id', constellationHealth_id)
+            .select('bizont_edms_constellation_health.constellation_health.*',
+                    'bizont_edms_constellation_health.constellation_health_language.description as language_prefer_description',
+                    'bizont_edms_constellation_health.constellation_health_demographics.description as demographic_description')
+            .whereIn("constellation_health.id", [duplicateEntry.original, duplicateEntry.duplicated])
+            .whereNot('constellation_health.status', '4');
+
+        constellationFamilyOriginal = await db("bizont_edms_constellation_health.constellation_health_family_members")
+            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
+            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
+            .select('constellation_health_family_members.*',
+                    'constellation_health_language.description as language_prefer_description_family_member',
+                    'constellation_health_demographics.description as demographic_description_family_member')
+            .where('constellation_health_family_members.constellation_health_id', duplicateEntry.original);
+
+        constellationFamilyDuplicated = await db("bizont_edms_constellation_health.constellation_health_family_members")
+            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
+            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
+            .select('constellation_health_family_members.*',
+                    'constellation_health_language.description as language_prefer_description_family_member',
+                    'constellation_health_demographics.description as demographic_description_family_member')
+            .where('constellation_health_family_members.constellation_health_id', duplicateEntry.duplicated);
+
+        let dataString = "";
+        var diagnosis = Object();
+
+        diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        if(constellationEntries){
+            constellationEntries.forEach(function (value: any) {
+
+                _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
+                    if(valueDiagnosis in diagnosis){
+                        dataString += diagnosis[valueDiagnosis]+",";
+                    }else{
+                        dataString += valueDiagnosis+",";
+                    }
+                });
+
+                if(dataString.substr(-1) == ","){
+                    dataString = dataString.slice(0, -1);
+                }
+
+                value.diagnosis = dataString.replace(/,/g, ', ');
+
+                value.flagFamilyMembers = false;
+
+                if(value.id == duplicateEntry.original){
+                    constellation = value;
+
+                    if(constellationFamilyOriginal.length){
+                        value.flagFamilyMembers = true;
+    
+                        constellationFamilyOriginal.forEach(function (value: any, key: any) {
+    
+                            if(value.date_of_birth_family_member == 0) {
+                                value.date_of_birth_family_member =  "N/A";
+                            }
+    
+                            let dataString = "";
+    
+                            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+    
+                                if(valueDiagnosisFm in diagnosis){
+                                    dataString += diagnosis[valueDiagnosisFm]+",";
+                                }else{
+                                    dataString += valueDiagnosisFm+",";
+                                }
+                            });
+    
+                            if(dataString.substr(-1) == ","){
+                                dataString = dataString.slice(0, -1);
+                            }
+    
+                            constellationFamilyOriginal[key].diagnosis_family_member = dataString.replace(/,/g, ', ');
+    
+                        });
+                    }
+
+                }else if(value.id == duplicateEntry.duplicated){
+                    constellationDuplicate = value;
+
+                    if(constellationFamilyDuplicated.length){
+                        value.flagFamilyMembers = true;
+
+                        constellationFamilyDuplicated.forEach(function (value: any, key: any) {
+
+                            if(value.date_of_birth_family_member == 0) {
+                                value.date_of_birth_family_member =  "N/A";
+                            }
+
+                            let dataString = "";
+
+                            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+
+                                if(valueDiagnosisFm in diagnosis){
+                                    dataString += diagnosis[valueDiagnosisFm]+",";
+                                }else{
+                                    dataString += valueDiagnosisFm+",";
+                                }
+                            });
+
+                            if(dataString.substr(-1) == ","){
+                                dataString = dataString.slice(0, -1);
+                            }
+
+                            constellationFamilyDuplicated[key].diagnosis_family_member = dataString.replace(/,/g, ', ');
+
+                        });
+                    }
+
+                }
+
+            });
+        }
+
+        res.json({  dataConstellation: constellation, dataConstellationDuplicate: constellationDuplicate,
+                    dataConstellationFamily: constellationFamilyOriginal,
+                    dataConstellationFamilyDuplicated: constellationFamilyDuplicated
+                });
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Validate if warning is non existant
+ *
+ * @param {duplicate_id} id of warning
+ * @return json
+ */
+constellationRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+        var duplicate_id = Number(req.params.duplicate_id);
+        var warning = Object();
+        var flagExists = true;
+        var message = "";
+        var type = "error";
+
+        warning = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+            .where('id', duplicate_id)
+            .select()
+            .first();
+
+        if(!warning){
+            flagExists = false;
+            message = "The request you are consulting is non existant, please choose a valid request.";
+        }
+
+        res.json({ status: 200, flagWarning: flagExists, message: message, type: type});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Reject duplicate warning
+ *
+ * @param {warning}
+ * @param {request}
+ * @return json
+ */
+constellationRouter.patch("/duplicates/primary", async (req: Request, res: Response) => {
+
+    try {
+
+        var warning = Number(req.body.params.warning);
+        var request = Number(req.body.params.request);
+        var type = req.body.params.type;
+        var updateRequest = Object();
+        var rejectWarning = Object();
+        let message = "Warning updated successfully.";
+
+        if(!request){
+            message = "Warning deleted successfully.";
+            rejectWarning = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).del();
+        }else{
+            var warningRequest = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).first();
+
+            if(type == 'O'){
+                updateRequest = await db("bizont_edms_constellation_health.constellation_health").update({status: "4"}).where("id", warningRequest.constellation_health_duplicated_id);
+            }else if(type == 'D'){
+                updateRequest = await db("bizont_edms_constellation_health.constellation_health").update({status: "4"}).where("id", warningRequest.constellation_health_original_id);
+            }
+
+            if(updateRequest){
+                rejectWarning = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).del();
+            }
+
+        }
+
+        if(rejectWarning) {
+            let type = "success";
+            res.json({ status:200, message: message, type: type });
+        }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
 /**
  * Obtains and transforms the data for storage
  *

@@ -2,7 +2,7 @@
   <v-expansion-panels multiple v-model="modelPanel">
     <v-expansion-panel class="mb-6">
       <v-expansion-panel-header>
-        Family Members Information
+        Family Members Information&nbsp;{{titleLabel}}
       </v-expansion-panel-header>
       <v-expansion-panel-content>
         <v-expansion-panels
@@ -226,7 +226,7 @@
 <script>
 export default {
   name: "ConstellationFamilyMembers",
-  props: ["familyMembers", "panelModel"],
+  props: ["familyMembers", "panelModel", "titleLabel"],
   data() {
     return {
       modelPanel: this.panelModel,

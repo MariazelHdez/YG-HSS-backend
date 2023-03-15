@@ -34,7 +34,7 @@ BEGIN
 				midwifery_services.first_name = NEW.first_name AND
 				midwifery_services.last_name = NEW.last_name AND
 				midwifery_services.date_of_birth = NEW.date_of_birth AND 
-				status=1
+				status NOT IN (4)
 				ORDER BY midwifery_services.created_at LIMIT 1
 			);
 
