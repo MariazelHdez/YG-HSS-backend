@@ -38,6 +38,11 @@ export const sections = [
                 ]
             },
             {
+                name: "Warnings",
+                url: "/constellationWarnings",
+                icon: "fa-regular fa-rectangle-list"
+            },
+            {
                 name: "Analytics",
                 url: "/constellationAnalytics",
                 icon: "fa-solid fa-chart-line",
