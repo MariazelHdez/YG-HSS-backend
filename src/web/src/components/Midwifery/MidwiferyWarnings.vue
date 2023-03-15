@@ -3,7 +3,7 @@
     <div class="midwifery-service">
         <p class="title-service mb-6">Midwifery Possible Duplicates</p>
 
-        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <Notifications ref="notifier"></Notifications>
 
