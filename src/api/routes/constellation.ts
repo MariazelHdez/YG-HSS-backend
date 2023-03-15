@@ -618,9 +618,9 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
         var constellation = Array();
         var sqlFilter = "constellation_health.status <> '4'";
 
-        constellationOriginal =  await db("bizont_edms_constellation_health.constellation_duplicated_requests")
-            .join('bizont_edms_constellation_health.constellation_health', 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
-            .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
+        constellationOriginal =  await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
+            .join(`${SCHEMA_CONSTELLATION}.constellation_health`, 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
+            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
             .select('constellation_health.your_legal_name',
                     'constellation_health.id',
                     'constellation_status.description as status_description',
@@ -638,9 +638,9 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
                 return arrayResult;
             });
 
-        constellationDuplicate = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
-        .join('bizont_edms_constellation_health.constellation_health', 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
-        .join('bizont_edms_constellation_health.constellation_status', 'constellation_health.status', '=', 'constellation_status.id')
+        constellationDuplicate = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
+        .join(`${SCHEMA_CONSTELLATION}.constellation_health`, 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
+        .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
         .select('constellation_health.your_legal_name',
                 'constellation_duplicated_requests.id',
                 'constellation_status.description as status_description',
@@ -703,7 +703,7 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
         var constellationFamilyOriginal = Object();
         var constellationFamilyDuplicated = Object();
 
-        var duplicateEntry = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+        var duplicateEntry = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
         .where("id", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
@@ -715,27 +715,27 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
             return arrayResult;
         });
 
-        constellationEntries = await db("bizont_edms_constellation_health.constellation_health")
-            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
+        constellationEntries = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
             //.where('constellation_health.id', constellationHealth_id)
-            .select('bizont_edms_constellation_health.constellation_health.*',
-                    'bizont_edms_constellation_health.constellation_health_language.description as language_prefer_description',
-                    'bizont_edms_constellation_health.constellation_health_demographics.description as demographic_description')
+            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
+                    `${SCHEMA_CONSTELLATION}.constellation_health_language.description as language_prefer_description`,
+                    `${SCHEMA_CONSTELLATION}.constellation_health_demographics.description as demographic_description`)
             .whereIn("constellation_health.id", [duplicateEntry.original, duplicateEntry.duplicated])
             .whereNot('constellation_health.status', '4');
 
-        constellationFamilyOriginal = await db("bizont_edms_constellation_health.constellation_health_family_members")
-            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
+        constellationFamilyOriginal = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
             .select('constellation_health_family_members.*',
                     'constellation_health_language.description as language_prefer_description_family_member',
                     'constellation_health_demographics.description as demographic_description_family_member')
             .where('constellation_health_family_members.constellation_health_id', duplicateEntry.original);
 
-        constellationFamilyDuplicated = await db("bizont_edms_constellation_health.constellation_health_family_members")
-            .leftJoin('bizont_edms_constellation_health.constellation_health_language', 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin('bizont_edms_constellation_health.constellation_health_demographics', 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
+        constellationFamilyDuplicated = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
             .select('constellation_health_family_members.*',
                     'constellation_health_language.description as language_prefer_description_family_member',
                     'constellation_health_demographics.description as demographic_description_family_member')
@@ -744,7 +744,7 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
         let dataString = "";
         var diagnosis = Object();
 
-        diagnosis = await db("bizont_edms_constellation_health.constellation_health_diagnosis_history").select().then((rows: any) => {
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -870,7 +870,7 @@ constellationRouter.get("/duplicates/validateWarning/:duplicate_id",[param("dupl
         var message = "";
         var type = "error";
 
-        warning = await db("bizont_edms_constellation_health.constellation_duplicated_requests")
+        warning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
             .where('id', duplicate_id)
             .select()
             .first();
@@ -911,18 +911,18 @@ constellationRouter.patch("/duplicates/primary", async (req: Request, res: Respo
 
         if(!request){
             message = "Warning deleted successfully.";
-            rejectWarning = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).del();
+            rejectWarning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).del();
         }else{
-            var warningRequest = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).first();
+            var warningRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db("bizont_edms_constellation_health.constellation_health").update({status: "4"}).where("id", warningRequest.constellation_health_duplicated_id);
+                updateRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).update({status: "4"}).where("id", warningRequest.constellation_health_duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db("bizont_edms_constellation_health.constellation_health").update({status: "4"}).where("id", warningRequest.constellation_health_original_id);
+                updateRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).update({status: "4"}).where("id", warningRequest.constellation_health_original_id);
             }
 
             if(updateRequest){
-                rejectWarning = await db("bizont_edms_constellation_health.constellation_duplicated_requests").where("id", warning).del();
+                rejectWarning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).del();
             }
 
         }
