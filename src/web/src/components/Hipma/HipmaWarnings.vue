@@ -3,7 +3,7 @@
     <div class="hipma-service">
         <p class="title-service mb-6">HIPMA Possible Duplicates</p>
 
-        <Alert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <Notifications ref="notifier"></Notifications>
 
@@ -28,7 +28,7 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
-import Alert from "../Alert.vue";
+import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_DUPLICATES } from "../../urls.js";
 
 export default {
@@ -70,7 +70,7 @@ export default {
     }),
     components: {
         Notifications,
-        Alert
+        ModuleAlert
     },
     watch: {
         options: {
