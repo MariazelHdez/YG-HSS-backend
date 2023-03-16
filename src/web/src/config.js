@@ -40,7 +40,10 @@ export const sections = [
             {
                 name: "Warnings",
                 url: "/constellationWarnings",
-                icon: "fa-regular fa-rectangle-list"
+                icon: "fa-regular fa-rectangle-list",
+                permissions: [
+                    "constellation_view"
+                ]
             },
             {
                 name: "Analytics",
