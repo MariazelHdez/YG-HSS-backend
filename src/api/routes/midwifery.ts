@@ -103,10 +103,10 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
            sqlFilter += "  AND midwifery_services.status IN ("+status_request+")";
         }
 
-        midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
                     'midwifery_status.description as status_description',
                     'midwifery_birth_locations.description as birth_locations',
@@ -117,7 +117,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
             .whereRaw(sqlFilter)
             .orderBy('midwifery_services.id', 'asc');
 
-        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select().whereNot('description', 'Closed')
+        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).select().whereNot('description', 'Closed')
             .then((rows: any) => {
                 let arrayResult = Array();
                 for (let row of rows) {
@@ -127,7 +127,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                 return arrayResult;
         });
 
-        midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -139,7 +139,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
         var communities = Object();
 
-        communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -218,10 +218,10 @@ midwiferyRouter.get("/validateRecord/:midwifery_id",[param("midwifery_id").isInt
         var message= "";
         var type= "error";
 
-        midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', 'midwifery_status.id')
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', 'midwifery_status.id')
             .where('midwifery_services.id', midwifery_id)
-            .select('bizont_edms_midwifery.midwifery_services.*',
+            .select(`${SCHEMA_MIDWIFERY}.midwifery_services.*`,
                     'midwifery_status.description as status_description')
             .first();
 
@@ -257,9 +257,9 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         var communityLocations = Object();
         var languages = Object();
 
-        midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact',
@@ -270,7 +270,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             .where("midwifery_services.id", midwifery_id)
             .first();
 
-        midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -280,7 +280,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -290,7 +290,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -300,7 +300,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        midwiferyStatus = await db("bizont_edms_midwifery.midwifery_status").select()
+        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).select()
             .then((rows: any) => {
                 let arrayResult = Array();
                 for (let row of rows) {
@@ -363,7 +363,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         var communities = Object();
         var contact = Object();
 
-        communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -373,7 +373,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        contact =  await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -419,7 +419,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
 
         }
 
-        var statusMidwifery =  await db("bizont_edms_midwifery.midwifery_status").where("description", "Closed").select().first();
+        var statusMidwifery =  await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).where("description", "Closed").select().first();
 
         let today = new Date();
         let dd = String(today.getDate()).padStart(2, '0');
@@ -476,7 +476,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.preferred_email = data.preferred_email;
         midwifery.when_was_the_first_day_of_your_last_period_ = data.when_was_the_first_day_of_your_last_period_;
 
-        midwiferyCommunityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").where({ description: data.community_located }).select().first();
+        midwiferyCommunityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).where({ description: data.community_located }).select().first();
 
         if(midwiferyCommunityLocations) {
             midwifery.community_located = midwiferyCommunityLocations.id;
@@ -484,7 +484,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.community_located = data.community_located;
         }
 
-        midwiferyLanguages = await db("bizont_edms_midwifery.midwifery_languages").where({ description: data.preferred_language }).select().first();
+        midwiferyLanguages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).where({ description: data.preferred_language }).select().first();
 
         if(midwiferyLanguages) {
             midwifery.preferred_language = midwiferyLanguages.id ;
@@ -492,7 +492,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.preferred_language = data.preferred_language;
         }
 
-        midwiferyPreferredContactTypes = await db("bizont_edms_midwifery.midwifery_preferred_contact_types").where({ name: data.prefer_to_be_contacted }).select().first();
+        midwiferyPreferredContactTypes = await db(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`).where({ name: data.prefer_to_be_contacted }).select().first();
 
         if(midwiferyPreferredContactTypes) {
             midwifery.prefer_to_be_contacted = midwiferyPreferredContactTypes.id ;
@@ -500,7 +500,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.prefer_to_be_contacted = null;
         }
 
-        midwiferyBirthLocations = await db("bizont_edms_midwifery.midwifery_birth_locations").where({ name: data.where_to_give_birth }).select().first();
+        midwiferyBirthLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`).where({ name: data.where_to_give_birth }).select().first();
 
         if(midwiferyBirthLocations) {
             midwifery.where_to_give_birth = midwiferyBirthLocations.id ;
@@ -541,7 +541,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.physician_s_name = data.physician_s_name;
         midwifery.provide_details3 = data.provide_details3;
 
-        midwiferySaved = await db('bizont_edms_midwifery.midwifery_services').insert(midwifery).into('bizont_edms_midwifery.midwifery_services').returning('id');
+        midwiferySaved = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).insert(midwifery).into(`${SCHEMA_MIDWIFERY}.midwifery_services`).returning('id');
 
         if(midwiferySaved){
             res.json({ status:200, message: 'Request saved' });
@@ -586,10 +586,10 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         }
 
 
-        midwifery = await db("bizont_edms_midwifery.midwifery_services")
-            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.*',
                     'midwifery_birth_locations.description as birth_locations',
                     'midwifery_preferred_contact_types.description as preferred_contact',
@@ -602,7 +602,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             .whereRaw(sqlFilter);
 
 
-        midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -617,7 +617,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var communityLocations = Object();
         var languages = Object();
 
-        communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -627,7 +627,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        contact =  await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -636,7 +636,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -646,7 +646,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -832,7 +832,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         var midwifery_id = req.body.params.requests;
         var status_id = req.body.params.requestStatus;
 
-        var updateStatus = await db("bizont_edms_midwifery.midwifery_services").update({status: status_id}).whereIn("midwifery_services.id", midwifery_id);
+        var updateStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: status_id}).whereIn("midwifery_services.id", midwifery_id);
 
         if(updateStatus) {
             let type = "success";
@@ -859,11 +859,11 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
         var midwifery = Array();
         var sqlFilter = "midwifery_services.status <> '4'";
 
-        midwiferyOriginal = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
-            .join('bizont_edms_midwifery.midwifery_services', 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
-            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
+        midwiferyOriginal = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_services`, 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.id as midwifery_services_id',
                     'midwifery_services.first_name',
                     'midwifery_services.last_name',
@@ -889,11 +889,11 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                 return arrayResult;
             });
 
-        midwiferyDuplicate = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
-            .join('bizont_edms_midwifery.midwifery_services', 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
-            .join('bizont_edms_midwifery.midwifery_status', 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
+        midwiferyDuplicate = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_services`, 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
+            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
             .select('midwifery_services.id as midwifery_services_id',
                     'midwifery_services.first_name',
                     'midwifery_services.last_name',
@@ -968,7 +968,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         var communities = Object();
         var contact = Object();
 
-        var duplicateEntry = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+        var duplicateEntry = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
         .where("id", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
@@ -980,9 +980,9 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        midwiferyEntries = await db("bizont_edms_midwifery.midwifery_services")
-        .leftJoin('bizont_edms_midwifery.midwifery_birth_locations', 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-        .leftJoin('bizont_edms_midwifery.midwifery_preferred_contact_types', 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
+        midwiferyEntries = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
+        .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
         .select('midwifery_services.*',
                 'midwifery_birth_locations.description as birth_locations',
                 'midwifery_preferred_contact_types.description as preferred_contact',
@@ -993,7 +993,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         .whereIn("midwifery_services.id", [duplicateEntry.original, duplicateEntry.duplicated])
         .whereNot('midwifery_services.status', '4');
 
-        communities = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1003,7 +1003,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        contact =  await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -1012,17 +1012,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        midwiferyOptions = await db("bizont_edms_midwifery.midwifery_options").select().then((rows: any) => {
-            let arrayResult = Object();
-
-            for (let row of rows) {
-                arrayResult[row['id']] = row['description'];
-            }
-
-            return arrayResult;
-        });
-
-        communityLocations = await db("bizont_edms_midwifery.midwifery_community_locations").select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1032,7 +1022,17 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        languages = await db("bizont_edms_midwifery.midwifery_languages").select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1132,7 +1132,7 @@ midwiferyRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicat
         var message = "";
         var type = "error";
 
-        warning = await db("bizont_edms_midwifery.midwifery_duplicated_requests")
+        warning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
             .where('id', duplicate_id)
             .select()
             .first();
@@ -1171,18 +1171,18 @@ midwiferyRouter.patch("/duplicates/primary", async (req: Request, res: Response)
         var rejectWarning = Object();
 
         if(!request){
-            rejectWarning = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).del();
+            rejectWarning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).del();
         }else{
-            var warningRequest = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).first();
+            var warningRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db("bizont_edms_midwifery.midwifery_services").update({status: "4"}).where("id", warningRequest.midwifery_services_duplicated_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: "4"}).where("id", warningRequest.midwifery_services_duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db("bizont_edms_midwifery.midwifery_services").update({status: "4"}).where("id", warningRequest.midwifery_services_original_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: "4"}).where("id", warningRequest.midwifery_services_original_id);
             }
 
             if(updateRequest){
-                rejectWarning = await db("bizont_edms_midwifery.midwifery_duplicated_requests").where("id", warning).del();
+                rejectWarning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).del();
             }
         }
 
@@ -1243,7 +1243,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
     var data = Object();
 
     if(model == "MidwiferyGroupsCommunities") {
-        groups = await db("bizont_edms_midwifery.midwifery_groups_communities").select().then((rows: any) => {
+        groups = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
                                 arrayResult[row['name']] = row['description'];
@@ -1259,10 +1259,10 @@ async function getMultipleIdsByModel(model: any, names: any) {
             }
         });
 
-        data = await db("bizont_edms_midwifery.midwifery_groups_communities").whereIn('name', names );
+        data = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).whereIn('name', names );
 
     }else if(model == "MidwiferyClinicContactTypes") {
-        contact =   await db("bizont_edms_midwifery.midwifery_clinic_contact_types").select().then((rows: any) => {
+        contact =   await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
                                 arrayResult[row['name']] = row['description'];
@@ -1278,7 +1278,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
             }
         });
 
-        data = await db("bizont_edms_midwifery.midwifery_clinic_contact_types").whereIn('name', names);
+        data = await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).whereIn('name', names);
     }
 
     if(data.length) {
@@ -1332,7 +1332,7 @@ async function getMidwiferyOptions(field: any, data: string) {
         return null;
     }
 
-    var options = await db("bizont_edms_midwifery.midwifery_options").where({ field_name: field }).where({ field_value: bool }).select().first();
+    var options = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).where({ field_name: field }).where({ field_value: bool }).select().first();
 
     return options.id;
 }

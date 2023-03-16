@@ -33,7 +33,7 @@ BEGIN
 				SELECT constellation_health.id FROM bizont_edms_constellation_health.constellation_health WHERE 
 				constellation_health.your_legal_name = NEW.your_legal_name AND
 				constellation_health.date_of_birth = NEW.date_of_birth AND
-				status=1
+				status NOT IN (4)
 				ORDER BY constellation_health.created_at LIMIT 1
 			);
 

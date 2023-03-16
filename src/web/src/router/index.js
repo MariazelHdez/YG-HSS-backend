@@ -10,6 +10,8 @@ import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
 import ConstellationExport from "../components/Constellation/ConstellationExport"
 import ConstellationAnalytics from "../components/Constellation/ConstellationAnalytics";
+import ConstellationWarnings from "../components/Constellation/ConstellationWarnings";
+import ConstellationWarningsDetails from "../components/Constellation/ConstellationWarningsDetails";
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
 import HipmaExport from "../components/Hipma/HipmaExport";
@@ -234,6 +236,22 @@ const routes = [
       permissions: [
         "midwifery_view"
       ]
+    }
+  },
+  {
+    path: "/constellationWarnings",
+    name: "Constellation Warnings",
+    component: ConstellationWarnings,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/constellationWarnings/details/:duplicate_id",
+    name: "Constellation Warnings Details",
+    component: ConstellationWarningsDetails,
+    meta: {
+      requiresAuth: true
     }
   },
 ];

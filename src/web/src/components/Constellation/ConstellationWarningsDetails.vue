@@ -167,38 +167,28 @@
 						></v-radio>
 					</v-radio-group>
 
-					<MidwiferyInformation
-						v-bind:midwifery="itemsMidwifery"
-						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
-						v-bind:options="optionsMidwifery"
+					<ConstellationPersonalInformation
+						v-bind:constellation="itemsConstellation"
+						v-bind:constellationDuplicated="itemsConstellationDuplicated"
 						v-bind:panelModel="panelModel"
 					/>
 
-					<MidwiferyContactInformation
-						v-bind:midwifery="itemsMidwifery"
-						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
-						v-bind:options="optionsMidwifery"
+					<ConstellationOtherInformation
+						v-bind:constellation="itemsConstellation"
+						v-bind:constellationDuplicated="itemsConstellationDuplicated"
 						v-bind:panelModel="panelModel"
 					/>
 
-					<MidwiferyMedicalInformation
-						v-bind:midwifery="itemsMidwifery"
-						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
-						v-bind:options="optionsMidwifery"
+					<ConstellationFamilyMembers
+						v-bind:familyMembers="itemsConstellationFamily"
 						v-bind:panelModel="panelModel"
+						titleLabel="(Original Request)"
 					/>
 
-					<MidwiferyOtherMedicalInformation
-						v-bind:midwifery="itemsMidwifery"
-						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
-						v-bind:options="optionsMidwifery"
+					<ConstellationFamilyMembers
+						v-bind:familyMembers="itemsConstellationFamilyDuplicated"
 						v-bind:panelModel="panelModel"
-					/>
-
-					<MidwiferyDemographicInformation
-						v-bind:midwifery="itemsMidwifery"
-						v-bind:midwiferyDuplicated="itemsMidwiferyDuplicated"
-						v-bind:panelModel="panelModel"
+						titleLabel="(Duplicated Request)"
 					/>
 
 				</v-col>
@@ -210,23 +200,23 @@
 
 <script>
 const axios = require("axios");
-import MidwiferyInformation from './MidwiferyInformation.vue';
-import MidwiferyContactInformation from './MidwiferyContactInformation.vue';
-import MidwiferyMedicalInformation from './MidwiferyMedicalInformation.vue';
-import MidwiferyOtherMedicalInformation from './MidwiferyOtherMedicalInformation.vue';
-import MidwiferyDemographicInformation from './MidwiferyDemographicInformation.vue';
-import { MIDWIFERY_DUPLICATES_DETAILS } from "../../urls.js";
-import { MIDWIFERY_VALIDATE_WARNING_URL } from "../../urls.js";
-import { MIDWIFERY_DUPLICATES_PRIMARY } from "../../urls.js";
+
+import ConstellationPersonalInformation from "./ConstellationPersonalInformation.vue";
+import ConstellationOtherInformation from "./ConstellationOtherInformation.vue";
+import ConstellationFamilyMembers from "./ConstellationFamilyMembers.vue";
+import { CONSTELLATION_DUPLICATES_DETAILS } from "../../urls.js";
+import { CONSTELLATION_VALIDATE_WARNING_URL } from "../../urls.js";
+import { CONSTELLATION_DUPLICATES_PRIMARY } from "../../urls.js";
 
 export default {
-	name: "MidwiferyWarningsDetails",
+	name: "ConstellationWarningsDetails",
 	data: () => ({
 		loader: null,
 		loadingReject: false,
-		itemsMidwifery: [],
-		itemsMidwiferyDuplicated: [],
-		optionsMidwifery: [],
+		itemsConstellation: [],
+		itemsConstellationDuplicated: [],
+		itemsConstellationFamily: [],
+		itemsConstellationFamilyDuplicated: [],
 		dialog: false,
 		dialogReject: false,
 		panelModel: [0],
@@ -239,11 +229,9 @@ export default {
 	}),
 
 	components: {
-		MidwiferyInformation,
-		MidwiferyContactInformation,
-		MidwiferyMedicalInformation,
-		MidwiferyOtherMedicalInformation,
-		MidwiferyDemographicInformation
+		ConstellationPersonalInformation,
+		ConstellationOtherInformation,
+		ConstellationFamilyMembers,
 	},
 	created(){
 
@@ -268,11 +256,11 @@ export default {
         },
 		validateRecord() {
 			axios
-			.get(MIDWIFERY_VALIDATE_WARNING_URL+this.$route.params.duplicate_id)
+			.get(CONSTELLATION_VALIDATE_WARNING_URL+this.$route.params.duplicate_id)
 			.then((resp) => {
 				if(!resp.data.flagWarning){
 					this.$router.push({
-						path: '/midwiferyWarnings',
+						path: '/constellationWarnings',
 						query: { message: resp.data.message, type: resp.data.type}
 					});
 				}else{
@@ -285,14 +273,15 @@ export default {
 		},
 		getDataFromApi() {
 			axios
-			.get(MIDWIFERY_DUPLICATES_DETAILS+this.$route.params.duplicate_id)
+			.get(CONSTELLATION_DUPLICATES_DETAILS+this.$route.params.duplicate_id)
 			.then((resp) => {
 
-				this.itemsMidwifery = resp.data.midwifery;
-				this.itemsMidwiferyDuplicated = resp.data.midwiferyDuplicate;
-				this.optionsMidwifery = resp.data.options;
-				this.originalRequest = resp.data.midwifery.id;
-				this.duplicatedRequest = resp.data.midwiferyDuplicate.id;
+				this.itemsConstellation = resp.data.dataConstellation;
+				this.itemsConstellationDuplicated = resp.data.dataConstellationDuplicate;
+				this.itemsConstellationFamily = resp.data.dataConstellationFamily;
+				this.itemsConstellationFamilyDuplicated = resp.data.dataConstellationFamilyDuplicated;
+				this.originalRequest = resp.data.dataConstellation.id;
+				this.duplicatedRequest = resp.data.dataConstellationDuplicate.id;
 
 			})
 			.catch((err) => console.error(err))
@@ -303,7 +292,7 @@ export default {
 			var duplicateId = this.$route.params.duplicate_id;
 
 			axios
-			.patch(MIDWIFERY_DUPLICATES_PRIMARY, {
+			.patch(CONSTELLATION_DUPLICATES_PRIMARY, {
                 params: {
 					warning: duplicateId,
 					request: this.primaryValue,
@@ -312,7 +301,7 @@ export default {
             })
 			.then((resp) => {
 				this.$router.push({
-					path: '/midwiferyWarnings',
+					path: '/constellationWarnings',
 					query: { message: resp.data.message, type: resp.data.type}
 				});
 
@@ -323,7 +312,7 @@ export default {
 			var duplicateId = this.$route.params.duplicate_id;
 
 			axios
-			.patch(MIDWIFERY_DUPLICATES_PRIMARY, {
+			.patch(CONSTELLATION_DUPLICATES_PRIMARY, {
                 params: {
 					warning: duplicateId,
 					request: this.primaryValue,
@@ -332,7 +321,7 @@ export default {
             })
 			.then((resp) => {
 				this.$router.push({
-					path: '/midwiferyWarnings',
+					path: '/constellationWarnings',
 					query: { message: resp.data.message, type: resp.data.type}
 				});
 

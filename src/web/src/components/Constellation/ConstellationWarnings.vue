@@ -1,9 +1,9 @@
 
 <template>
-    <div class="midwifery-service">
-        <p class="title-service mb-6">Midwifery Possible Duplicates</p>
+    <div class="constellation-service">
+        <p class="title-service mb-6">Constellation Possible Duplicates</p>
 
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
 
         <Notifications ref="notifier"></Notifications>
 
@@ -29,10 +29,10 @@
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
 import ModuleAlert from '../General/ModuleAlert.vue';
-import { MIDWIFERY_DUPLICATES } from "../../urls.js";
+import { CONSTELLATION_DUPLICATES } from "../../urls.js";
 
 export default {
-    name: "MidwiferyWarning",
+    name: "ConstellationWarning",
     data: () => ({
         loading: false,
         date: null,
@@ -54,10 +54,7 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "First Name", value: "first_name", sortable: true},
-            { text: "Last Name", value: "last_name", sortable: true},
-            { text: "Preferred Email", value: "preferred_email", sortable: true},
-            { text: "Preferred Phone", value: "preferred_phone", sortable: true},
+			{ text: "Legal Name", value: "your_legal_name", sortable: true},
 			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
             { text: "Status", value: "status_description", sortable: true},
             { text: "Created", value: "created_at", sortable: true},
@@ -136,7 +133,7 @@ export default {
             this.loading = true;
 
             axios
-            .post(MIDWIFERY_DUPLICATES, {
+            .post(CONSTELLATION_DUPLICATES, {
                 params: {
                     dateFrom: this.date,
                     dateTo: this.dateEnd,
