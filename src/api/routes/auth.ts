@@ -1,4 +1,4 @@
-import { UserPermissionRepository } from './../repository/UserPermissionRepository';
+import { UserPermissionRepository } from './../repository/oracle/UserPermissionRepository';
 import { Express, NextFunction, Request, Response } from "express"
 import * as ExpressSession from "express-session";
 import { AuthUser } from "../models/auth";

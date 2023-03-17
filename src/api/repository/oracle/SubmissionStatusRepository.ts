@@ -1,5 +1,5 @@
 import { PermissionDTO } from '../../models/user/index';
-import { DB_CONFIG_GENERAL } from '../../config';
+import { DB_CONFIG_GENERAL } from '../../config.oracle';
 import { SubmissionsTotalDTO, SubmissionStatusDTO } from '../../models/general/index';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
@@ -10,7 +10,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
         
     async getSubmissionsStatus(actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionStatusDTO[]> {
         let general = Object();
-        let viewName = "bizont_edms_general.submissions_status_week_v";
+        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_WEEK_V";
         let whereClause = (builder: any) => {
             builder.where(1, "=", "1");
 
@@ -18,21 +18,21 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
        
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "bizont_edms_general.submissions_status_month_v";
+            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_MONTH_V";
             whereClause = (builder: any) => {
-                builder.where("monthid", "=", monthId);
+                builder.where("MONTHID", "=", monthId);
             };
         }
         
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select('status', 'color')
-                .sum("submissions", { as: "submissions"} )
-                .max("permissions", { as: "permissions"} )
+                .select('STATUS', 'COLOR')
+                .sum("SUBMISSIONS", { as: "SUBMISSIONS"} )
+                .max("PERMISSIONS", { as: "PERMISSIONS"} )
                 .where(whereClause)
-                .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .groupBy('status', 'color')
-                .orderBy('status', 'asc');
+                .whereIn("PERMISSIONS", permissions.map((x) => x.permission_name))
+                .groupBy('STATUS', 'COLOR')
+                .orderBy('STATUS', 'ASC');
         }
         
         general = await submissionsStatusQuery(this.mainDb, viewName);
@@ -43,30 +43,30 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
     async getModuleSubmissionsStatus(module: string, actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionStatusDTO[]> {
 
         let general = Object();
-        let viewName = "bizont_edms_general.submissions_status_week_v";
+        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_WEEK_V";
         let whereClause = (builder: any) => {
-            builder.where("id", "=", module);
+            builder.where("ID", "=", module);
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "bizont_edms_general.submissions_status_month_v";
+            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_MONTH_V";
             whereClause = (builder: any) => {
                 builder
-                    .where("monthid", "=", monthId)
-                    .andWhere("id", "=", module);
+                    .where("MONTHID", "=", monthId)
+                    .andWhere("ID", "=", module);
             };
         }
 
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select('status', 'color')
-                .sum("submissions", { as: "submissions"} )
-                .max("permissions", { as: "permissions"} )
+                .select('STATUS', 'COLOR')
+                .sum("SUBMISSIONS", { as: "SUBMISSIONS"} )
+                .max("PERMISSIONS", { as: "PERMISSIONS"} )
                 .where(whereClause)
-                .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .groupBy('status', 'color')
-                .orderBy('status', 'asc');
+                .whereIn("PERMISSIONS", permissions.map((x) => x.permission_name))
+                .groupBy('STATUS', 'COLOR')
+                .orderBy('STATUS', 'ASC');
         }
         
         general = await submissionsStatusQuery(this.mainDb, viewName);
@@ -76,30 +76,30 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
 
     async getSubmissions(actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
-        let viewName = "bizont_edms_general.submissions_week_v";
+        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_WEEK_V";
         let whereClause = (builder: any) => {
             builder.where(1, "=", "1");
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "bizont_edms_general.submissions_month_v";
+            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_MONTH_V";
             whereClause = (builder: any) => {
-                builder.where("monthid", "=", monthId);
+                builder.where("MONTHID", "=", monthId);
             };
         }
 
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select("id")
-                .select("department")
-                .select("date_code")
-                .select("submissions")
-                .select("color")
-                .select("permissions")
+                .select("ID")
+                .select("DEPARTMENT")
+                .select("DATE_CODE")
+                .select("SUBMISSIONS")
+                .select("COLOR")
+                .select("PERMISSIONS")
                 .where(whereClause)
-                .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .orderBy('date_code', 'asc');
+                .whereIn("PERMISSIONS", permissions.map((x) => x.permission_name))
+                .orderBy('DATE_CODE', 'ASC');
         }
         
         general = await submissionsStatusQuery(this.mainDb, viewName);
@@ -109,32 +109,32 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
 
     async getModuleSubmissions(module: string, actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
-        let viewName = "bizont_edms_general.submissions_week_v";
+        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_WEEK_V";
         let whereClause = (builder: any) => {
-            builder.where("id", "=", module);
+            builder.where("ID", "=", module);
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "bizont_edms_general.submissions_month_v";
+            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_MONTH_V";
             whereClause = (builder: any) => {
                 builder
-                    .where("monthid", "=", monthId)
-                    .andWhere("id", "=", module);
+                    .where("MONTHID", "=", monthId)
+                    .andWhere("ID", "=", module);
             };
         }
 
         const submissionsStatusQuery = (db: Knex<any, unknown[]>, view: string) => {
             return db(view)
-                .select("id")
-                .select("department")
-                .select("date_code")
-                .select("submissions")
-                .select("color")
-                .select("permissions")
+                .select("ID")
+                .select("DEPARTMENT")
+                .select("DATE_CODE")
+                .select("SUBMISSIONS")
+                .select("COLOR")
+                .select("PERMISSIONS")
                 .where(whereClause)
-                .whereIn("permissions", permissions.map((x) => x.permission_name))
-                .orderBy('date_code', 'asc');
+                .whereIn("PERMISSIONS", permissions.map((x) => x.permission_name))
+                .orderBy('DATE_CODE', 'ASC');
         }
         
         general = await submissionsStatusQuery(this.mainDb, viewName);

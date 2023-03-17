@@ -1,4 +1,4 @@
-import { UserPermissionRepository } from '../repository/UserPermissionRepository';
+import { UserPermissionRepository } from '../repository/oracle/UserPermissionRepository';
 import { Request, Response, NextFunction } from "express";
 
 const userRepo = new UserPermissionRepository();

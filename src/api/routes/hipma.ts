@@ -1,11 +1,11 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
+import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config.oracle";
 import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 

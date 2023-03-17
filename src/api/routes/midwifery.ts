@@ -5,7 +5,7 @@ import { SubmissionStatusRepository } from "../repository/SubmissionStatusReposi
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
+import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config.oracle";
 import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 
