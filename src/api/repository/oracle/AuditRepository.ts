@@ -1,5 +1,5 @@
-import { AuditDTO, AuditTimelineDTO } from './../../models/general/index';
-import { DB_CONFIG_GENERAL } from '../../config.oracle';
+import { AuditDTO, AuditTimelineDTO } from './../../models';
+import { DB_CONFIG_GENERAL } from '../../config';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
 import { PermissionDTO } from 'models';

@@ -1,8 +1,7 @@
-import { UserDTO, PermissionDTO } from '../../models/user/index';
-import { DB_CONFIG_GENERAL } from '../../config.oracle';
+import { DB_CONFIG_GENERAL } from '../../config';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
-import { UserPermissionDTO } from '../../models/user';
+import { UserPermissionDTO, UserDTO, PermissionDTO } from '../../models';
 
 export class UserPermissionRepository extends BaseRepository<UserPermissionDTO> {
 

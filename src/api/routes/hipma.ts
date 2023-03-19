@@ -5,7 +5,7 @@ import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatu
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
-import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config.oracle";
+import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 import { groupBy } from "../utils/groupBy";
 var _ = require('lodash');
 

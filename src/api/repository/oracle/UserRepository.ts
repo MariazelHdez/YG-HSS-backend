@@ -1,5 +1,5 @@
-import { UserDTO, RoleDTO } from '../../models/user/index';
-import { DB_CONFIG_GENERAL } from '../../config.oracle';
+import { UserDTO, RoleDTO } from '../../models';
+import { DB_CONFIG_GENERAL } from '../../config';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
 

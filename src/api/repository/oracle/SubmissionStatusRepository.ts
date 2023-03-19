@@ -1,6 +1,5 @@
-import { PermissionDTO } from '../../models/user/index';
-import { DB_CONFIG_GENERAL } from '../../config.oracle';
-import { SubmissionsTotalDTO, SubmissionStatusDTO } from '../../models/general/index';
+import { DB_CONFIG_GENERAL } from '../../config';
+import { SubmissionsTotalDTO, SubmissionStatusDTO, PermissionDTO } from '../../models';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
 
