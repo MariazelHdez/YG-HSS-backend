@@ -26,6 +26,8 @@ export const DB_PORT = process.env.DB_PORT || '';
 export const DB_NAME = process.env.DB_NAME || '';
 export const DB_SERVICE = process.env.DB_SERVICE || '';
 
+export const SKIP_PERMISSIONS = process.env.SKIP_PERMISSIONS || false;
+
 export const SCHEMA_CONSTELLATION = process.env.SCHEMA_CONSTELLATION || '';
 export const SCHEMA_MIDWIFERY = process.env.SCHEMA_MIDWIFERY || '';
 export const SCHEMA_HIPMA = process.env.SCHEMA_HIPMA || '';

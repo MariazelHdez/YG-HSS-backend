@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
+import { ConstellationRepository } from './../repository/oracle/ConstellationRepository';
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
@@ -14,6 +15,7 @@ var _ = require('lodash');
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
+const constellationRepo = new ConstellationRepository();
 export const constellationRouter = express.Router();
 
 /**
@@ -90,80 +92,8 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
 constellationRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
-        let status_request = req.body.params.status;
-        var sqlFilter = "constellation_health.status <> '4'";
-         
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
-        }
-
-        if(status_request){
-           sqlFilter += "  AND constellation_health.status IN ("+status_request+")";
-        }
-
-        var constellationHealth =  await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-            .select('constellation_health.your_legal_name',
-                    'constellation_health.date_of_birth',
-                    'constellation_health.id',
-                    'constellation_health.family_physician',
-                    'constellation_health.diagnosis',
-                    'constellation_health.created_at',
-                    'constellation_status.description as status',
-                    'constellation_health.id as constellation_health_id')
-            .whereRaw(sqlFilter)
-            .orderBy('constellation_health.id', 'asc');
-        var diagnosis = Object();
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
-            let arrayResult = Object();
-
-            for (let row of rows) {
-                arrayResult[row['id']] = row['description'];
-            }
-
-            return arrayResult;
-        });
-
-        constellationHealth.forEach(function (value: any) {
-
-            if(value.date_of_birth == 0) {
-                value.date_of_birth =  "N/A";
-            }else{
-                value.date_of_birth =  value.date_of_birth.toLocaleDateString("en-CA");
-            }
-
-            value.created_at =  value.created_at.toLocaleString("en-CA");
-
-            if(value.language_prefer_to_receive_services){
-                value.language_prefer_to_receive_services = value.preferred_language;
-            }else{
-                value.language_prefer_to_receive_services = value.language_preferred;
-            }
-
-            var dataString = "";
-
-            _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
-
-                if(valueDiagnosis in diagnosis){
-                    dataString += diagnosis[valueDiagnosis]+",";
-                }else{
-                    dataString += valueDiagnosis+",";
-                }
-            });
-
-            if(dataString.substr(-1) == ","){
-                dataString = dataString.slice(0, -1);
-            }
-
-            value.diagnosis = dataString.replace(/,/g, ', ');
-
-            value.showUrl = "constellation/show/"+value.constellation_health_id;
-        });
-
-        var constellationStatus = await getAllStatus();
-        res.send({data: constellationHealth, dataStatus: constellationStatus});
+        const all = await constellationRepo.getAll(req);
+        res.send(all);
     } catch(e) {
         console.log(e);  // debug if needed
         res.send( {
@@ -181,25 +111,8 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
  */
 constellationRouter.get("/validateRecord/:constellationHealth_id",[param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
     try {
-        var constellationHealth_id = Number(req.params.constellationHealth_id);
-        var constellationHealth = Object();
-        var flagExists= true;
-        var message= "";
-        var type= "error";
-
-        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-            .where('constellation_health.id', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
-                    'constellation_status.description as status_description')
-            .first();
-
-        if(!constellationHealth || constellationHealth.status_description == "closed"){
-            flagExists= false;
-            message= "The request you are consulting is closed or non existant, please choose a valid request.";
-        }
-
-        res.json({ status: 200, flagConstellation: flagExists, message: message, type: type});
+        const validateRecord = await constellationRepo.validateRecord(Number(req.params.constellationHealth_id));
+        res.json(validateRecord);
     } catch(e) {
         console.log(e);
         res.send( {
@@ -217,103 +130,8 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
  */
 constellationRouter.get("/show/:constellationHealth_id", checkPermissions("constellation_view"), [param("constellationHealth_id").isInt().notEmpty()], async (req: Request, res: Response) => {
     try {
-        var constellationHealth_id = Number(req.params.constellationHealth_id);
-        var constellationHealth = Object();
-        var constellationFamily = Object();
-
-        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-            .where('constellation_health.id', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_language.description as language_prefer_description`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_demographics.description as demographic_description`)
-            .first();
-
-        constellationFamily = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-            .select('constellation_health_family_members.*',
-                    'constellation_health_language.description as language_prefer_description_family_member',
-                    'constellation_health_demographics.description as demographic_description_family_member')
-            .where('constellation_health_family_members.constellation_health_id', constellationHealth_id);
-
-        if(constellationHealth.date_of_birth == 0) {
-            constellationHealth.date_of_birth =  "N/A";
-        }else{
-            constellationHealth.date_of_birth =  constellationHealth.date_of_birth.toLocaleDateString("en-CA");
-        }
-
-        let dataString = "";
-        var diagnosis = Object();
-
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
-            let arrayResult = Object();
-
-            for (let row of rows) {
-                arrayResult[row['id']] = row['description'];
-            }
-
-            return arrayResult;
-        });
-
-        _.forEach(constellationHealth.diagnosis, function(valueDiagnosis: any, key: any) {
-            if(valueDiagnosis in diagnosis){
-                dataString += diagnosis[valueDiagnosis]+",";
-            }else{
-                dataString += valueDiagnosis+",";
-            }
-        });
-
-        if(dataString.substr(-1) == ","){
-            dataString = dataString.slice(0, -1);
-        }
-
-        constellationHealth.diagnosis = dataString.replace(/,/g, ', ');
-
-        constellationHealth.flagFamilyMembers = false;
-
-        //If the client has family members, the same treatment of the corresponding data is given.
-        if(constellationFamily.length){
-            constellationHealth.flagFamilyMembers = true;
-
-            constellationFamily.forEach(function (value: any, key: any) {
-
-                if(value.date_of_birth_family_member == 0) {
-                    value.date_of_birth_family_member =  "N/A";
-                }
-
-                let dataString = "";
-
-                _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
-
-                    if(valueDiagnosisFm in diagnosis){
-                        dataString += diagnosis[valueDiagnosisFm]+",";
-                    }else{
-                        dataString += valueDiagnosisFm+",";
-                    }
-                });
-
-                if(dataString.substr(-1) == ","){
-                    dataString = dataString.slice(0, -1);
-                }
-
-                constellationFamily[key].diagnosis_family_member = dataString.replace(/,/g, ', ');
-
-            });
-        }
-
-        let today = new Date();
-        let dd = String(today.getDate()).padStart(2, '0');
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let yyyy = today.getFullYear();
-        let todayDate = mm+'_'+dd+'_'+yyyy;
-        let fileName = 'constellation_request_details_'+todayDate+".pdf";
-
-        var constellationStatus = await getAllStatus();
-
-        
-        res.json({ status: 200, dataStatus: constellationStatus, dataConstellation: constellationHealth, dataConstellationFamily: constellationFamily, fileName:fileName});
+        const results = await constellationRepo.getById(Number(req.params.constellationHealth_id));        
+        res.json(results);
     } catch(e) {
         console.log(e);  // debug if needed
 

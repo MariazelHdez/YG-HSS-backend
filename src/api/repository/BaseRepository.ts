@@ -1,4 +1,5 @@
 import { IRepository } from "./interfaces/IRepository";
+import { Request, Response } from "express";
 
 export abstract class BaseRepository<T> implements IRepository<T> {
 
@@ -25,7 +26,7 @@ export abstract class BaseRepository<T> implements IRepository<T> {
     delete(id: string): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    findAll(): Promise<T[]> {
+    findAll(req: Request): Promise<T[]> {
         throw new Error("Method not implemented.");
     }
     find(id: string): Promise<T> {

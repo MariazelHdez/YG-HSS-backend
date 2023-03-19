@@ -1,4 +1,4 @@
-import { DB_CONFIG_GENERAL } from '../../config';
+import { DB_CONFIG_GENERAL, SCHEMA_GENERAL } from '../../config';
 import { SubmissionsTotalDTO, SubmissionStatusDTO, PermissionDTO } from '../../models';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
@@ -9,7 +9,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
         
     async getSubmissionsStatus(actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionStatusDTO[]> {
         let general = Object();
-        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_WEEK_V";
+        let viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_STATUS_WEEK_V`;
         let whereClause = (builder: any) => {
             builder.where(1, "=", "1");
 
@@ -17,7 +17,7 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
        
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_MONTH_V";
+            viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_STATUS_MONTH_V`;
             whereClause = (builder: any) => {
                 builder.where("MONTHID", "=", monthId);
             };
@@ -42,14 +42,14 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
     async getModuleSubmissionsStatus(module: string, actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionStatusDTO[]> {
 
         let general = Object();
-        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_WEEK_V";
+        let viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_STATUS_WEEK_V`;
         let whereClause = (builder: any) => {
             builder.where("ID", "=", module);
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_STATUS_MONTH_V";
+            viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_STATUS_MONTH_V`;
             whereClause = (builder: any) => {
                 builder
                     .where("MONTHID", "=", monthId)
@@ -75,14 +75,14 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
 
     async getSubmissions(actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
-        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_WEEK_V";
+        let viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_WEEK_V`;
         let whereClause = (builder: any) => {
             builder.where(1, "=", "1");
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_MONTH_V";
+            viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_MONTH_V`;
             whereClause = (builder: any) => {
                 builder.where("MONTHID", "=", monthId);
             };
@@ -108,14 +108,14 @@ export class SubmissionStatusRepository extends BaseRepository<SubmissionStatusD
 
     async getModuleSubmissions(module: string, actionId: string, actionVal: string, permissions: Array<PermissionDTO>): Promise<SubmissionsTotalDTO[]> {
         let general = Object();
-        let viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_WEEK_V";
+        let viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_WEEK_V`;
         let whereClause = (builder: any) => {
             builder.where("ID", "=", module);
         }
         
         if (actionId === "month") {
             const monthId = actionVal.slice(-6);
-            viewName = "BIZONT_EDMS_GENERAL.SUBMISSIONS_MONTH_V";
+            viewName = `${SCHEMA_GENERAL}.SUBMISSIONS_MONTH_V`;
             whereClause = (builder: any) => {
                 builder
                     .where("MONTHID", "=", monthId)
