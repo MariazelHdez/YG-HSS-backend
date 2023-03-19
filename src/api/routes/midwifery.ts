@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
