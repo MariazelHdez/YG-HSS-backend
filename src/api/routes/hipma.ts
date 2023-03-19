@@ -97,11 +97,11 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
             sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
         
-        hipma = await db("bizont_edms_hipma.health_information")
-            .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-            .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-            .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-            .leftJoin('bizont_edms_hipma.hipma_situations', 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
             .whereRaw(sqlFilter)
             .select('health_information.*',
                     'hipma_request_type.description as HipmaRequestType',
@@ -151,9 +151,9 @@ hipmaRouter.get("/validateRecord/:hipma_id",[param("hipma_id").isInt().notEmpty(
         var message = "";
         var type = "error";
 
-        hipma = await db("bizont_edms_hipma.health_information")
+        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
             .where('health_information.id', hipma_id)
-            .select('bizont_edms_hipma.health_information.*')
+            .select(`${SCHEMA_HIPMA}.health_information.*`)
             .first();
 
         if(!hipma || hipma.status == 2){
@@ -182,18 +182,18 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
     try {
         let hipma_id = Number(req.params.hipma_id);
 
-        var hipma = await db("bizont_edms_hipma.health_information")
-        .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-        .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-        .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-        .leftJoin('bizont_edms_hipma.hipma_situations', 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
-        .leftJoin('bizont_edms_hipma.hipma_copy_activity_request', 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
-        .select('bizont_edms_hipma.health_information.*',
-                'bizont_edms_hipma.hipma_request_type.description as HipmaRequestType',
-                'bizont_edms_hipma.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
-                'bizont_edms_hipma.hipma_copy_health_information.description as CopyHealthInformation',
-                'bizont_edms_hipma.hipma_situations.description as HipmaSituations',
-                'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest')
+        var hipma = await db(`${SCHEMA_HIPMA}.health_information`)
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
+        .select(`${SCHEMA_HIPMA}.health_information.*`,
+                `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
+                `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
+                `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
+                `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
+                `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`)
         .where("health_information.id", hipma_id)
         .first();
 
@@ -225,7 +225,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             var dataString = "";
             var socialServices = Object();
 
-            socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
+            socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -254,7 +254,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             var dataString = "";
             var hssSystems = Object();
 
-            hssSystems = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
+            hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -279,7 +279,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             hipma.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
         }
 
-        var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("hipma_id", hipma_id).select();
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", hipma_id).select();
         var files = Object();
 
         if(!_.isEmpty(hipmaFiles)){
@@ -440,7 +440,7 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range = data.date_range_is_unknown_or_i_need_help_identifying_the_date_range;
         hipma.i_affirm_the_information_above_to_be_true_and_accurate_ = data.i_affirm_the_information_above_to_be_true_and_accurate_;
 
-        HipmaSaved = await db('bizont_edms_hipma.health_information').insert(hipma).into('bizont_edms_hipma.health_information').returning('id');
+        HipmaSaved = await db(`${SCHEMA_HIPMA}.health_information`).insert(hipma).into(`${SCHEMA_HIPMA}.health_information`).returning('id');
 
         if(!_.isEmpty(files)){
             var filesInsert = Array();
@@ -459,7 +459,7 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
                 filesInsert.push(hipmaFiles);
             });
 
-            var filesSaved = await db('bizont_edms_hipma.hipma_files').insert(filesInsert).into('bizont_edms_hipma.hipma_files');
+            var filesSaved = await db(`${SCHEMA_HIPMA}.hipma_files`).insert(filesInsert).into(`${SCHEMA_HIPMA}.hipma_files`);
 
             if(HipmaSaved && filesSaved){
                 res.json({ status:200, message: 'Request saved' });
@@ -490,7 +490,7 @@ hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
         var hipma = req.body.params.requests;
 
-        var updateStatus = await db("bizont_edms_hipma.health_information").update({status: "2"}).whereIn("id", hipma);
+        var updateStatus = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).whereIn("id", hipma);
 
         if(updateStatus) {
             let type = "success";
@@ -521,7 +521,7 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
         var fs = require("fs");
 
         var hipmaFile_id = Number(req.params.hipmaFile_id);
-        var hipmaFiles = await db("bizont_edms_hipma.hipma_files").where("id", hipmaFile_id).select().first();
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("id", hipmaFile_id).select().first();
         var buffer = Buffer.from(hipmaFiles.file_data, 'base64');
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+hipmaFiles.file_name;
         let pathPublicFront = path.join(__dirname, "../../");
@@ -566,18 +566,18 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
             sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
         }
 
-        hipma = await db("bizont_edms_hipma.health_information")
-                .leftJoin('bizont_edms_hipma.hipma_request_type', 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-                .leftJoin('bizont_edms_hipma.hipma_request_access_personal_health_information', 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-                .leftJoin('bizont_edms_hipma.hipma_copy_health_information', 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-                .leftJoin('bizont_edms_hipma.hipma_situations', 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
-                .leftJoin('bizont_edms_hipma.hipma_copy_activity_request', 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
-                .select('bizont_edms_hipma.health_information.*',
-                        'bizont_edms_hipma.hipma_request_type.description as HipmaRequestType',
-                        'bizont_edms_hipma.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
-                        'bizont_edms_hipma.hipma_copy_health_information.description as CopyHealthInformation',
-                        'bizont_edms_hipma.hipma_situations.description as HipmaSituations',
-                        'bizont_edms_hipma.hipma_copy_activity_request.description as HipmaCopyActivityRequest',
+        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
+                .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+                .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
+                .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
+                .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+                .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
+                .select(`${SCHEMA_HIPMA}.health_information.*`,
+                        `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
+                        `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
+                        `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
+                        `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
+                        `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`,
                     db.raw("to_char(health_information.date_from_, 'YYYY-MM-DD') as date_from_, "+
                         "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_to_,"+
                         "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_of_birth,"+
@@ -589,7 +589,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var socialServices = Object();
         var hssSystems = Object();
 
-        socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
+        socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -599,7 +599,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        hssSystems = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
+        hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -744,6 +744,363 @@ hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
     }
 });
 
+hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
+
+    try {
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        var hipmaOriginal = Object();
+        var hipmaDuplicate = Object();
+        var hipma = Array();
+
+        var sqlFilter = "health_information.status = '1'";
+
+        if(dateFrom && dateTo ){
+            sqlFilter += "  AND to_char(hipma_duplicated_requests.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(hipma_duplicated_requests.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+        }
+
+        hipmaOriginal = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+            .join(`${SCHEMA_HIPMA}.health_information`, 'hipma_duplicated_requests.health_information_original_id', '=', 'health_information.id')
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+            .whereRaw(sqlFilter)
+            .select('health_information.id as health_information_id',
+                    'hipma_duplicated_requests.id',
+                    'hipma_duplicated_requests.health_information_original_id',
+                    'hipma_duplicated_requests.health_information_duplicated_id',
+                    'health_information.confirmation_number',
+                    'hipma_request_type.description as HipmaRequestType',
+                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
+                    "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, "+
+                    "to_char(health_information.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
+            ).orderBy("health_information.created_at").then((rows: any) => {
+                let arrayResult = Object();
+    
+                for (let row of rows) {
+                    arrayResult[row['health_information_original_id']] = row;
+                }
+    
+                return arrayResult;
+            });
+
+        hipmaDuplicate = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+            .join(`${SCHEMA_HIPMA}.health_information`, 'hipma_duplicated_requests.health_information_duplicated_id', '=', 'health_information.id')
+            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+            .whereRaw(sqlFilter)
+            .select('health_information.id as health_information_id',
+                    'hipma_duplicated_requests.id',
+                    'hipma_duplicated_requests.health_information_original_id',
+                    'hipma_duplicated_requests.health_information_duplicated_id',
+                    'health_information.confirmation_number as confirmation_number',
+                    'hipma_request_type.description as HipmaRequestType',
+                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
+                    "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, "+
+                    "to_char(health_information.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
+            ).orderBy("health_information.created_at");
+
+        let index = 0;
+        hipmaDuplicate.forEach(function (value: any) {
+            /*value.created_at_format =  value.created_at.toLocaleString("en-CA", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });*/
+            let url = "hipmaWarnings/details/"+value.id;
+
+            hipma.push({
+                health_information_id: null,
+                id: null,
+                health_information_original_id: null,
+                health_information_duplicated_id: null,
+                confirmation_number: null,
+                HipmaRequestType: null,
+                applicantfullname: 'Duplicated #'+(index+1),
+                created_at: 'ACTIONS:',
+                date_of_birth: null,
+                showUrl: url,
+            });
+
+            hipma.push(hipmaOriginal[value.health_information_original_id]);
+            hipma.push(value);
+            index = index + 1;
+        });
+
+        res.send({data: hipma});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+
+});
+
+
+/**
+ * Obtain data to show in details view
+ *
+ * @param {hipma_id} id of request
+ * @return json
+ */
+hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+
+        let duplicate_id = Number(req.params.duplicate_id);
+        var hipma = Object();
+        var hipmaDuplicate = Object();
+        var hipmaEntries = Object();
+
+        var duplicateEntry = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+        .where("id", duplicate_id).then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult.original = row['health_information_original_id'];
+                arrayResult.duplicated = row['health_information_duplicated_id'];
+            }
+
+            return arrayResult;
+        });
+
+        hipmaEntries = await db(`${SCHEMA_HIPMA}.health_information`)
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
+        .select(`${SCHEMA_HIPMA}.health_information.*`,
+                `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
+                `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
+                `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
+                `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
+                `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`)
+        .whereIn("health_information.id", [duplicateEntry.original, duplicateEntry.duplicated])
+        .where("health_information.status", "1");
+
+        var socialServices = Object();
+        var hssSystems = Object();
+
+        socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        if(hipmaEntries){
+            hipmaEntries.forEach(function (value: any) {
+                if(!_.isNull(value.date_from_)) {
+                    value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isNull(value.date_to_)) {
+                    value.date_to_ =  value.date_to_.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isNull(value.date_of_birth)) {
+                    value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    });
+                }
+
+                if(!_.isEmpty(value.name_of_health_and_social_services_program_area_optional_)) {
+                    var dataString = "";
+
+                    _.forEach(value.name_of_health_and_social_services_program_area_optional_, function(value: any, key: any) {
+                        if(socialServices.hasOwnProperty(value)) {
+                            dataString += socialServices[value]+",";
+                        }else{
+                            dataString += value+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ",") {
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.name_of_health_and_social_services_program_area_optional_ = dataString.replace(/,/g, ', ');
+                }
+
+                if(!_.isEmpty(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ)) {
+                    var dataString = "";
+
+                    _.forEach(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ, function(value: any, key: any) {
+                        if(hssSystems.hasOwnProperty(value)) {
+                            dataString += hssSystems[value]+",";
+                        }else{
+                            dataString += value+",";
+                        }
+                    });
+
+                    if(dataString.substr(-1) == ",") {
+                        dataString = dataString.slice(0, -1);
+                    }
+
+                    value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
+                }
+
+                if(value.id == duplicateEntry.original){
+                    hipma = value;
+                }else if(value.id == duplicateEntry.duplicated){
+                    hipmaDuplicate = value;
+                }
+
+            });
+        }
+
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", duplicateEntry.original).select();
+        var hipmaFilesDuplicated = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", duplicateEntry.duplicated).select();
+        var files = Object();
+        var filesDuplicated = Object();
+
+        if(!_.isEmpty(hipmaFiles)){
+
+            _.forEach(hipmaFiles, function(valueFiles: any) {
+
+                files[valueFiles.description] = { id: valueFiles.id,
+                                            file_name: valueFiles.file_name,
+                                            file_type: valueFiles.file_type,
+                                            file_size: valueFiles.file_size,
+                                            file_fullName: valueFiles.file_name+"."+valueFiles.file_type,
+                                            file_data: valueFiles.file_data
+                                        };
+
+            });
+        }
+
+        if(!_.isEmpty(hipmaFilesDuplicated)){
+
+            _.forEach(hipmaFilesDuplicated, function(valueFilesDup: any) {
+
+                filesDuplicated[valueFilesDup.description] = { id: valueFilesDup.id,
+                                            file_name: valueFilesDup.file_name,
+                                            file_type: valueFilesDup.file_type,
+                                            file_size: valueFilesDup.file_size,
+                                            file_fullName: valueFilesDup.file_name+"."+valueFilesDup.file_type,
+                                            file_data: valueFilesDup.file_data
+                                        };
+
+            });
+        }
+
+        res.json({ hipma: hipma, hipmaDuplicate: hipmaDuplicate, hipmaFiles: files, hipmaFilesDuplicated: filesDuplicated});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Reject duplicate warning
+ *
+ * @param {duplicate_id} id of request
+ * @return json
+ */
+hipmaRouter.patch("/duplicates/primary", async (req: Request, res: Response) => {
+
+    try {
+
+        var warning = Number(req.body.params.warning);
+        var request = Number(req.body.params.request);
+        var type = req.body.params.type;
+        var updateRequest = Object();
+        var rejectWarning = Object();
+
+        if(!request){
+            rejectWarning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).del();
+        }else{
+            var warningRequest = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).first();
+
+            if(type == 'O'){
+                updateRequest = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).where("id", warningRequest.health_information_duplicated_id);
+            }else if(type == 'D'){
+                updateRequest = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).where("id", warningRequest.health_information_original_id);
+            }
+
+            if(updateRequest){
+                rejectWarning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).del();
+            }
+        }
+
+        if(rejectWarning) {
+            let type = "success";
+            let message = "Warning updated successfully.";
+            res.json({ status:200, message: message, type: type });
+        }
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
+/**
+ * Validate if warning is non existant
+ *
+ * @param {hipma_id} id of warning
+ * @return json
+ */
+hipmaRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id").isInt().notEmpty()], async (req: Request, res: Response) => {
+    try {
+        var duplicate_id = Number(req.params.duplicate_id);
+        console.log(duplicate_id);
+        var warning = Object();
+        var flagExists = true;
+        var message = "";
+        var type = "error";
+
+        warning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+            .where('id', duplicate_id)
+            .select()
+            .first();
+
+        if(!warning){
+            flagExists = false;
+            message = "The request you are consulting is non existant, please choose a valid request.";
+        }
+
+        res.json({ status: 200, flagWarning: flagExists, message: message, type: type});
+
+    } catch(e) {
+        console.log(e);  // debug if needed
+        res.send( {
+            status: 400,
+            message: 'Request could not be processed'
+        });
+    }
+});
+
 /**
  * Generate a new confirmation number similar to php's uniqid()
  *
@@ -834,23 +1191,23 @@ async function getDataByModel(model: string, id: any, type: string){
     if(type == "single"){
         switch (model) {
             case 'HipmaRequestType':
-                data = await db("bizont_edms_hipma.hipma_request_type").where("bizont_edms_hipma.hipma_request_type.id", id).first();
+                data = await db(`${SCHEMA_HIPMA}.hipma_request_type`).where(`${SCHEMA_HIPMA}.hipma_request_type.id`, id).first();
                 break;
 
             case 'HipmaRequestAccessPersonalHealthInformation':
-                data = await db("bizont_edms_hipma.hipma_request_access_personal_health_information").where("bizont_edms_hipma.hipma_request_access_personal_health_information.id", id).first();
+                data = await db(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`).where(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.id`, id).first();
                 break;
 
             case 'HipmaCopyHealthInformation':
-                data = await db("bizont_edms_hipma.hipma_copy_health_information").where("bizont_edms_hipma.hipma_copy_health_information.id", id).first();
+                data = await db(`${SCHEMA_HIPMA}.hipma_copy_health_information`).where(`${SCHEMA_HIPMA}.hipma_copy_health_information.id`, id).first();
                 break;
 
             case 'HipmaSituations':
-                data = await db("bizont_edms_hipma.hipma_situations").where("bizont_edms_hipma.hipma_situations.id", id).first();
+                data = await db(`${SCHEMA_HIPMA}.hipma_situations`).where(`${SCHEMA_HIPMA}.hipma_situations.id`, id).first();
                 break;
 
             case 'HipmaCopyActivityRequest':
-                data = await db("bizont_edms_hipma.hipma_copy_activity_request").where("bizont_edms_hipma.hipma_copy_activity_request.id", id).first();
+                data = await db(`${SCHEMA_HIPMA}.hipma_copy_activity_request`).where(`${SCHEMA_HIPMA}.hipma_copy_activity_request.id`, id).first();
                 break;
         }
 
@@ -869,7 +1226,7 @@ async function getDataByModel(model: string, id: any, type: string){
         var hss = Object();
 
         if(model == "HipmaHealthSocialServicesProgram") {
-            socialServices = await db("bizont_edms_hipma.hipma_health_social_services_program").select().then((rows: any) => {
+            socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
                                         let arrayResult = Object();
                                         for (let row of rows) {
                                             arrayResult[row['id']] = row['description'];
@@ -885,13 +1242,13 @@ async function getDataByModel(model: string, id: any, type: string){
                 }
             });
 
-            data = await db("bizont_edms_hipma.hipma_health_social_services_program")
+            data = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`)
                             .select()
                             .whereIn('id', id);
 
         }else if(model == "HipmaHssSystems") {
 
-            hss = await db("bizont_edms_hipma.hipma_hss_systems").select().then((rows: any) => {
+            hss = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
                                 let arrayResult = Object();
                                 for (let row of rows) {
                                     arrayResult[row['id']] = row['description'];
@@ -907,7 +1264,7 @@ async function getDataByModel(model: string, id: any, type: string){
                 }
             });
 
-            data =  await db("bizont_edms_hipma.hipma_hss_systems")
+            data =  await db(`${SCHEMA_HIPMA}.hipma_hss_systems`)
                             .select()
                             .whereIn('id', id);
         }

@@ -38,6 +38,14 @@ export const sections = [
                 ]
             },
             {
+                name: "Warnings",
+                url: "/constellationWarnings",
+                icon: "fa-regular fa-rectangle-list",
+                permissions: [
+                    "constellation_view"
+                ]
+            },
+            {
                 name: "Analytics",
                 url: "/constellationAnalytics",
                 icon: "fa-solid fa-chart-line",
@@ -71,6 +79,14 @@ export const sections = [
                 ]
             },
             {
+                name: "Warnings",
+                url: "/hipmaWarnings",
+                icon: "fa-regular fa-rectangle-list",
+                permissions: [
+                    "hipma_view"
+                ]
+            },
+            {
                 name: "Analytics",
                 url: "/hipmaAnalytics",
                 icon: "fa-solid fa-chart-line",
@@ -98,6 +114,14 @@ export const sections = [
             {
                 name: "Submissions",
                 url: "/midwifery",
+                icon: "fa-regular fa-rectangle-list",
+                permissions: [
+                    "midwifery_view"
+                ]
+            },
+            {
+                name: "Warnings",
+                url: "/midwiferyWarnings",
                 icon: "fa-regular fa-rectangle-list",
                 permissions: [
                     "midwifery_view"

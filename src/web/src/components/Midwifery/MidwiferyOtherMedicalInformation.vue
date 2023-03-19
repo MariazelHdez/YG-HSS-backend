@@ -15,12 +15,49 @@
 								<b>Field</b>
                             </th>
                             <th>
-								<b>Value</b>
+								<b>Value<span v-if="midwiferyDuplicated">&nbsp;(Original Request)</span></b>
                             </th>
+							<th v-if="midwiferyDuplicated">
+								<b>Value&nbsp;(Duplicated Request)</b>
+							</th>
                         </tr>
                         </thead>
-                        <tbody>
+						<tbody v-if="midwiferyDuplicated">
+							<tr>
+								<td>What is your average menstrual cycle length?</td>
+								<td>{{ midwifery.menstrual_cycle_length }}</td>
+								<td>{{ midwiferyDuplicated.menstrual_cycle_length }}</td>
+							</tr>
 
+							<tr>
+								<td>
+									Do you have a family physician?
+								</td>
+								<td>{{ options[midwifery.family_physician] }}</td>
+								<td>{{ options[midwiferyDuplicated.family_physician] }}</td>
+							</tr>
+
+							<tr>
+								<td>What is your physician's name?</td>
+								<td>{{ midwifery.physician_s_name }}</td>
+								<td>{{ midwiferyDuplicated.physician_s_name }}</td>
+							</tr>
+
+							<tr>
+								<td>
+									Do you have any major medical conditions such as Type 1 diabetes or epilepsy?
+								</td>
+								<td>{{ options[midwifery.major_medical_conditions] }}</td>
+								<td>{{ options[midwiferyDuplicated.major_medical_conditions] }}</td>
+							</tr>
+
+							<tr>
+								<td>Medical Conditions Details</td>
+								<td>{{ midwifery.provide_details3 }}</td>
+								<td>{{ midwiferyDuplicated.provide_details3 }}</td>
+							</tr>
+						</tbody>
+                        <tbody v-else >
 							<tr v-if="midwifery.menstrual_cycle_length || midwifery.menstrual_cycle_length =='0'">
 								<td>What is your average menstrual cycle length?</td>
 								<td>{{ midwifery.menstrual_cycle_length }}</td>
@@ -49,7 +86,6 @@
 								<td>Medical Conditions Details</td>
 								<td>{{ midwifery.provide_details3 }}</td>
 							</tr>
-
                         </tbody>
                     </template>
 				</v-simple-table>
@@ -62,7 +98,7 @@
 <script>
 export default {
     name: 'MidwiferyOtherMedicalInformation',
-    props: ['midwifery', 'options', 'panelModel'],
+    props: ['midwifery', 'midwiferyDuplicated', 'options', 'panelModel'],
 	data() {
 		return {
 			modelPanel: this.panelModel

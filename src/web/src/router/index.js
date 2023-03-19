@@ -10,14 +10,20 @@ import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
 import ConstellationExport from "../components/Constellation/ConstellationExport"
 import ConstellationAnalytics from "../components/Constellation/ConstellationAnalytics";
+import ConstellationWarnings from "../components/Constellation/ConstellationWarnings";
+import ConstellationWarningsDetails from "../components/Constellation/ConstellationWarningsDetails";
 import Hipma from "../components/Hipma/Hipma";
 import HipmaDetails from "../components/Hipma/HipmaDetails";
 import HipmaExport from "../components/Hipma/HipmaExport";
 import HipmaAnalytics from "../components/Hipma/HipmaAnalytics";
+import HipmaWarnings from "../components/Hipma/HipmaWarnings";
+import HipmaWarningsDetails from "../components/Hipma/HipmaWarningsDetails";
 import Midwifery from "../components/Midwifery/Midwifery";
 import MidwiferyDetails from "../components/Midwifery/MidwiferyDetails";
 import MidwiferyExport from "../components/Midwifery/MidwiferyExport";
 import MidwiferyAnalytics from "../components/Midwifery/MidwiferyAnalytics";
+import MidwiferyWarnings from "../components/Midwifery/MidwiferyWarnings";
+import MidwiferyWarningsDetails from "../components/Midwifery/MidwiferyWarningsDetails";
 
 import Dashboard from "../components/Dashboard.vue";
 
@@ -188,7 +194,66 @@ const routes = [
       ]
     }
   },
-  
+  {
+    path: "/hipmaWarnings",
+    name: "Hipma Warnings",
+    component: HipmaWarnings,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
+    }
+  },
+  {
+    path: "/hipmaWarnings/details/:duplicate_id",
+    name: "Hipma Warnings Details",
+    component: HipmaWarningsDetails,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "hipma_view"
+      ]
+    }
+  },
+  {
+    path: "/midwiferyWarnings",
+    name: "Midwifery Warnings",
+    component: MidwiferyWarnings,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
+    }
+  },
+  {
+    path: "/midwiferyWarnings/details/:duplicate_id",
+    name: "Midwifery Warnings Details",
+    component: MidwiferyWarningsDetails,
+    meta: {
+      requiresAuth: true,
+      permissions: [
+        "midwifery_view"
+      ]
+    }
+  },
+  {
+    path: "/constellationWarnings",
+    name: "Constellation Warnings",
+    component: ConstellationWarnings,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/constellationWarnings/details/:duplicate_id",
+    name: "Constellation Warnings Details",
+    component: ConstellationWarningsDetails,
+    meta: {
+      requiresAuth: true
+    }
+  },
 ];
 
 const router = new VueRouter({
