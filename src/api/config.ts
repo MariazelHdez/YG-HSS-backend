@@ -33,6 +33,24 @@ export const SCHEMA_MIDWIFERY = process.env.SCHEMA_MIDWIFERY || '';
 export const SCHEMA_HIPMA = process.env.SCHEMA_HIPMA || '';
 export const SCHEMA_GENERAL = process.env.SCHEMA_GENERAL || '';
 
+const postProcessToLowerCase = (result: any, queryContext: any) => {
+  if (Array.isArray(result)) {
+    const results: { [k: string]: unknown; }[] = [];
+    result.forEach((row) => {
+      const newObj = Object.fromEntries(
+          Object.entries(row).map(([k, v]) => [k.toLowerCase(), v])
+      );
+        
+      results.push(newObj);
+    });
+    return results;
+  } else {
+    const newObj = Object.fromEntries(
+      Object.entries(result).map(([k, v]) => [k.toLowerCase(), v])
+    );
+    return newObj;
+  }
+};
 
 export const DB_CONFIG_CONSTELLATION = {
   client: 'oracledb',
@@ -49,6 +67,7 @@ export const DB_CONFIG_CONSTELLATION = {
         (HOST=${DB_HOST})(PORT=${DB_PORT}) ) )           
         (CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE}) ) )`
   },
+  postProcessResponse: postProcessToLowerCase
 };
 
 export const DB_CONFIG_MIDWIFERY = {
@@ -66,6 +85,7 @@ export const DB_CONFIG_MIDWIFERY = {
         (HOST=${DB_HOST})(PORT=${DB_PORT}) ) )           
         (CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE}) ) )`
   },
+  postProcessResponse: postProcessToLowerCase
 };
 
 export const DB_CONFIG_HIPMA = {
@@ -83,6 +103,7 @@ export const DB_CONFIG_HIPMA = {
         (HOST=${DB_HOST})(PORT=${DB_PORT}) ) )           
         (CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE}) ) )`
   },
+  postProcessResponse: postProcessToLowerCase
 };
 
 export const DB_CONFIG_GENERAL = {
@@ -99,5 +120,6 @@ export const DB_CONFIG_GENERAL = {
         (ADDRESS=(PROTOCOL=TCP)              
         (HOST=${DB_HOST})(PORT=${DB_PORT}) ) )           
         (CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE}) ) )`
-  }
+  },
+  postProcessResponse: postProcessToLowerCase
 };

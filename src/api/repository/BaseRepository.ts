@@ -6,12 +6,8 @@ export abstract class BaseRepository<T> implements IRepository<T> {
     loadResults<T>(data: Array<any>): Array<T> {
         const result: Array<T> = [];
         if (Array.isArray(data)) {
-            data.forEach((row) => {
-                const newObj = Object.fromEntries(
-                    Object.entries(row).map(([k, v]) => [k.toLowerCase(), v])
-                );
-                  
-                result.push(newObj as T);
+            data.forEach((row) => {                  
+                result.push(row as T);
             });
         }
         return result;

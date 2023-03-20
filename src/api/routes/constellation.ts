@@ -109,7 +109,7 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
                     'CONSTELLATION_HEALTH.DATE_OF_BIRTH',
                     'CONSTELLATION_HEALTH.ID',
                     'CONSTELLATION_HEALTH.FAMILY_PHYSICIAN',
-                    'CONSTELLATION_HEALTH.DIAGNOSIS',
+                    db.raw('JSON_SERIALIZE(CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS'),
                     'CONSTELLATION_HEALTH.CREATED_AT',
                     'CONSTELLATION_STATUS.DESCRIPTION as STATUS',
                     'CONSTELLATION_HEALTH.ID as CONSTELLATION_HEALTH_ID')
@@ -142,9 +142,11 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
                 value.language_prefer_to_receive_services = value.language_preferred;
             }
 
-            var dataString = "";
+            let dataString = "";
+            const diagnosisJson = JSON.parse(value.diagnosis);
+            const diagnosisList = diagnosisJson?.data ?? [];
 
-            _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
+            _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
 
                 if(valueDiagnosis in diagnosis){
                     dataString += diagnosis[valueDiagnosis]+",";
