@@ -1,11 +1,11 @@
-import { ConstellationFamilyDTO } from './../../models/constellation/index';
+import { ConstellationHealthDemographicDTO, ConstellationHealthLanguageDTO } from './../../models/constellation/index';
 import { ResultsDTO } from './../../models/base';
 import { Request, Response } from "express";
-import { ConstellationFamilyResultDTO, ConstellationHealthDTO, ConstellationStatusDTO } from '../../models';
+import { ConstellationFamilyResultDTO, ConstellationHealthDTO, ConstellationStatusDTO, ConstellationFamilyDTO } from '../../models';
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from '../../config';
 import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
-
+const _ = require('lodash');
 export class ConstellationRepository extends BaseRepository<ConstellationHealthDTO> {
 
     mainDb: Knex<any, unknown> = knex(DB_CONFIG_CONSTELLATION);
@@ -309,6 +309,42 @@ export class ConstellationRepository extends BaseRepository<ConstellationHealthD
         }
 
         throw new Error("Record was not found.");
+    }
+
+    async getDemographics(): Promise<ConstellationHealthDemographicDTO[]> {
+        const demographics = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).select();
+        const result = this.loadResults<ConstellationHealthDemographicDTO>(demographics);
+        return result;
+    }
+
+    async getDemographicsByValue(value: number): Promise<ConstellationHealthDemographicDTO[]> {
+        const demographics = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ value: value }).select();
+        const result = this.loadResults<ConstellationHealthDemographicDTO>(demographics);
+        return result;
+    }
+
+    async getLanguages(): Promise<ConstellationHealthLanguageDTO[]> {
+        const languages = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).select();
+        const result = this.loadResults<ConstellationHealthLanguageDTO>(languages);
+        return result;
+    }
+
+    async getLanguagesByValue(value: number): Promise<ConstellationHealthLanguageDTO[]> {
+        const languages = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).where({ value: value }).select();
+        const result = this.loadResults<ConstellationHealthLanguageDTO>(languages);
+        return result;
+    }
+
+    async create(item: ConstellationHealthDTO): Promise<number> {
+        let constellationSaved = Object();
+        constellationSaved = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).insert(item).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).returning('id');
+        return constellationSaved;        
+    }
+
+    async createFamilyMembers(item: ConstellationFamilyDTO): Promise<number> {
+        let itemSaved = Object();
+        itemSaved = await this.mainDb(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`).insert(item).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`);
+        return itemSaved;
     }
 
 }

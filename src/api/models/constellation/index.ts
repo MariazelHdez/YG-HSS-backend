@@ -6,6 +6,16 @@ export interface ConstellationHealthLanguage {
     description: string;
 }
 
+export interface ConstellationHealthLanguageDTO extends BaseTableDTO {
+    value: string;
+    description: string;
+}
+
+export interface ConstellationHealthDemographicDTO extends BaseTableDTO {
+    value: string;
+    description: string;
+}
+
 export interface ConstellationFamilyDTO extends BaseTableDTO {
     constellation_health_id: number;
     first_name_family_member: string;
@@ -19,13 +29,13 @@ export interface ConstellationFamilyDTO extends BaseTableDTO {
     province_family_member: string;
     yhcip_family_member: string;
     relationship_family_member: string;
-    language_prefer_to_receive_services_family_member: number;
+    language_prefer_to_receive_services_family_member?: number;
     preferred_language_family_member: string;
     interpretation_support_family_member: string;
     family_physician_family_member: string;
     current_family_physician_family_member: string;
     accessing_health_care_family_member: string;
-    diagnosis_family_member: string;
+    diagnosis_family_member?: string;
     demographics_groups_family_member: number;
 }
 
@@ -38,7 +48,7 @@ export interface ConstellationHealthDTO extends BaseTableDTO {
     status: number;
     first_name: string;
     last_name: string;
-    is_this_your_leagal_name: string;
+    is_this_your_legal_name_: string;
     your_legal_name: string;
     pronouns: string;
     date_of_birth: Date | string;

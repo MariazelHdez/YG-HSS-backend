@@ -17,7 +17,7 @@ export abstract class BaseRepository<T> implements IRepository<T> {
         return result;
     }
 
-    create(item: T): Promise<boolean> {
+    create(item: T): Promise<number> {
         throw new Error("Method not implemented.");
     }
     update(id: string, item: T): Promise<boolean> {

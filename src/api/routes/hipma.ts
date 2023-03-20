@@ -94,24 +94,24 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
         var hipma = Object();
         var sqlFilter = "health_information.status = '1'";
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
         }
         
-        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
+        hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATIO', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
             .whereRaw(sqlFilter)
-            .select('health_information.*',
-                    'hipma_request_type.description as HipmaRequestType',
-                    'hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation',
-                    'hipma_copy_health_information.description as CopyHealthInformation',
-                    'hipma_situations.description as HipmaSituations',
-                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
-                        "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at")
+            .select('HEALTH_INFORMATION.*',
+                    'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE',
+                    'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESSPERSONALHEALTHINFORMATION',
+                    'HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS COPYHEALTHINFORMATION',
+                    'HIPMA_SITUATIONS.DESCRIPTION AS HIPMASITUATIONS',
+                    db.raw("CONCAT(HEALTH_INFORMATION.FIRST_NAME, ' ', HEALTH_INFORMATION.LAST_NAME) AS APPLICANTFULLNAME, "+
+                        "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT")
             )
-            .orderBy('health_information.created_at', 'asc');
+            .orderBy('HEALTH_INFORMATION.CREATED_AT', 'ASC');
 
         hipma.forEach(function (value: any) {
             value.created_at_format =  value.created_at.toLocaleString("en-CA", {
@@ -151,9 +151,9 @@ hipmaRouter.get("/validateRecord/:hipma_id",[param("hipma_id").isInt().notEmpty(
         var message = "";
         var type = "error";
 
-        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
-            .where('health_information.id', hipma_id)
-            .select(`${SCHEMA_HIPMA}.health_information.*`)
+        hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+            .where('HEALTH_INFORMATION.ID', hipma_id)
+            .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`)
             .first();
 
         if(!hipma || hipma.status == 2){
@@ -182,19 +182,19 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
     try {
         let hipma_id = Number(req.params.hipma_id);
 
-        var hipma = await db(`${SCHEMA_HIPMA}.health_information`)
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
-        .select(`${SCHEMA_HIPMA}.health_information.*`,
-                `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
-                `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
-                `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
-                `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
-                `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`)
-        .where("health_information.id", hipma_id)
+        var hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATIO', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST', '=', 'HIPMA_COPY_ACTIVITY_REQUEST.ID')
+        .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`,
+                `${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE`,
+                `${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESSPERSONALHEALTHINFORMATION`,
+                `${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS COPYHEALTHINFORMATION`,
+                `${SCHEMA_HIPMA}.HIPMA_SITUATIONS.DESCRIPTION AS HIPMASITUATIONS`,
+                `${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS HIPMACOPYACTIVITYREQUEST`)
+        .where("HEALTH_INFORMATION.ID", hipma_id)
         .first();
 
         if(!_.isNull(hipma.date_from_)) {
@@ -225,7 +225,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             var dataString = "";
             var socialServices = Object();
 
-            socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
+            socialServices = await db(`${SCHEMA_HIPMA}.HIPMA_HEALTH_SOCIAL_SERVICES_PROGRAM`).select().then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -254,7 +254,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             var dataString = "";
             var hssSystems = Object();
 
-            hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
+            hssSystems = await db(`${SCHEMA_HIPMA}.HIPMA_HSS_SYSTEMS`).select().then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -279,7 +279,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
             hipma.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
         }
 
-        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", hipma_id).select();
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.HIPMA_FILES`).where("hipma_id", hipma_id).select();
         var files = Object();
 
         if(!_.isEmpty(hipmaFiles)){
@@ -440,7 +440,7 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range = data.date_range_is_unknown_or_i_need_help_identifying_the_date_range;
         hipma.i_affirm_the_information_above_to_be_true_and_accurate_ = data.i_affirm_the_information_above_to_be_true_and_accurate_;
 
-        HipmaSaved = await db(`${SCHEMA_HIPMA}.health_information`).insert(hipma).into(`${SCHEMA_HIPMA}.health_information`).returning('id');
+        HipmaSaved = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).insert(hipma).into(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).returning('id');
 
         if(!_.isEmpty(files)){
             var filesInsert = Array();
@@ -459,7 +459,7 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
                 filesInsert.push(hipmaFiles);
             });
 
-            var filesSaved = await db(`${SCHEMA_HIPMA}.hipma_files`).insert(filesInsert).into(`${SCHEMA_HIPMA}.hipma_files`);
+            var filesSaved = await db(`${SCHEMA_HIPMA}.HIPMA_FILES`).insert(filesInsert).into(`${SCHEMA_HIPMA}.HIPMA_FILES`);
 
             if(HipmaSaved && filesSaved){
                 res.json({ status:200, message: 'Request saved' });
@@ -490,7 +490,7 @@ hipmaRouter.patch("/changeStatus", async (req: Request, res: Response) => {
 
         var hipma = req.body.params.requests;
 
-        var updateStatus = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).whereIn("id", hipma);
+        var updateStatus = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({status: "2"}).whereIn("ID", hipma);
 
         if(updateStatus) {
             let type = "success";
@@ -521,7 +521,7 @@ hipmaRouter.get("/downloadFile/:hipmaFile_id",[param("hipmaFile_id").isInt().not
         var fs = require("fs");
 
         var hipmaFile_id = Number(req.params.hipmaFile_id);
-        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("id", hipmaFile_id).select().first();
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.HIPMA_FILES`).where("id", hipmaFile_id).select().first();
         var buffer = Buffer.from(hipmaFiles.file_data, 'base64');
         let safeName = (Math.random() + 1).toString(36).substring(7)+'_'+hipmaFiles.file_name;
         let pathPublicFront = path.join(__dirname, "../../");
@@ -556,40 +556,40 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
         var hipma = Object();
-        var sqlFilter = "health_information.status = '1'";
+        var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
 
         if(requests.length > 0){
-            sqlFilter += " AND health_information.id IN ("+requests+")";
+            sqlFilter += " AND HEALTH_INFORMATION.ID IN ("+requests+")";
         }
         
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(health_information.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
         }
 
-        hipma = await db(`${SCHEMA_HIPMA}.health_information`)
-                .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-                .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-                .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-                .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
-                .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
-                .select(`${SCHEMA_HIPMA}.health_information.*`,
-                        `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
-                        `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
-                        `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
-                        `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
-                        `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`,
-                    db.raw("to_char(health_information.date_from_, 'YYYY-MM-DD') as date_from_, "+
-                        "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_to_,"+
-                        "to_char(health_information.date_to_, 'YYYY-MM-DD') as date_of_birth,"+
-                        "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                        "to_char(health_information.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
+        hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+                .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
+                .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATIO', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
+                .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
+                .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
+                .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST', '=', 'HIPMA_COPY_ACTIVITY_REQUEST.ID')
+                .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`,
+                        `${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE`,
+                        `${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESSPERSONALHEALTHINFORMATION`,
+                        `${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS COPYHEALTHINFORMATION`,
+                        `${SCHEMA_HIPMA}.HIPMA_SITUATIONS.DESCRIPTION AS HIPMASITUATIONS`,
+                        `${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS HIPMACOPYACTIVITYREQUEST`,
+                    db.raw("TO_CHAR(HEALTH_INFORMATION.DATE_FROM_, 'YYYY-MM-DD') AS DATE_FROM_, "+
+                        "TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'YYYY-MM-DD') AS DATE_TO_,"+
+                        "TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'YYYY-MM-DD') AS DATE_OF_BIRTH,"+
+                        "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                        "TO_CHAR(HEALTH_INFORMATION.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT")
                 )
                 .whereRaw(sqlFilter);
 
         var socialServices = Object();
         var hssSystems = Object();
 
-        socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
+        socialServices = await db(`${SCHEMA_HIPMA}.HIPMA_HEALTH_SOCIAL_SERVICES_PROGRAM`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -599,7 +599,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
+        hssSystems = await db(`${SCHEMA_HIPMA}.HIPMA_HSS_SYSTEMS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -753,49 +753,49 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
         var hipmaDuplicate = Object();
         var hipma = Array();
 
-        var sqlFilter = "health_information.status = '1'";
+        var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
 
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(hipma_duplicated_requests.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(hipma_duplicated_requests.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(HIPMA_DUPLICATED_REQUESTS.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HIPMA_DUPLICATED_REQUESTS.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
         }
 
-        hipmaOriginal = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
-            .join(`${SCHEMA_HIPMA}.health_information`, 'hipma_duplicated_requests.health_information_original_id', '=', 'health_information.id')
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+        hipmaOriginal = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
+            .join(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`, 'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_ORIGINAL_ID', '=', 'HEALTH_INFORMATION.ID')
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
             .whereRaw(sqlFilter)
-            .select('health_information.id as health_information_id',
-                    'hipma_duplicated_requests.id',
-                    'hipma_duplicated_requests.health_information_original_id',
-                    'hipma_duplicated_requests.health_information_duplicated_id',
-                    'health_information.confirmation_number',
-                    'hipma_request_type.description as HipmaRequestType',
-                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
-                    "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, "+
-                    "to_char(health_information.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
-            ).orderBy("health_information.created_at").then((rows: any) => {
+            .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
+                    'HIPMA_DUPLICATED_REQUESTS.ID',
+                    'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_ORIGINAL_ID',
+                    'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_DUPLICATED_ID',
+                    'HEALTH_INFORMATION.CONFIRMATION_NUMBER',
+                    'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE',
+                    db.raw("CONCAT(HEALTH_INFORMATION.FIRST_NAME, ' ', HEALTH_INFORMATION.LAST_NAME) AS APPLICANTFULLNAME, "+
+                    "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT, "+
+                    "TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
+            ).orderBy("HEALTH_INFORMATION.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
     
                 for (let row of rows) {
-                    arrayResult[row['health_information_original_id']] = row;
+                    arrayResult[row['HEALTH_INFORMATION_ORIGINAL_ID']] = row;
                 }
     
                 return arrayResult;
             });
 
-        hipmaDuplicate = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
-            .join(`${SCHEMA_HIPMA}.health_information`, 'hipma_duplicated_requests.health_information_duplicated_id', '=', 'health_information.id')
-            .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
+        hipmaDuplicate = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
+            .join(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`, 'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_DUPLICATED_ID', '=', 'HEALTH_INFORMATION.ID')
+            .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
             .whereRaw(sqlFilter)
-            .select('health_information.id as health_information_id',
-                    'hipma_duplicated_requests.id',
-                    'hipma_duplicated_requests.health_information_original_id',
-                    'hipma_duplicated_requests.health_information_duplicated_id',
-                    'health_information.confirmation_number as confirmation_number',
-                    'hipma_request_type.description as HipmaRequestType',
-                    db.raw("concat(health_information.first_name, ' ', health_information.last_name) as applicantFullName, "+
-                    "to_char(health_information.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, "+
-                    "to_char(health_information.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
-            ).orderBy("health_information.created_at");
+            .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
+                    'HIPMA_DUPLICATED_REQUESTS.ID',
+                    'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_ORIGINAL_ID',
+                    'HIPMA_DUPLICATED_REQUESTS.HEALTH_INFORMATION_DUPLICATED_ID',
+                    'HEALTH_INFORMATION.CONFIRMATION_NUMBER AS CONFIRMATION_NUMBER',
+                    'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE',
+                    db.raw("CONCAT(HEALTH_INFORMATION.FIRST_NAME, ' ', HEALTH_INFORMATION.LAST_NAME) AS APPLICANTFULLNAME, "+
+                    "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT, "+
+                    "TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
+            ).orderBy("HEALTH_INFORMATION.CREATED_AT");
 
         let index = 0;
         hipmaDuplicate.forEach(function (value: any) {
@@ -851,7 +851,7 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
         var hipmaDuplicate = Object();
         var hipmaEntries = Object();
 
-        var duplicateEntry = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+        var duplicateEntry = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
         .where("id", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
@@ -863,25 +863,25 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
             return arrayResult;
         });
 
-        hipmaEntries = await db(`${SCHEMA_HIPMA}.health_information`)
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_type`, 'health_information.what_type_of_request_do_you_want_to_make_', '=', 'hipma_request_type.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`, 'health_information.are_you_requesting_access_to_your_own_personal_health_informatio', '=', 'hipma_request_access_personal_health_information.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_health_information`, 'health_information.get_a_copy_of_your_health_information_', '=', 'hipma_copy_health_information.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_situations`, 'health_information.select_the_situation_that_applies_', '=', 'hipma_situations.id')
-        .leftJoin(`${SCHEMA_HIPMA}.hipma_copy_activity_request`, 'health_information.get_a_copy_of_your_activity_request', '=', 'hipma_copy_activity_request.id')
-        .select(`${SCHEMA_HIPMA}.health_information.*`,
-                `${SCHEMA_HIPMA}.hipma_request_type.description as HipmaRequestType`,
-                `${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.description as AccessPersonalHealthInformation`,
-                `${SCHEMA_HIPMA}.hipma_copy_health_information.description as CopyHealthInformation`,
-                `${SCHEMA_HIPMA}.hipma_situations.description as HipmaSituations`,
-                `${SCHEMA_HIPMA}.hipma_copy_activity_request.description as HipmaCopyActivityRequest`)
-        .whereIn("health_information.id", [duplicateEntry.original, duplicateEntry.duplicated])
-        .where("health_information.status", "1");
+        hipmaEntries = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATIO', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
+        .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST', '=', 'HIPMA_COPY_ACTIVITY_REQUEST.ID')
+        .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`,
+                `${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMAREQUESTTYPE`,
+                `${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESSPERSONALHEALTHINFORMATION`,
+                `${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS COPYHEALTHINFORMATION`,
+                `${SCHEMA_HIPMA}.HIPMA_SITUATIONS.DESCRIPTION AS HIPMASITUATIONS`,
+                `${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS HIPMACOPYACTIVITYREQUEST`)
+        .whereIn("HEALTH_INFORMATION.ID", [duplicateEntry.original, duplicateEntry.duplicated])
+        .where("HEALTH_INFORMATION.STATUS", "1");
 
         var socialServices = Object();
         var hssSystems = Object();
 
-        socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
+        socialServices = await db(`${SCHEMA_HIPMA}.HIPMA_HEALTH_SOCIAL_SERVICES_PROGRAM`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -891,7 +891,7 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
             return arrayResult;
         });
 
-        hssSystems = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
+        hssSystems = await db(`${SCHEMA_HIPMA}.HIPMA_HSS_SYSTEMS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -972,8 +972,8 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
             });
         }
 
-        var hipmaFiles = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", duplicateEntry.original).select();
-        var hipmaFilesDuplicated = await db(`${SCHEMA_HIPMA}.hipma_files`).where("hipma_id", duplicateEntry.duplicated).select();
+        var hipmaFiles = await db(`${SCHEMA_HIPMA}.HIPMA_FILES`).where("HIPMA_ID", duplicateEntry.original).select();
+        var hipmaFilesDuplicated = await db(`${SCHEMA_HIPMA}.HIPMA_FILES`).where("HIPMA_ID", duplicateEntry.duplicated).select();
         var files = Object();
         var filesDuplicated = Object();
 
@@ -1035,18 +1035,18 @@ hipmaRouter.patch("/duplicates/primary", async (req: Request, res: Response) => 
         var rejectWarning = Object();
 
         if(!request){
-            rejectWarning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).del();
+            rejectWarning = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`).where("ID", warning).del();
         }else{
-            var warningRequest = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).first();
+            var warningRequest = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`).where("ID", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).where("id", warningRequest.health_information_duplicated_id);
+                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({status: "2"}).where("ID", warningRequest.health_information_duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db(`${SCHEMA_HIPMA}.health_information`).update({status: "2"}).where("id", warningRequest.health_information_original_id);
+                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({status: "2"}).where("ID", warningRequest.health_information_original_id);
             }
 
             if(updateRequest){
-                rejectWarning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`).where("id", warning).del();
+                rejectWarning = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`).where("ID", warning).del();
             }
         }
 
@@ -1080,7 +1080,7 @@ hipmaRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id
         var message = "";
         var type = "error";
 
-        warning = await db(`${SCHEMA_HIPMA}.hipma_duplicated_requests`)
+        warning = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
             .where('id', duplicate_id)
             .select()
             .first();
@@ -1191,23 +1191,23 @@ async function getDataByModel(model: string, id: any, type: string){
     if(type == "single"){
         switch (model) {
             case 'HipmaRequestType':
-                data = await db(`${SCHEMA_HIPMA}.hipma_request_type`).where(`${SCHEMA_HIPMA}.hipma_request_type.id`, id).first();
+                data = await db(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`).where(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE.ID`, id).first();
                 break;
 
             case 'HipmaRequestAccessPersonalHealthInformation':
-                data = await db(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information`).where(`${SCHEMA_HIPMA}.hipma_request_access_personal_health_information.id`, id).first();
+                data = await db(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`).where(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID`, id).first();
                 break;
 
             case 'HipmaCopyHealthInformation':
-                data = await db(`${SCHEMA_HIPMA}.hipma_copy_health_information`).where(`${SCHEMA_HIPMA}.hipma_copy_health_information.id`, id).first();
+                data = await db(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`).where(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION.ID`, id).first();
                 break;
 
             case 'HipmaSituations':
-                data = await db(`${SCHEMA_HIPMA}.hipma_situations`).where(`${SCHEMA_HIPMA}.hipma_situations.id`, id).first();
+                data = await db(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`).where(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS.ID`, id).first();
                 break;
 
             case 'HipmaCopyActivityRequest':
-                data = await db(`${SCHEMA_HIPMA}.hipma_copy_activity_request`).where(`${SCHEMA_HIPMA}.hipma_copy_activity_request.id`, id).first();
+                data = await db(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST`).where(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST.ID`, id).first();
                 break;
         }
 
@@ -1226,7 +1226,7 @@ async function getDataByModel(model: string, id: any, type: string){
         var hss = Object();
 
         if(model == "HipmaHealthSocialServicesProgram") {
-            socialServices = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`).select().then((rows: any) => {
+            socialServices = await db(`${SCHEMA_HIPMA}.HIPMA_HEALTH_SOCIAL_SERVICES_PROGRAM`).select().then((rows: any) => {
                                         let arrayResult = Object();
                                         for (let row of rows) {
                                             arrayResult[row['id']] = row['description'];
@@ -1242,13 +1242,13 @@ async function getDataByModel(model: string, id: any, type: string){
                 }
             });
 
-            data = await db(`${SCHEMA_HIPMA}.hipma_health_social_services_program`)
+            data = await db(`${SCHEMA_HIPMA}.HIPMA_HEALTH_SOCIAL_SERVICES_PROGRAM`)
                             .select()
                             .whereIn('id', id);
 
         }else if(model == "HipmaHssSystems") {
 
-            hss = await db(`${SCHEMA_HIPMA}.hipma_hss_systems`).select().then((rows: any) => {
+            hss = await db(`${SCHEMA_HIPMA}.HIPMA_HSS_SYSTEMS`).select().then((rows: any) => {
                                 let arrayResult = Object();
                                 for (let row of rows) {
                                     arrayResult[row['id']] = row['description'];
@@ -1264,7 +1264,7 @@ async function getDataByModel(model: string, id: any, type: string){
                 }
             });
 
-            data =  await db(`${SCHEMA_HIPMA}.hipma_hss_systems`)
+            data =  await db(`${SCHEMA_HIPMA}.HIPMA_HSS_SYSTEMS`)
                             .select()
                             .whereIn('id', id);
         }
