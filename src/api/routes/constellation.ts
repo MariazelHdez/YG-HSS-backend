@@ -6,7 +6,7 @@ import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatu
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
-import { groupBy } from "../utils/groupBy";
+import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
 var _ = require('lodash');
 
@@ -143,8 +143,7 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
             }
 
             let dataString = "";
-            const diagnosisJson = JSON.parse(value.diagnosis);
-            const diagnosisList = diagnosisJson?.data ?? [];
+            const diagnosisList = helper.getJsonDataList(value.diagnosis);
 
             _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
 
@@ -190,8 +189,8 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
         var type= "error";
 
         constellationHealth = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'CONSTELLATION_HEALTH.status', '=', 'CONSTELLATION_STATUS.ID')
-            .where('constellation_health.id', constellationHealth_id)
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
+            .where('CONSTELLATION_HEALTH.ID', constellationHealth_id)
             .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.*`,
                     'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION')
             .first();
@@ -227,7 +226,34 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
             .where('CONSTELLATION_HEALTH.ID', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.*`,
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.STATUS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FIRST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LAST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.IS_THIS_YOUR_LEGAL_NAME_`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YOUR_LEGAL_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PRONOUNS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DATE_OF_BIRTH`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HAVE_YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HEALTH_CARE_CARD`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PROVINCE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.POSTAL_CODE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PREFER_TO_BE_CONTACTED`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PHONE_NUMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.EMAIL_ADDRESS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LEAVE_PHONE_MESSAGE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PREFERRED_LANGUAGE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INTERPRETATION_SUPPORT`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CURRENT_FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ACCESSING_HEALTH_CARE`,
+                    db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS`),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CREATED_AT`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.UPDATED_AT`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`)
             .first();
@@ -235,7 +261,29 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
         constellationFamily = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
-            .select('CONSTELLATION_HEALTH_FAMILY_MEMBERS.*',
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.FIRST_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.LAST_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.IS_THIS_YOUR_LEGAL_NAME__FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.YOUR_LEGAL_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PRONOUNS_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DATE_OF_BIRTH_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.HAVE_YHCIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.HEALTH_CARE_CARD_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PROVINCE_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.YHCIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.RELATIONSHIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PREFERRED_LANGUAGE_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.INTERPRETATION_SUPPORT_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.FAMILY_PHYSICIAN_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.CURRENT_FAMILY_PHYSICIAN_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.ACCESSING_HEALTH_CARE_FAMILY_MEMBER`,
+                    db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DIAGNOSIS_FAMILY_MEMBER) AS DIAGNOSIS_FAMILY_MEMBER`),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.CREATED_AT`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.UPDATED_AT`,
                     'CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION_FAMILY_MEMBER',
                     'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER')
             .where('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', constellationHealth_id);
@@ -259,7 +307,9 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
             return arrayResult;
         });
 
-        _.forEach(constellationHealth.diagnosis, function(valueDiagnosis: any, key: any) {
+        const diagnosisList = helper.getJsonDataList(constellationHealth.diagnosis);
+
+        _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
             if(valueDiagnosis in diagnosis){
                 dataString += diagnosis[valueDiagnosis]+",";
             }else{
@@ -286,8 +336,9 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
                 }
 
                 let dataString = "";
+                const diagnosisFmList = helper.getJsonDataList(value.diagnosis_family_member);
 
-                _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+                _.forEach(diagnosisFmList, function(valueDiagnosisFm: any, key: any) {
 
                     if(valueDiagnosisFm in diagnosis){
                         dataString += diagnosis[valueDiagnosisFm]+",";
@@ -336,8 +387,8 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
     try {
         var data = Object();
         var constellationHealth = Object();
-        var demographics = Object();
-        var languages = Object();
+        var demographicsQuery = Object();
+        var languagesQuery = Object();
         let constellationSaved = Object();
 
         data = req.body;
@@ -359,7 +410,6 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         constellationHealth.postal_code = data.postal_code;
         constellationHealth.phone_number = data.phone_number;
         constellationHealth.email_address = data.email_address;
-        constellationHealth.language_prefer_to_receive_services = data.language_prefer_to_receive_services;
         constellationHealth.current_family_physician = data.current_family_physician;
         constellationHealth.accessing_health_care = data.accessing_health_care;
         constellationHealth.leave_phone_message = data.leave_phone_message;
@@ -370,22 +420,26 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         constellationHealth.health_care_card = data.health_care_card;
         constellationHealth.province = data.province;
 
-        languages = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).where({ value: data.language_prefer_to_receive_services }).select().first();
+        languagesQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).where({ VALUE: data.language_prefer_to_receive_services }).select();
+        const language = languagesQuery.length == 1 ? languagesQuery[0] : undefined;
 
-        if(languages){
-            constellationHealth.language_prefer_to_receive_services = languages.id;
+        if (language){
+            constellationHealth.language_prefer_to_receive_services = language.id;
         }
 
         if(data.language_prefer_to_receive_services !== ''){
             constellationHealth.preferred_language = data.other_language;
         }
 
-        constellationHealth.diagnosis = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", data.diagnosis);
+        const diagnosisList = data.diagnosis.data;
 
-        demographics = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ value: data.demographics_groups }).select().first();
+        constellationHealth.diagnosis = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
 
-        if(demographics){
-            constellationHealth.demographics_groups = demographics.id;
+        demographicsQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ VALUE: data.demographics_groups }).select();
+        const demographic = demographicsQuery.length == 1 ? demographicsQuery[0] : undefined;
+
+        if (demographic) {
+            constellationHealth.demographics_groups = demographic.id;
         }
 
         constellationHealth.include_family_members = data.include_family_members;
@@ -1071,8 +1125,12 @@ async function getMultipleIdsByModel(model: string, names: any) {
         });
 
         data = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`)
-                        .select()
-                        .whereIn('value', names);
+                        .select(
+                            db.raw(`JSON_OBJECT('data' VALUE JSON_ARRAYAGG(ID)) AS DATA`)
+                        )
+                        .whereIn('VALUE', names);
+        data = data[0].data;
+        return data;
 
     }else if(model == "ConstellationHealthDemographics") {
 
