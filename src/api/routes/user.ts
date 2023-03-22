@@ -1,4 +1,4 @@
-import { UserRepository } from './../repository/UserRepository';
+import { UserRepository } from './../repository/oracle/UserRepository';
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { AppUser, Team } from "../models/user";

@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 //import moment from "moment";
 import knex from "knex";
 //import { ReturnValidationErrors } from "../../middleware";
@@ -93,31 +93,31 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
         var midwifery = Object();
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_services.status <> '4'";
+        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> '4'";
 
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
         }
 
         if(!_.isEmpty(status_request)){
-           sqlFilter += "  AND midwifery_services.status IN ("+status_request+")";
+           sqlFilter += "  AND MIDWIFERY_SERVICES.STATUS IN ("+status_request+")";
         }
 
-        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
-            .select('midwifery_services.*',
-                    'midwifery_status.description as status_description',
-                    'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact',
-                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+            .select('MIDWIFERY_SERVICES.*',
+                    'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                    db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                        "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
             )
             .whereRaw(sqlFilter)
-            .orderBy('midwifery_services.id', 'asc');
+            .orderBy('MIDWIFERY_SERVICES.ID', 'ASC');
 
-        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).select().whereNot('description', 'Closed')
+        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`).select().whereNot('DESCRIPTION', 'Closed')
             .then((rows: any) => {
                 let arrayResult = Array();
                 for (let row of rows) {
@@ -127,7 +127,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                 return arrayResult;
         });
 
-        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -139,7 +139,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
         var communities = Object();
 
-        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -257,20 +257,20 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         var communityLocations = Object();
         var languages = Object();
 
-        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
-            .select('midwifery_services.*',
-                    'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact',
-                    db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
-                        "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
-                        "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+            .select('MIDWIFERY_SERVICES.*',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                    db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
+                        "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
+                        "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
             )
-            .where("midwifery_services.id", midwifery_id)
+            .where("MIDWIFERY_SERVICES.ID", midwifery_id)
             .first();
 
-        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -280,7 +280,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_COMMUNITY_LOCATIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -290,7 +290,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
+        languages = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_LANGUAGES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -300,7 +300,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).select()
+        midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`).select()
             .then((rows: any) => {
                 let arrayResult = Array();
                 for (let row of rows) {
@@ -363,7 +363,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         var communities = Object();
         var contact = Object();
 
-        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -373,7 +373,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             return arrayResult;
         });
 
-        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -419,7 +419,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
 
         }
 
-        var statusMidwifery =  await db(`${SCHEMA_MIDWIFERY}.midwifery_status`).where("description", "Closed").select().first();
+        var statusMidwifery =  await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`).where("DESCRIPTION", "Closed").select().first();
 
         let today = new Date();
         let dd = String(today.getDate()).padStart(2, '0');
@@ -476,7 +476,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.preferred_email = data.preferred_email;
         midwifery.when_was_the_first_day_of_your_last_period_ = data.when_was_the_first_day_of_your_last_period_;
 
-        midwiferyCommunityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).where({ description: data.community_located }).select().first();
+        midwiferyCommunityLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_COMMUNITY_LOCATIONS`).where({ description: data.community_located }).select().first();
 
         if(midwiferyCommunityLocations) {
             midwifery.community_located = midwiferyCommunityLocations.id;
@@ -484,7 +484,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.community_located = data.community_located;
         }
 
-        midwiferyLanguages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).where({ description: data.preferred_language }).select().first();
+        midwiferyLanguages = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_LANGUAGES`).where({ description: data.preferred_language }).select().first();
 
         if(midwiferyLanguages) {
             midwifery.preferred_language = midwiferyLanguages.id ;
@@ -492,7 +492,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.preferred_language = data.preferred_language;
         }
 
-        midwiferyPreferredContactTypes = await db(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`).where({ name: data.prefer_to_be_contacted }).select().first();
+        midwiferyPreferredContactTypes = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`).where({ name: data.prefer_to_be_contacted }).select().first();
 
         if(midwiferyPreferredContactTypes) {
             midwifery.prefer_to_be_contacted = midwiferyPreferredContactTypes.id ;
@@ -500,7 +500,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.prefer_to_be_contacted = null;
         }
 
-        midwiferyBirthLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`).where({ name: data.where_to_give_birth }).select().first();
+        midwiferyBirthLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`).where({ name: data.where_to_give_birth }).select().first();
 
         if(midwiferyBirthLocations) {
             midwifery.where_to_give_birth = midwiferyBirthLocations.id ;
@@ -541,7 +541,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.physician_s_name = data.physician_s_name;
         midwifery.provide_details3 = data.provide_details3;
 
-        midwiferySaved = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).insert(midwifery).into(`${SCHEMA_MIDWIFERY}.midwifery_services`).returning('id');
+        midwiferySaved = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).insert(midwifery).into(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).returning('ID');
 
         if(midwiferySaved){
             res.json({ status:200, message: 'Request saved' });
@@ -571,14 +571,14 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         let status_request = req.body.params.status;
         var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "midwifery_services.status <> 4";
+        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         if(requests.length > 0){
-            sqlFilter += " AND midwifery_services.id IN ("+requests+")";
+            sqlFilter += " AND MIDWIFERY_SERVICES.ID IN ("+requests+")";
         }
         
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(midwifery_services.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
         }
 
         if(!_.isEmpty(status_request)){
@@ -586,23 +586,23 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         }
 
 
-        midwifery = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
-            .select('midwifery_services.*',
-                    'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact',
-                db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
-                    "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
-                    "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date,"+
-                    "to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                    "to_char(midwifery_services.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at")
+        midwifery = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+            .select('MIDWIFERY_SERVICES.*',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
+                    "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
+                    "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE,"+
+                    "TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                    "TO_CHAR(MIDWIFERY_SERVICES.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT")
             )
             .whereRaw(sqlFilter);
 
 
-        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -617,7 +617,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var communityLocations = Object();
         var languages = Object();
 
-        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -627,7 +627,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -636,7 +636,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_COMMUNITY_LOCATIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -646,7 +646,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
             return arrayResult;
         });
 
-        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
+        languages = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_LANGUAGES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -832,7 +832,7 @@ midwiferyRouter.patch("/changeStatus", async (req: Request, res: Response) => {
         var midwifery_id = req.body.params.requests;
         var status_id = req.body.params.requestStatus;
 
-        var updateStatus = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: status_id}).whereIn("midwifery_services.id", midwifery_id);
+        var updateStatus = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({status: status_id}).whereIn("MIDWIFERY_SERVICES.id", midwifery_id);
 
         if(updateStatus) {
             let type = "success";
@@ -857,29 +857,29 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
         var midwiferyOriginal = Object();
         var midwiferyDuplicate = Object();
         var midwifery = Array();
-        var sqlFilter = "midwifery_services.status <> '4'";
+        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> '4'";
 
-        midwiferyOriginal = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_services`, 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
-            .select('midwifery_services.id as midwifery_services_id',
-                    'midwifery_services.first_name',
-                    'midwifery_services.last_name',
-                    'midwifery_services.preferred_email',
-                    'midwifery_services.preferred_phone',
-                    'midwifery_duplicated_requests.id',
-                    'midwifery_duplicated_requests.midwifery_services_original_id',
-                    'midwifery_duplicated_requests.midwifery_services_duplicated_id',
-                    'midwifery_status.description as status_description',
-                    'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact',
-                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
+        midwiferyOriginal = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+            .select('MIDWIFERY_SERVICES.ID AS MIDWIFERY_SERVICES_ID',
+                    'MIDWIFERY_SERVICES.FIRST_NAME',
+                    'MIDWIFERY_SERVICES.LAST_NAME',
+                    'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
+                    'MIDWIFERY_SERVICES.PREFERRED_PHONE',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_DUPLICATED_ID',
+                    'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                    db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
                         "to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
             )
             .whereRaw(sqlFilter)
-            .orderBy("midwifery_services.created_at").then((rows: any) => {
+            .orderBy("MIDWIFERY_SERVICES.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -889,27 +889,27 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                 return arrayResult;
             });
 
-        midwiferyDuplicate = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_services`, 'midwifery_duplicated_requests.midwifery_services_original_id', '=', 'midwifery_services.id')
-            .join(`${SCHEMA_MIDWIFERY}.midwifery_status`, 'midwifery_services.status', '=', 'midwifery_status.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', '=', 'midwifery_birth_locations.id')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', '=', 'midwifery_preferred_contact_types.id')
-            .select('midwifery_services.id as midwifery_services_id',
-                    'midwifery_services.first_name',
-                    'midwifery_services.last_name',
-                    'midwifery_services.preferred_email',
-                    'midwifery_services.preferred_phone',
-                    'midwifery_duplicated_requests.id',
-                    'midwifery_duplicated_requests.midwifery_services_original_id',
-                    'midwifery_duplicated_requests.midwifery_services_duplicated_id',
-                    'midwifery_status.description as status_description',
-                    'midwifery_birth_locations.description as birth_locations',
-                    'midwifery_preferred_contact_types.description as preferred_contact',
-                    db.raw("to_char(midwifery_services.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                        "to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
+        midwiferyDuplicate = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+            .select('MIDWIFERY_SERVICES.ID AS MIDWIFERY_SERVICES_ID',
+                    'MIDWIFERY_SERVICES.FIRST_NAME',
+                    'MIDWIFERY_SERVICES.LAST_NAME',
+                    'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
+                    'MIDWIFERY_SERVICES.PREFERRED_PHONE',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_DUPLICATED_ID',
+                    'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                    db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                        "TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
             )
             .whereRaw(sqlFilter)
-            .orderBy("midwifery_services.created_at");
+            .orderBy("MIDWIFERY_SERVICES.CREATED_AT");
 
         let index = 0;
 
@@ -968,7 +968,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         var communities = Object();
         var contact = Object();
 
-        var duplicateEntry = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
+        var duplicateEntry = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
         .where("id", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
@@ -980,20 +980,20 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        midwiferyEntries = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`)
-        .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_birth_locations`, 'midwifery_services.where_to_give_birth', 'midwifery_birth_locations.id')
-        .leftJoin(`${SCHEMA_MIDWIFERY}.midwifery_preferred_contact_types`, 'midwifery_services.prefer_to_be_contacted', 'midwifery_preferred_contact_types.id')
-        .select('midwifery_services.*',
-                'midwifery_birth_locations.description as birth_locations',
-                'midwifery_preferred_contact_types.description as preferred_contact',
-                db.raw("to_char(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth, "+
-                    "to_char(midwifery_services.when_was_the_first_day_of_your_last_period_, 'YYYY-MM-DD') as when_was_the_first_day_of_your_last_period_,"+
-                    "to_char(midwifery_services.due_date, 'YYYY-MM-DD') as due_date")
+        midwiferyEntries = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+        .select('MIDWIFERY_SERVICES.*',
+                'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
+                    "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
+                    "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
         )
-        .whereIn("midwifery_services.id", [duplicateEntry.original, duplicateEntry.duplicated])
-        .whereNot('midwifery_services.status', '4');
+        .whereIn("MIDWIFERY_SERVICES.ID", [duplicateEntry.original, duplicateEntry.duplicated])
+        .whereNot('MIDWIFERY_SERVICES.STATUS', '4');
 
-        communities = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
+        communities = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1003,7 +1003,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        contact =  await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
+        contact =  await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
                 arrayResult[row['id']] = row['description'];
@@ -1012,17 +1012,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).select().then((rows: any) => {
-            let arrayResult = Object();
-
-            for (let row of rows) {
-                arrayResult[row['id']] = row['description'];
-            }
-
-            return arrayResult;
-        });
-
-        communityLocations = await db(`${SCHEMA_MIDWIFERY}.midwifery_community_locations`).select().then((rows: any) => {
+        midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1032,7 +1022,17 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             return arrayResult;
         });
 
-        languages = await db(`${SCHEMA_MIDWIFERY}.midwifery_languages`).select().then((rows: any) => {
+        communityLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_COMMUNITY_LOCATIONS`).select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['id']] = row['description'];
+            }
+
+            return arrayResult;
+        });
+
+        languages = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_LANGUAGES`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -1132,7 +1132,7 @@ midwiferyRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicat
         var message = "";
         var type = "error";
 
-        warning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`)
+        warning = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
             .where('id', duplicate_id)
             .select()
             .first();
@@ -1171,18 +1171,18 @@ midwiferyRouter.patch("/duplicates/primary", async (req: Request, res: Response)
         var rejectWarning = Object();
 
         if(!request){
-            rejectWarning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).del();
+            rejectWarning = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`).where("ID", warning).del();
         }else{
-            var warningRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).first();
+            var warningRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`).where("ID", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: "4"}).where("id", warningRequest.midwifery_services_duplicated_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({status: "4"}).where("ID", warningRequest.midwifery_services_duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db(`${SCHEMA_MIDWIFERY}.midwifery_services`).update({status: "4"}).where("id", warningRequest.midwifery_services_original_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({status: "4"}).where("ID", warningRequest.midwifery_services_original_id);
             }
 
             if(updateRequest){
-                rejectWarning = await db(`${SCHEMA_MIDWIFERY}.midwifery_duplicated_requests`).where("id", warning).del();
+                rejectWarning = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`).where("ID", warning).del();
             }
         }
 
@@ -1243,7 +1243,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
     var data = Object();
 
     if(model == "MidwiferyGroupsCommunities") {
-        groups = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).select().then((rows: any) => {
+        groups = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
                                 arrayResult[row['name']] = row['description'];
@@ -1259,10 +1259,10 @@ async function getMultipleIdsByModel(model: any, names: any) {
             }
         });
 
-        data = await db(`${SCHEMA_MIDWIFERY}.midwifery_groups_communities`).whereIn('name', names );
+        data = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).whereIn('NAME', names );
 
     }else if(model == "MidwiferyClinicContactTypes") {
-        contact =   await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).select().then((rows: any) => {
+        contact =   await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
                                 arrayResult[row['name']] = row['description'];
@@ -1278,7 +1278,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
             }
         });
 
-        data = await db(`${SCHEMA_MIDWIFERY}.midwifery_clinic_contact_types`).whereIn('name', names);
+        data = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).whereIn('NAME', names);
     }
 
     if(data.length) {
@@ -1332,7 +1332,7 @@ async function getMidwiferyOptions(field: any, data: string) {
         return null;
     }
 
-    var options = await db(`${SCHEMA_MIDWIFERY}.midwifery_options`).where({ field_name: field }).where({ field_value: bool }).select().first();
+    var options = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).where({ field_name: field }).where({ field_value: bool }).select().first();
 
     return options.id;
 }

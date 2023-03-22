@@ -1,6 +1,6 @@
-import { UserDTO, PermissionDTO, RoleDTO } from '../models/user/index';
-import { DB_CONFIG_GENERAL } from '../config';
-import { BaseRepository } from './BaseRepository';
+import { UserDTO, RoleDTO } from '../../models';
+import { DB_CONFIG_GENERAL, SCHEMA_GENERAL } from '../../config';
+import { BaseRepository } from '../BaseRepository';
 import knex, { Knex } from "knex";
 
 interface UserRolesOptionsDTO extends RoleDTO {
@@ -15,13 +15,13 @@ export class UserRepository extends BaseRepository<UserDTO> {
         let roles = Object();
         const allRoles: Array<UserRolesOptionsDTO> = [];
 
-        roles = await this.mainDb(this.mainDb.ref("bizont_edms_general.user_data").as("ud"))
-            .leftJoin(this.mainDb.ref("bizont_edms_general.user_roles").as("ur"), (build) => {
-                build.on("ur.user_id", "=", "ud.id")
-                    .andOn("ud.user_email", "=", this.mainDb.raw(`'${user_email}'`))
+        roles = await this.mainDb(this.mainDb.ref(`${SCHEMA_GENERAL}.USER_DATA`).as("UD"))
+            .leftJoin(this.mainDb.ref("BIZONT_EDMS_GENERAL.USER_ROLES").as("UR"), (build) => {
+                build.on("UR.USER_ID", "=", "UD.ID")
+                    .andOn("UD.USER_EMAIL", "=", this.mainDb.raw(`'${user_email}'`))
             })
-            .rightJoin(this.mainDb.ref("bizont_edms_general.roles_data").as("rd"), "rd.id", "ur.role_id")
-            .select("rd.id", "rd.role_name", "ud.user_name", "ud.user_email");
+            .rightJoin(this.mainDb.ref(`${SCHEMA_GENERAL}.ROLES_DATA`).as("RD"), "RD.ID", "UR.ROLE_ID")
+            .select("RD.ID", "rd.ROLE_NAME", "ud.USER_NAME", "ud.USER_EMAIL");
         
         roles.forEach((x: any) => {
             allRoles.push({

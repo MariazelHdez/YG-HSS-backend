@@ -1,8 +1,8 @@
-import { AuditRepository } from './../repository/AuditRepository';
+import { AuditRepository } from './../repository/oracle/AuditRepository';
 import { groupBy } from '../utils/groupBy';
 import express, { Request, Response } from "express";
 import { param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 
 const submissionStatusRepo = new SubmissionStatusRepository();
 const auditRepo = new AuditRepository();
@@ -107,6 +107,7 @@ generalRouter.get("/audit/timeline", async (req: Request, res: Response) => {
 
     try {
         const permissions = req.user?.db_user.permissions ?? [];
+        console.log(permissions);
         const result = await auditRepo.getAuditTimeline(permissions);
         res.send({ data: result });
 
