@@ -79,14 +79,14 @@
 
                             <tr>
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
-                                <td>{{ hipmaDuplicated.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
+                                <td>{{ hipmaDuplicated.cp_health_info }}</td>
                             </tr>
 
                             <tr>
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
-                                <td>{{ hipmaDuplicated.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
+                                <td>{{ hipmaDuplicated.cp_act_req }}</td>
                             </tr>
 
                             <tr>
@@ -144,14 +144,14 @@
                                 <td v-else>No</td>
                             </tr>
 
-                            <tr v-if="hipma.CopyHealthInformation">
+                            <tr v-if="hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
                             </tr>
 
-                            <tr v-if="hipma.HipmaCopyActivityRequest">
+                            <tr v-if="hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
                             </tr>
 
                             <tr>

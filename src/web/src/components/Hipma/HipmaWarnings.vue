@@ -142,8 +142,6 @@ export default {
             })
             .then((resp) => {
                 this.items = resp.data.data;
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))
@@ -155,7 +153,6 @@ export default {
             this.$router.push({ path: route });
         },
         selectAll() {
-                //event.value - boolen value if needed
                 this.selected = this.selected.length === this.items.length
                 ? []
                 : this.items

@@ -191,8 +191,6 @@ export default {
 			.then((resp) => {
 				this.items = resp.data.data;
 				this.itemsUnfiltered = resp.data.data;
-				//this.pagination.totalLength = resp.data.meta.count;
-				//this.totalLength = resp.data.meta.count;
 				this.loading = false;
 			})
 			.catch((err) => console.error(err))
@@ -280,13 +278,6 @@ export default {
 			.finally(() => {
 				this.loading = false;
 			});
-
-
-			/*
-			console.log(this.date);
-			console.log(this.dateEnd);
-			console.log(this.selected);
-			*/
 		},
 	},
 };
