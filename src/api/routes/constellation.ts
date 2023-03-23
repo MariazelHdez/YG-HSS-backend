@@ -405,7 +405,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
 
         constellationHealth.your_legal_name = legal_name;
         constellationHealth.pronouns = data.pronouns;
-        constellationHealth.date_of_birth = data.date_of_birth;
+        constellationHealth.date_of_birth = db.raw(`TO_DATE('${data.date_of_birth}', 'yyyy-mm-dd')`);
         constellationHealth.yhcip = data.yhcip;
         constellationHealth.postal_code = data.postal_code;
         constellationHealth.phone_number = data.phone_number;
@@ -431,9 +431,9 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
             constellationHealth.preferred_language = data.other_language;
         }
 
-        const diagnosisList = data.diagnosis.data;
-
-        constellationHealth.diagnosis = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
+        const diagnosisList = data.diagnosis;
+        const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
+        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
 
         demographicsQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ VALUE: data.demographics_groups }).select();
         const demographic = demographicsQuery.length == 1 ? demographicsQuery[0] : undefined;
@@ -492,7 +492,7 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
         var sqlFilter = "CONSTELLATION_HEALTH.STATUS <> '4'";
         
         if(!_.isEmpty(requests)){
-            sqlFilter += " AND CONSTELLATION_HEALTH.ID IN ("+requests+")";
+            sqlFilter += ` AND CONSTELLATION_HEALTH.ID IN (${requests.join(",")})`;
         }
         if(dateFrom && dateTo ){
             sqlFilter += "  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
@@ -523,11 +523,23 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FAMILY_PHYSICIAN`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CURRENT_FAMILY_PHYSICIAN`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ACCESSING_HEALTH_CARE`,
-                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DIAGNOSIS`,
+                    db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS`),
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CREATED_AT`,
                     );
+        
+        var diagnosis = Object();
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
+            let arrayResult = Object();
+
+            for (let row of rows) {
+                arrayResult[row['ID']] = row['DESCRIPTION'];
+            }
+
+            return arrayResult;
+        });
+
 
         constellationHealth.forEach(function (value: any) {
 
@@ -545,11 +557,21 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
             }
             
             var dataString = "";
-            
+            const diagnosisList = helper.getJsonDataList(value.diagnosis);
+
+            _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
+
+                if(valueDiagnosis in diagnosis){
+                    dataString += diagnosis[valueDiagnosis]+",";
+                }else{
+                    dataString += valueDiagnosis+",";
+                }
+            });
+
             if(dataString.substr(-1) == ","){
                 dataString = dataString.slice(0, -1);
             }
-            
+
             value.diagnosis = dataString.replace(/,/g, ', ');
         });
 
@@ -675,7 +697,7 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
         var sqlFilter = "CONSTELLATION_HEALTH.STATUS <> '4'";
 
         constellationOriginal =  await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
-            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.CONSTELLATION_HEALTH_ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
             .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
             .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
                     'CONSTELLATION_HEALTH.ID',
@@ -688,14 +710,14 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
-                    arrayResult[row['constellation_health_original_id']] = row;
+                    arrayResult[row['original_id']] = row;
                 }
 
                 return arrayResult;
             });
 
         constellationDuplicate = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
-        .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.CONSTELLATION_HEALTH_ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
+        .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
         .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
         .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
                 'CONSTELLATION_DUPLICATED_REQUESTS.ID',
@@ -1124,13 +1146,20 @@ async function getMultipleIdsByModel(model: string, names: any) {
             }
         });
 
-        data = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`)
+        if (names.lenght > 0) {
+            data = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`)
                         .select(
                             db.raw(`JSON_OBJECT('data' VALUE JSON_ARRAYAGG(ID)) AS DATA`)
                         )
                         .whereIn('VALUE', names);
-        data = data[0].data;
-        return data;
+        }
+        
+        if (Array.isArray(data) && data.length > 0) {
+            data = data[0].data;
+            return data;
+        } 
+        
+        return undefined;
 
     }else if(model == "ConstellationHealthDemographics") {
 
