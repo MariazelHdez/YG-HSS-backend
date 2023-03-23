@@ -208,7 +208,6 @@ export default {
 			this.loader = 'loadingExport';
 			let requests = [];
 			let checked = this.selected;
-			console.log(checked.length);
 			if(checked.length > 0){
 				checked.forEach(function (value) {
 					requests.push(value.id);

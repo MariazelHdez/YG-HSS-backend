@@ -1001,9 +1001,9 @@ hipmaRouter.patch("/duplicates/primary", async (req: Request, res: Response) => 
             var warningRequest = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`).where("ID", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({status: "2"}).where("ID", warningRequest.DUPLICATED_ID);
+                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({STATUS: "2"}).where("ID", Number(warningRequest.duplicated_id));
             }else if(type == 'D'){
-                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({status: "2"}).where("ID", warningRequest.ORIGINAL_ID);
+                updateRequest = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).update({STATUS: "2"}).where("ID", Number(warningRequest.original_id));
             }
 
             if(updateRequest){

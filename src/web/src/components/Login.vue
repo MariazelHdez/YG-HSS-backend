@@ -36,7 +36,6 @@ export default {
       router.push("/");
     }
 
-    console.log(config.apiBaseUrl);
   }
 };
 </script>
