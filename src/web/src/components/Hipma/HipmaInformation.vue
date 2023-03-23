@@ -77,13 +77,13 @@
                                 <td v-else>No</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_health_info ||  hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
                                 <td>{{ hipma.cp_health_info }}</td>
                                 <td>{{ hipmaDuplicated.cp_health_info }}</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_act_req ||  hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
                                 <td>{{ hipma.cp_act_req }}</td>
                                 <td>{{ hipmaDuplicated.cp_act_req }}</td>

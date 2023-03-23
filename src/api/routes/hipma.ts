@@ -817,31 +817,50 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
         var hipma = Object();
         var hipmaDuplicate = Object();
         var hipmaEntries = Object();
-
         var duplicateEntry = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
-        .where("ID", duplicate_id).then((rows: any) => {
+        .where("ID", Number(duplicate_id)).then((rows: any) => {
             let arrayResult = Object();
-
             for (let row of rows) {
-                arrayResult.original = row['ORIGINAL_ID'];
-                arrayResult.duplicated = row['DUPLICATED_ID'];
+                arrayResult.original = row['original_id'];
+                arrayResult.duplicated = row['duplicated_id'];
             }
-
             return arrayResult;
         });
-
+ 
         hipmaEntries = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
         .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
         .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATI', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
         .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
         .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
         .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST', '=', 'HIPMA_COPY_ACTIVITY_REQUEST.ID')
-        .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`,
-                `${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
-                `${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
-                `${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS CP_HEALTH_INFO`,
-                `${SCHEMA_HIPMA}.HIPMA_SITUATIONS.DESCRIPTION AS HIPMA_SITUATIONS_DESC`,
-                `${SCHEMA_HIPMA}.HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS CP_ACT_REQ`)
+        .select(`HEALTH_INFORMATION.ID`, `HEALTH_INFORMATION.CONFIRMATION_NUMBER`, `HEALTH_INFORMATION.STATUS`,
+                `HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_`,
+                `HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATI`,
+                `HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_`,
+                `HEALTH_INFORMATION.FIRST_NAME_BEHALF`,
+                `HEALTH_INFORMATION.LAST_NAME_BEHALF`,
+                `HEALTH_INFORMATION.COMPANY_OR_ORGANIZATION_OPTIONAL_BEHALF`,
+                `HEALTH_INFORMATION.ADDRESS_BEHALF`, `HEALTH_INFORMATION.CITY_OR_TOWN_BEHALF`,
+                `HEALTH_INFORMATION.POSTAL_CODE_BEHALF`, `HEALTH_INFORMATION.EMAIL_ADDRESS_BEHALF`,
+                `HEALTH_INFORMATION.PHONE_NUMBER_BEHALF`, `HEALTH_INFORMATION.FIRST_NAME`, `HEALTH_INFORMATION.LAST_NAME`,
+                db.raw(`TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'yyyy-mm-dd')  AS DATE_OF_BIRTH,
+                        TO_CHAR(HEALTH_INFORMATION.DATE_FROM_, 'yyyy-mm-dd')  AS DATE_FROM_,
+                        TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'yyyy-mm-dd')  AS DATE_TO_`
+                    ),
+                `HEALTH_INFORMATION.ADDRESS`, `HEALTH_INFORMATION.CITY_OR_TOWN`,
+                `HEALTH_INFORMATION.POSTAL_CODE`, `HEALTH_INFORMATION.EMAIL_ADDRESS`, `HEALTH_INFORMATION.PHONE_NUMBER`,
+                `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_`, `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST`,
+                `HEALTH_INFORMATION.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_`,
+                `HEALTH_INFORMATION.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV`,
+                `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
+                `HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE`,
+                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`, `HEALTH_INFORMATION.ISSUED_IDENTIFICATION`,
+                `HEALTH_INFORMATION.CREATED_AT`, `HEALTH_INFORMATION.UPDATED_AT`,
+                `HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
+                `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
+                `HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS CP_HEALTH_INFO`,
+                `HIPMA_SITUATIONS.DESCRIPTION AS HIPMA_SITUATIONS_DESC`,
+                `HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS CP_ACT_REQ`)
         .whereIn("HEALTH_INFORMATION.ID", [duplicateEntry.original, duplicateEntry.duplicated])
         .where("HEALTH_INFORMATION.STATUS", "1");
 
@@ -870,33 +889,9 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
 
         if(hipmaEntries){
             hipmaEntries.forEach(function (value: any) {
-                if(!_.isNull(value.date_from_)) {
-                    value.date_from_ =  value.date_from_.toLocaleString("en-CA", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                    });
-                }
-
-                if(!_.isNull(value.date_to_)) {
-                    value.date_to_ =  value.date_to_.toLocaleString("en-CA", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                    });
-                }
-
-                if(!_.isNull(value.date_of_birth)) {
-                    value.date_of_birth =  value.date_of_birth.toLocaleString("en-CA", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                    });
-                }
-
                 if(!_.isEmpty(value.name_of_health_and_social_services_program_area_optional_)) {
                     var dataString = "";
-
+                    value.name_of_health_and_social_services_program_area_optional_ = JSON.parse(value.name_of_health_and_social_services_program_area_optional_.toString());
                     _.forEach(value.name_of_health_and_social_services_program_area_optional_, function(value: any, key: any) {
                         if(socialServices.hasOwnProperty(value)) {
                             dataString += socialServices[value]+",";
@@ -914,7 +909,7 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
 
                 if(!_.isEmpty(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ)) {
                     var dataString = "";
-
+                    value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = JSON.parse(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ.toString());
                     _.forEach(value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ, function(value: any, key: any) {
                         if(hssSystems.hasOwnProperty(value)) {
                             dataString += hssSystems[value]+",";
@@ -973,7 +968,6 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
 
             });
         }
-
         res.json({ hipma: hipma, hipmaDuplicate: hipmaDuplicate, hipmaFiles: files, hipmaFilesDuplicated: filesDuplicated});
 
     } catch(e) {
