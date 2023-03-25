@@ -54,10 +54,10 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "Applicant", value: "applicantfullname", sortable: true},
+			{ text: "Applicant", value: "applicant_full_name", sortable: true},
 			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
             { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-            { text: "Request Type", value: "HipmaRequestType", sortable: true},
+            { text: "Request Type", value: "hipma_request_type_desc", sortable: true},
             { text: "Created", value: "created_at", sortable: true},
             { text: "", value: "showUrl", sortable: false},
 			{ title: '', key: 'data-table-expand' },

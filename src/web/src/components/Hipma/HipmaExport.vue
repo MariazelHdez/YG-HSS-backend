@@ -144,9 +144,9 @@ export default {
 		loadingReset: false,
 		headers: [
 			{ text: "Confirmation Number", value: "confirmation_number", sortable: true},
-			{ text: "Request Type", value: "HipmaRequestType", sortable: true},
-			{ text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-			{ text: "Applicant", value: "applicantfullname", sortable: true},
+			{ text: "Request Type", value: "hipma_request_type_desc", sortable: true},
+			{ text: "Request Access to personal information", value: "access_personal_health_information", sortable: true},
+			{ text: "Applicant", value: "applicant_full_name", sortable: true},
 			{ text: "Created", value: "created_at", sortable: true},
 		],
 		page: 1,

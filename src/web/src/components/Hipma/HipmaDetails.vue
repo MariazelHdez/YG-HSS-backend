@@ -95,7 +95,7 @@
 					<HipmaInformation v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
 
 					<HipmaBehalf
-						v-if="itemsHipma.HipmaSituations
+						v-if="itemsHipma.hipmasituations
 						|| itemsHipma.first_name_behalf
 						|| itemsHipma.last_name_behalf
 						|| itemsHipma.company_or_organization_optional_behalf
