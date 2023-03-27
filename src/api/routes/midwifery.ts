@@ -477,22 +477,21 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.PREFERRED_NAME = legal_name;
         midwifery.PRONOUNS = data.pronouns;
 
-        //midwifery.DATE_OF_BIRTH = data.date_of_birth;
         if(!_.isNull(data.date_of_birth)) {
             data.date_of_birth = new Date(data.date_of_birth);
             let result: string =   data.date_of_birth.toISOString().split('T')[0];
-            midwifery.DATE_OF_BIRTH  = db.raw("TO_CHAR('"+result+"','YYYY-MM-DD') ");
+            midwifery.DATE_OF_BIRTH  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
         }
 
+        //midwifery.DATE_OF_BIRTH = data.date_of_birth;
         midwifery.PREFERRED_PHONE = data.preferred_phone;
         midwifery.PREFERRED_EMAIL = data.preferred_email;
 
         //midwifery.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_ = data.when_was_the_first_day_of_your_last_period_;
         if(!_.isNull(data.when_was_the_first_day_of_your_last_period_)) {
-
             data.when_was_the_first_day_of_your_last_period_ = new Date(data.when_was_the_first_day_of_your_last_period_);
-            let result: string =   data.when_was_the_first_day_of_your_last_period_.toISOString().split('T')[0];
-            midwifery.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_  = db.raw("TO_CHAR('"+result+"','YYYY-MM-DD') ");
+            let period: string =   data.when_was_the_first_day_of_your_last_period_.toISOString().split('T')[0];
+            midwifery.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_  = db.raw("TO_DATE('"+period+"','YYYY-MM-DD') ");
         }
 
         midwiferyCommunityLocations = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_COMMUNITY_LOCATIONS`).where({ DESCRIPTION: data.community_located }).select().first();
@@ -554,8 +553,8 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         //midwifery.DUE_DATE = data.due_date;
         if(!_.isNull(data.due_date)) {
             data.due_date = new Date(data.due_date);
-            let result: string =   data.due_date.toISOString().split('T')[0];
-            midwifery.DUE_DATE  = db.raw("TO_CHAR('"+result+"','YYYY-MM-DD') ");
+            let dueDate: string =   data.due_date.toISOString().split('T')[0];
+            midwifery.DUE_DATE  = db.raw("TO_DATE('"+dueDate+"','YYYY-MM-DD') ");
         }
 
         midwifery.HOW_MANY_VAGINAL_BIRTHS = data.how_many_vaginal_births;
@@ -888,7 +887,7 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
         var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         midwiferyOriginal = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
-            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
             .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
             .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
             .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
@@ -898,8 +897,8 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
                     'MIDWIFERY_SERVICES.PREFERRED_PHONE',
                     'MIDWIFERY_DUPLICATED_REQUESTS.ID',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_DUPLICATED_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
                     'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
                     'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
@@ -911,14 +910,14 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
-                    arrayResult[row['midwifery_services_original_id']] = row;
+                    arrayResult[row['original_id']] = row;
                 }
 
                 return arrayResult;
             });
 
         midwiferyDuplicate = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
-            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
+            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
             .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
             .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
             .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
@@ -928,8 +927,8 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
                     'MIDWIFERY_SERVICES.PREFERRED_PHONE',
                     'MIDWIFERY_DUPLICATED_REQUESTS.ID',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_ORIGINAL_ID',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.MIDWIFERY_SERVICES_DUPLICATED_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID',
+                    'MIDWIFERY_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
                     'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
                     'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
@@ -948,8 +947,8 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
             midwifery.push({
                 midwifery_services_id: null,
                 id: null,
-                midwifery_services_original_id: null,
-                midwifery_services_duplicated_id: null,
+                original_id: null,
+                duplicated_id: null,
                 first_name: 'Duplicated #'+(index+1),
                 last_name: null,
                 preferred_email: null,
@@ -960,7 +959,7 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                 showUrl: url
             });
 
-            midwifery.push(midwiferyOriginal[value.midwifery_services_original_id]);
+            midwifery.push(midwiferyOriginal[value.original_id]);
             midwifery.push(value);
             index = index + 1;
         });
@@ -997,12 +996,12 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         var contact = Object();
 
         var duplicateEntry = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
-        .where("id", duplicate_id).then((rows: any) => {
+        .where("ID", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult.original = row['midwifery_services_original_id'];
-                arrayResult.duplicated = row['midwifery_services_duplicated_id'];
+                arrayResult.original = row['original_id'];
+                arrayResult.duplicated = row['duplicated_id'];
             }
 
             return arrayResult;
@@ -1011,7 +1010,40 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         midwiferyEntries = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
         .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
         .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
-        .select('MIDWIFERY_SERVICES.*',
+        .select('MIDWIFERY_SERVICES.ID',
+                'MIDWIFERY_SERVICES.CONFIRMATION_NUMBER',
+                'MIDWIFERY_SERVICES.STATUS',
+                'MIDWIFERY_SERVICES.FIRST_NAME',
+                'MIDWIFERY_SERVICES.LAST_NAME',
+                'MIDWIFERY_SERVICES.PREFERRED_NAME',
+                'MIDWIFERY_SERVICES.PRONOUNS',
+                'MIDWIFERY_SERVICES.YUKON_HEALTH_INSURANCE',
+                'MIDWIFERY_SERVICES.COMMUNITY_LOCATED',
+                'MIDWIFERY_SERVICES.PREFERRED_LANGUAGE',
+                'MIDWIFERY_SERVICES.NEED_INTERPRETATION',
+                'MIDWIFERY_SERVICES.PREFERRED_PHONE',
+                'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
+                'MIDWIFERY_SERVICES.OKAY_TO_LEAVE_MESSAGE',
+                'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED',
+                'MIDWIFERY_SERVICES.DATE_CONFIRMED',
+                'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
+                'MIDWIFERY_SERVICES.HOW_MANY_VAGINAL_BIRTHS',
+                'MIDWIFERY_SERVICES.HOW_MANY_C_SECTION_BIRTHS',
+                'MIDWIFERY_SERVICES.COMPLICATIONS_WITH_PREVIOUS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS',
+                'MIDWIFERY_SERVICES.MIDWIFE_BEFORE',
+                'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH',
+                'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS2',
+                'MIDWIFERY_SERVICES.HAVE_YOU_HAD_PRIMARY_HEALTH_CARE',
+                'MIDWIFERY_SERVICES.MENSTRUAL_CYCLE_LENGTH',
+                'MIDWIFERY_SERVICES.FAMILY_PHYSICIAN',
+                'MIDWIFERY_SERVICES.PHYSICIAN_S_NAME',
+                'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS3',
+                'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
+                'MIDWIFERY_SERVICES.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT',
+                'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION as preferred_contact',
                 'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
                 'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
                 db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
@@ -1025,7 +1057,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult[row['ID']] = row['DESCRIPTION'];
+                arrayResult[row['id']] = row['description'];
             }
 
             return arrayResult;
@@ -1034,7 +1066,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
         contact =  await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_CLINIC_CONTACT_TYPES`).select().then((rows: any) => {
             let arrayResult = Object();
             for (let row of rows) {
-                arrayResult[row['ID']] = row['DESCRIPTION'];
+                arrayResult[row['id']] = row['description'];
             }
 
             return arrayResult;
@@ -1044,7 +1076,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult[row['ID']] = row['DESCRIPTION'];
+                arrayResult[row['id']] = row['description'];
             }
 
             return arrayResult;
@@ -1054,7 +1086,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult[row['ID']] = row['DESCRIPTION'];
+                arrayResult[row['id']] = row['description'];
             }
 
             return arrayResult;
@@ -1064,7 +1096,7 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult[row['ID']] = row['DESCRIPTION'];
+                arrayResult[row['id']] = row['description'];
             }
 
             return arrayResult;
@@ -1092,7 +1124,9 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
                 if(!_.isEmpty(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
 
                     var dataString = "";
-                    _.forEach(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie, function(valueCommunity: any) {
+                    value.do_you_identify_with_one_or_more_of_these_groups_and_communitie = JSON.parse(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie.toString());
+
+                    _.forEach(value.do_you_identify_with_one_or_more_of_these_groups_and_communitie.data, function(valueCommunity: any) {
                         if(!isNaN(valueCommunity) && communities.hasOwnProperty(valueCommunity)) {
                             dataString += communities[valueCommunity]+",";
                         }else{
@@ -1110,7 +1144,9 @@ midwiferyRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").i
 
                 if(!_.isEmpty(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that)){
                     var dataString = "";
-                    _.forEach(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that, function(valueContact: any) {
+                    value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that = JSON.parse(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that.toString());
+
+                    _.forEach(value.how_did_you_find_out_about_the_midwifery_clinic_select_all_that.data, function(valueContact: any) {
                         if(!isNaN(valueContact) && contact.hasOwnProperty(valueContact)) {
                             dataString += contact[valueContact]+",";
                         }else{
@@ -1204,9 +1240,9 @@ midwiferyRouter.patch("/duplicates/primary", async (req: Request, res: Response)
             var warningRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`).where("ID", warning).first();
 
             if(type == 'O'){
-                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({STATUS: "4"}).where("ID", warningRequest.midwifery_services_duplicated_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({STATUS: "4"}).where("ID", warningRequest.duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({STATUS: "4"}).where("ID", warningRequest.midwifery_services_original_id);
+                updateRequest = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`).update({STATUS: "4"}).where("ID", warningRequest.original_id);
             }
 
             if(updateRequest){
