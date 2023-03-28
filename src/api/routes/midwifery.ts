@@ -222,10 +222,11 @@ midwiferyRouter.get("/validateRecord/:midwifery_id",[param("midwifery_id").isInt
             .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', 'MIDWIFERY_STATUS.ID')
             .where('MIDWIFERY_SERVICES.ID', midwifery_id)
             .select(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES.*`,
-                    'MIDWIFERY_STATUS.DESCRIPTION as status_description')
-            .first();
+                    'MIDWIFERY_STATUS.DESCRIPTION as status_description').then((data:any) => {
+                        return data[0];
+                    });
 
-        if(midwifery.status == 4){
+        if(!midwifery || midwifery.status == 4){
             flagExists= false;
             message= "The request you are consulting is closed or non existant, please choose a valid request.";
         }

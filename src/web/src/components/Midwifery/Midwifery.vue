@@ -2,7 +2,9 @@
 <template>
     <div class="midwifery-service">
         <span class="title-service">Midwifery Requests</span>
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+
         <Notifications ref="notifier"></Notifications>
         <v-row>
             <v-col
