@@ -1082,6 +1082,9 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             } else {
                 dataMember.language_prefer_to_receive_services_family_member = null;
             }
+            if( !_.isEmpty(dataMember.other_language_family_member)){
+                dataMember.preferred_language_family_member = dataMember.other_language_family_member;
+            }
             const diagnosisList = dataMember.diagnosis_family_member;
             const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
             dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
