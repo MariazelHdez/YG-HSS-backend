@@ -138,9 +138,9 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
             }
 
             let dataString = "";
-
-           value.diagnosis = JSON.parse(value.diagnosis.toString());
-
+            if(!_.isEmpty(value.diagnosis)){
+                value.diagnosis = JSON.parse(value.diagnosis.toString());
+            }
             _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
 
                 if(valueDiagnosis in diagnosis){
@@ -229,7 +229,6 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.IS_THIS_YOUR_LEGAL_NAME_`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YOUR_LEGAL_NAME`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PRONOUNS`,
-                    //`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DATE_OF_BIRTH`,
                     db.raw(`JSON_SERIALIZE(CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS,
                     TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
                     TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT,
@@ -250,11 +249,8 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FAMILY_PHYSICIAN`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CURRENT_FAMILY_PHYSICIAN`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ACCESSING_HEALTH_CARE`,
-                    //db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS`),
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
-                    //`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CREATED_AT`,
-                    //`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.UPDATED_AT`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`)
             .first();
@@ -716,7 +712,8 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
                     'CONSTELLATION_HEALTH.ID AS CONSTELLATION_HEALTH_ID',
                     db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
-                        "TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH"))
+                    "(CONSTELLATION_DUPLICATED_REQUESTS.ID|| '-'|| CONSTELLATION_HEALTH.ID) AS UNIQUE_ID, "+    
+                    "TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH"))
             .whereRaw(sqlFilter)
             .orderBy("CONSTELLATION_HEALTH.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
@@ -736,6 +733,7 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
                 'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
                 'CONSTELLATION_HEALTH.ID AS CONSTELLATION_HEALTH_ID',
                 db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                    "(CONSTELLATION_DUPLICATED_REQUESTS.ID|| '-'|| CONSTELLATION_HEALTH.ID) AS UNIQUE_ID, "+
                     "TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH"))
         .whereRaw(sqlFilter)
         .orderBy("CONSTELLATION_HEALTH.CREATED_AT");
@@ -1123,7 +1121,6 @@ async function getAllStatus(){
  */
 async function getMultipleIdsByModel(model: string, names: any) {
     var others = "";
-    var auxNames = names;
     var data: any[] = [];
     var catalog = Object();
 
@@ -1133,7 +1130,7 @@ async function getMultipleIdsByModel(model: string, names: any) {
                         .select()
                         .whereIn('VALUE', names);
             names.forEach(function (value: any, key: any) {
-                if(!_.find(catalog, { 'value':value })){ //if(!catalog.hasOwnProperty(value)){
+                if(!_.find(catalog, { 'value':value })){
                     others = names[key];
                     names.splice(key, 1);
                 }else{
@@ -1160,6 +1157,7 @@ async function getMultipleIdsByModel(model: string, names: any) {
         });
 
     }
+
     if(data.length){  
         var modelValues = "";
         var max = data.length;
@@ -1182,8 +1180,8 @@ async function getMultipleIdsByModel(model: string, names: any) {
         }else{
             return "["+modelValues+"]";
         }
-    }else if(!data.length && auxNames.length > 0){
-        return '["'+auxNames[0]+'"]';
+    }else if(!data.length && others.length > 0){
+        return '["'+others+'"]';
     }else{
         return null;
     }
