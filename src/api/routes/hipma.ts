@@ -2,9 +2,7 @@ import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
-//import moment from "moment";
 import knex from "knex";
-//import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 import { groupBy , helper } from "../utils";
 var _ = require('lodash');
@@ -25,7 +23,6 @@ hipmaRouter.get("/submissions/:action_id/:action_value", [
     param("action_id").notEmpty(), 
     param("action_value").notEmpty()
 ], async (req: Request, res: Response) => {
-
     try {
 
         const actionId = req.params.action_id;
@@ -34,7 +31,6 @@ hipmaRouter.get("/submissions/:action_id/:action_value", [
         const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_HIPMA, actionId, actionVal, permissions);
         const groupedId = groupBy(result, i => i.id);
         const labels = groupBy(result, i => i.date_code);
-                        
         res.send(
             {
                 data: groupedId,
@@ -201,7 +197,7 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
                 `HEALTH_INFORMATION.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV`,
                 `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
                 `HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE`,
-                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`, `HEALTH_INFORMATION.ISSUED_IDENTIFICATION`,
+                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`,
                 `HEALTH_INFORMATION.CREATED_AT`, `HEALTH_INFORMATION.UPDATED_AT`,
                 `HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
                 `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
@@ -431,9 +427,9 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         hipma.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_ = data.provide_details_about_your_request_;
         hipma.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE = data.date_range_is_unknown_or_i_need_help_identifying_the_date_range;
         hipma.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = data.i_affirm_the_information_above_to_be_true_and_accurate_;
+        
         HipmaSaved = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).insert(hipma).into(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`).returning('ID');
-
-       if(!_.isEmpty(files)){
+        if(!_.isEmpty(files)){
             var filesInsert = Array();
             var filesSaved =  true;
             _.forEach(files, async function(value: any) {
@@ -588,7 +584,6 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                     `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
                     db.raw(`TO_CHAR(HEALTH_INFORMATION.DATE_FROM_, 'YYYY-MM-DD')  AS DATE_FROM_,
                             TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'YYYY-MM-DD')  AS DATE_TO_`),
-                    `HEALTH_INFORMATION.ISSUED_IDENTIFICATION`,
                     db.raw(`TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
                             TO_CHAR(HEALTH_INFORMATION.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT`
                         ),
@@ -660,9 +655,6 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
 
                 value.indicate_the_hss_system_s_you_would_like_a_record_of_user_activ = dataString.replace(/,/g, ', ');
             }
-  
-            delete value.i_affirm_the_information_above_to_be_true_and_accurate_;
-            delete value.date_range_is_unknown_or_i_need_help_identifying_the_date_range;
 
         });
 
@@ -712,7 +704,6 @@ hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
 });
 
 hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
-
     try {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
@@ -737,13 +728,13 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'HEALTH_INFORMATION.CONFIRMATION_NUMBER',
                     'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC',
                     db.raw("(HEALTH_INFORMATION.FIRST_NAME|| ' '|| HEALTH_INFORMATION.LAST_NAME) AS APPLICANT_FULL_NAME, "+
+                    "(HIPMA_DUPLICATED_REQUESTS.ID|| '-'|| HEALTH_INFORMATION.ID) AS UNIQUE_ID, "+
                     "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT, "+
                     "TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
             ).orderBy("HEALTH_INFORMATION.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
-    
                 for (let row of rows) {
-                    arrayResult[row['ORIGINAL_ID']] = row;
+                    arrayResult[row['original_id']] = row;
                 }
     
                 return arrayResult;
@@ -760,19 +751,14 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'HEALTH_INFORMATION.CONFIRMATION_NUMBER AS CONFIRMATION_NUMBER',
                     'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC',
                     db.raw("(HEALTH_INFORMATION.FIRST_NAME || ' ' || HEALTH_INFORMATION.LAST_NAME) AS APPLICANT_FULL_NAME, "+
+                    "(HIPMA_DUPLICATED_REQUESTS.ID|| '-'|| HEALTH_INFORMATION.ID) AS UNIQUE_ID, "+
                     "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT, "+
                     "TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
             ).orderBy("HEALTH_INFORMATION.CREATED_AT");
 
         let index = 0;
         hipmaDuplicate.forEach(function (value: any) {
-            /*value.created_at_format =  value.created_at.toLocaleString("en-CA", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });*/
             let url = "hipmaWarnings/details/"+value.id;
-
             hipma.push({
                 health_information_id: null,
                 id: null,
@@ -785,8 +771,7 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
                 date_of_birth: null,
                 showUrl: url,
             });
-
-            hipma.push(hipmaOriginal[value.ORIGINAL_ID]);
+            hipma.push(hipmaOriginal[value.original_id]);
             hipma.push(value);
             index = index + 1;
         });
@@ -854,7 +839,7 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
                 `HEALTH_INFORMATION.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV`,
                 `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
                 `HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE`,
-                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`, `HEALTH_INFORMATION.ISSUED_IDENTIFICATION`,
+                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`,
                 `HEALTH_INFORMATION.CREATED_AT`, `HEALTH_INFORMATION.UPDATED_AT`,
                 `HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
                 `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,

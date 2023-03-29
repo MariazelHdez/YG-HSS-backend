@@ -36,7 +36,6 @@ constellationRouter.get("/submissions/:action_id/:action_value", [
         const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_CONSTELLATION, actionId, actionVal, permissions);
         const groupedId = groupBy(result, i => i.id);
         const labels = groupBy(result, i => i.date_code);
-                        
         res.send(
             {
                 data: groupedId,
@@ -463,8 +462,21 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
             const jsonFixed = replaceString.replace(/\'/gm, '"');
             const jsonFm = JSON.parse(jsonFixed);
 
-            const familyMembers = await dataFamilyMembers(idConstellation.id, jsonFm);
-            const familyMembersSaved = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`).insert(familyMembers).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`);
+            let familyMembers = await dataFamilyMembers(idConstellation.id, jsonFm);
+            let familyMembersSaved = false;
+            for (const familyMember of familyMembers) {
+                await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`).insert(familyMember).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+                .then(() => {
+                    familyMembersSaved = true; 
+                })
+                .catch((e) => {
+                    console.log(e);
+                    res.send( {
+                        status: 400,
+                        message: 'Request could not be processed'
+                    });
+                });
+            }
 
             if(constellationSaved && familyMembersSaved){
                 res.json({ status:200, message: 'Request saved' });
@@ -510,6 +522,7 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
         if(status_request){
            sqlFilter += "  AND CONSTELLATION_HEALTH.STATUS IN ("+status_request+")";
         }
+
         constellationHealth = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
@@ -539,7 +552,7 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
                     db.raw(`TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`),
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ID`,
                     );
-         
+
         var diagnosis = Object();
         diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
@@ -1054,10 +1067,8 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
     });
 
     if (Array.isArray(arrayMembers)) {
-        arrayMembers.forEach(async (dataMember) => {
-            dataMember.constellation_health_id = idConstellationHealth;            
-            let legal_name = dataMember.your_legal_name_family_member;
-
+        for (const dataMember of arrayMembers) {
+            dataMember.constellation_health_id = +idConstellationHealth;
             if(!_.isEmpty( dataMember.date_of_birth_family_member)){
                 dataMember.date_of_birth_family_member = new Date(dataMember.date_of_birth_family_member);
                 let result: string =   dataMember.date_of_birth_family_member.toISOString().split('T')[0];
@@ -1065,19 +1076,14 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             }else{
                 dataMember.date_of_birth_family_member = null;
             }
-
-            if(!_.isEmpty(legal_name)){
-                legal_name = dataMember.first_name_family_member + " " + dataMember.last_name_family_member;
+            if(_.isEmpty(dataMember.your_legal_name_family_member)){
+                dataMember.your_legal_name_family_member = dataMember.first_name_family_member + " " + dataMember.last_name_family_member;
             }
-
-            dataMember.your_legal_name_family_member = legal_name;
-            
             if (dataMember.language_prefer_to_receive_services_family_member in languages) {
                 dataMember.language_prefer_to_receive_services_family_member = languages[dataMember.language_prefer_to_receive_services_family_member];
             } else {
                 dataMember.language_prefer_to_receive_services_family_member = null;
             }
-            
             const diagnosisList = dataMember.diagnosis_family_member;
             const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
             dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
@@ -1085,15 +1091,15 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             if (dataMember.demographics_groups_family_member in demographics) {
                 dataMember.demographics_groups_family_member = demographics[dataMember.demographics_groups_family_member];
             }
-            
+
             // Remove unused properties to prepare for the insert.
             delete dataMember.personal_info_text_family_member;
             delete dataMember.other_language_family_member;
             delete dataMember.demographics_text_family_member;
-            familyMembersInsert.push(dataMember);
-        });
-    }
 
+            familyMembersInsert.push(dataMember);
+        }
+    }
     return familyMembersInsert;
 }
 

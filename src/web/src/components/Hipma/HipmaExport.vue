@@ -258,7 +258,6 @@ export default {
 					"Provide details about your request ",
 					"Date from ",
 					"Date to ",
-					"Issued identification",
 					"Created at",
 					"Updated at",
 					"Request Type",

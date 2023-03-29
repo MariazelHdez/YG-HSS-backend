@@ -10,6 +10,7 @@
         <v-data-table
             dense
             :items="items"
+            item-key="unique_id"
             :headers="headers"
             :options.sync="options"
             :loading="loading"
@@ -18,7 +19,7 @@
 			:item-class= "rowClass"
         >
 
-            <template v-slot:[`item.showUrl`]="{ item }">
+            <template v-slot:[`item.showUrl`]="{ item }" >
                 <v-icon color="white" @click="showDetails(item.showUrl)" v-if="item.showUrl">mdi-eye</v-icon>
             </template>
         </v-data-table>
@@ -36,6 +37,7 @@ export default {
     data: () => ({
         loading: false,
         date: null,
+        flagAlert: false,
         menu: false,
         dateEnd: null,
         menuEnd: false,

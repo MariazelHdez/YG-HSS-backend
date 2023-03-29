@@ -104,8 +104,6 @@
             </v-col>
         </v-row>
 
-        <!-- <v-text-field v-model="search" label="Search"></v-text-field> -->
-
         <v-data-table
             dense
             :items="items"
@@ -129,7 +127,6 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
-
 import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
@@ -144,7 +141,7 @@ export default {
     menuEnd: false,
     items: [],
     alertMessage: "",
-    alertType: "",
+    alertType: null,
     search: "",
     options: {},
     flagAlert: false,
