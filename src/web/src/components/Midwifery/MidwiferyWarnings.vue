@@ -143,13 +143,11 @@ export default {
                     dateFrom: this.date,
                     dateTo: this.dateEnd,
 
-                    
+
                 }
             })
             .then((resp) => {
                 this.items = resp.data.data;
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))

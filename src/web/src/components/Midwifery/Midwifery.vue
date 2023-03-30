@@ -237,8 +237,6 @@ export default {
                 this.itemsUnfiltered = resp.data.data;
                 this.itemsBulk = resp.data.dataStatus;
                 this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))
