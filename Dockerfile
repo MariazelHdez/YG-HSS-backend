@@ -1,22 +1,26 @@
-FROM node:14-alpine3.10
+FROM oraclelinux:9-slim
 
-RUN mkdir /home/node/app && chown -R node:node /home/node/app
-RUN mkdir /home/node/web && chown -R node:node /home/node/web
+RUN mkdir -p /home/node/app
+RUN mkdir -p /home/node/web
 
-COPY --chown=node:node src/web/package*.json /home/node/web/
-COPY --chown=node:node src/api/package*.json /home/node/app/
+COPY src/web/package*.json /home/node/web/
+COPY src/api/package*.json /home/node/app/
 
-USER node
+
+RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash -
+RUN microdnf install -y nodejs
+
+# USER node
 
 WORKDIR /home/node/app
 RUN npm install && npm cache clean --force --loglevel=error
-COPY --chown=node:node src/api/.env* ./
+COPY src/api/.env* ./
 
 WORKDIR /home/node/web
-RUN npm install && npm cache clean --force --loglevel=error
 
-COPY --chown=node:node src/api /home/node/app/
-COPY --chown=node:node src/web /home/node/web/
+RUN npm install && npm cache clean --force --loglevel=error
+COPY src/api /home/node/app/
+COPY src/web /home/node/web/
 
 RUN npm run build:docker
 
