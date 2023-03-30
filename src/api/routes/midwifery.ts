@@ -95,7 +95,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
         var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD ') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD ') <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') <= '"+dateTo+"'";
         }
 
         if(!_.isEmpty(status_request)){
@@ -387,6 +387,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         if(!_.isEmpty(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
 
             var dataString = "";
+
             midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie = JSON.parse(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie.toString());
 
             _.forEach(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie.data, function(valueCommunity: any) {
@@ -897,7 +898,7 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'MIDWIFERY_SERVICES.LAST_NAME',
                     'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
                     'MIDWIFERY_SERVICES.PREFERRED_PHONE',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.ID',
+                    //'MIDWIFERY_DUPLICATED_REQUESTS.ID',
                     'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID',
                     'MIDWIFERY_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
@@ -945,9 +946,11 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
 
             let url = "midwiferyWarnings/details/"+value.id;
 
+            delete value.id;
+
             midwifery.push({
                 midwifery_services_id: null,
-                id: null,
+                //id: null,
                 original_id: null,
                 duplicated_id: null,
                 first_name: 'Duplicated #'+(index+1),
@@ -1367,7 +1370,11 @@ async function getMultipleIdsByModel(model: any, names: any) {
 
     }
 
-    if(data.data.length && others !== "") {
+    if(_.isEmpty(data) && others !== ""){
+
+        data.data = [others];
+
+    }else if(data.data.length && others !== "") {
 
         data.data.push(others);
 
