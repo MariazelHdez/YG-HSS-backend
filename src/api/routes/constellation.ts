@@ -2,15 +2,12 @@ import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
-//import moment from "moment";
 import knex from "knex";
-//import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
 var _ = require('lodash');
 
-//let { RequireServerAuth, RequireAdmin } = require("../auth")
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();

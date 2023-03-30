@@ -4,7 +4,6 @@
         <p class="title-service mb-6">HIPMA Possible Duplicates</p>
 
         <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
         <Notifications ref="notifier"></Notifications>
 
         <v-data-table
@@ -56,11 +55,11 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "Applicant", value: "applicant_full_name", sortable: true},
-			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
-            { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-            { text: "Request Type", value: "hipma_request_type_desc", sortable: true},
-            { text: "Created", value: "created_at", sortable: true},
+			{ text: "Applicant", value: "applicant_full_name", sortable: false},
+			{ text: "Date of Birth", value: "date_of_birth", sortable: false},
+            { text: "Confirmation Number", value: "confirmation_number", sortable: false},
+            { text: "Request Type", value: "hipma_request_type_desc", sortable: false},
+            { text: "Created", value: "created_at", sortable: false},
             { text: "", value: "showUrl", sortable: false},
 			{ title: '', key: 'data-table-expand' },
         ],
