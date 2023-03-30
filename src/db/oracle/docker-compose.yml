@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  oracle-db:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    environment:
+      - ORACLE_SID=XE
+      - ORACLE_PDB=XEPDB1
+      - ORACLE_PWD=Oracle123
+    ports:
+      - 1521:1521
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - oracle-backup:/opt/oracle/backup
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "sys/Oracle123@//localhost:1521/XEPDB1 as sysdba", "@healthcheck.sql"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - oracle-network
+
+volumes:
+  oracle-data:
+  oracle-backup:
+
+networks:
+  oracle-network:
+    name: "oracle-network"
+      

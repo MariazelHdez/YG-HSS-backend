@@ -16,6 +16,10 @@ RUN yum install -y nodejs
 RUN npm install -g pm2@latest
 RUN npm install -g html-pdf
 
+RUN yum -y install iputils
+
+RUN export LD_LIBRARY_PATH=/usr/lib/oracle/19.3/client64/lib
+
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/package.json
 RUN npm install

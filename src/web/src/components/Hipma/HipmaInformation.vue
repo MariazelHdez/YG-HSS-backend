@@ -26,16 +26,16 @@
                         <tbody v-if="hipmaDuplicated">
                             <tr>
                                 <td>What type of request do you want to make?</td>
-                                <td>{{ hipma.HipmaRequestType }}</td>
-                                <td>{{ hipmaDuplicated.HipmaRequestType }}</td>
+                                <td>{{ hipma.hipma_request_type_desc }}</td>
+                                <td>{{ hipmaDuplicated.hipma_request_type_desc }}</td>
                             </tr>
                             <tr>
                                 <td>
                                     Are you requesting access to your own personal health information or
                                     making a request on behalf of another individual?
                                 </td>
-                                <td>{{ hipma.AccessPersonalHealthInformation }}</td>
-                                <td>{{ hipmaDuplicated.AccessPersonalHealthInformation }}</td>
+                                <td>{{ hipma.access_personal_health_information }}</td>
+                                <td>{{ hipmaDuplicated.access_personal_health_information }}</td>
                             </tr>
 
                             <tr>
@@ -77,16 +77,16 @@
                                 <td v-else>No</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_health_info ||  hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
-                                <td>{{ hipmaDuplicated.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
+                                <td>{{ hipmaDuplicated.cp_health_info }}</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_act_req ||  hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
-                                <td>{{ hipmaDuplicated.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
+                                <td>{{ hipmaDuplicated.cp_act_req }}</td>
                             </tr>
 
                             <tr>
@@ -103,14 +103,14 @@
                         <tbody v-else >
                             <tr>
                                 <td>What type of request do you want to make?</td>
-                                <td>{{ hipma.HipmaRequestType }}</td>
+                                <td>{{ hipma.hipma_request_type_desc }}</td>
                             </tr>
                             <tr>
                                 <td>
                                     Are you requesting access to your own personal health information or
                                     making a request on behalf of another individual?
                                 </td>
-                                <td>{{ hipma.AccessPersonalHealthInformation }}</td>
+                                <td>{{ hipma.access_personal_health_information }}</td>
                             </tr>
 
                             <tr v-if="hipma.name_of_health_and_social_services_program_area_optional_">
@@ -144,14 +144,14 @@
                                 <td v-else>No</td>
                             </tr>
 
-                            <tr v-if="hipma.CopyHealthInformation">
+                            <tr v-if="hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
                             </tr>
 
-                            <tr v-if="hipma.HipmaCopyActivityRequest">
+                            <tr v-if="hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
                             </tr>
 
                             <tr>

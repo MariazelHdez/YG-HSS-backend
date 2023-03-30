@@ -157,7 +157,7 @@ export default {
     actionSelected: "",
     itemsSelected: [],
     alertMessage: "",
-    alertType: "",
+    alertType: null,
     search: "",
     applyDisabled: true,
     options: {},
