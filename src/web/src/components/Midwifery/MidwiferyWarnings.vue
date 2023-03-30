@@ -16,6 +16,7 @@
             :search="search"
 			id="duplicateDatatable"
 			:item-class= "rowClass"
+            :key="count"
         >
 
             <template v-slot:[`item.showUrl`]="{ item }">
@@ -54,13 +55,13 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "First Name", value: "first_name", sortable: true},
-            { text: "Last Name", value: "last_name", sortable: true},
-            { text: "Preferred Email", value: "preferred_email", sortable: true},
-            { text: "Preferred Phone", value: "preferred_phone", sortable: true},
-			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
-            { text: "Status", value: "status_description", sortable: true},
-            { text: "Created", value: "created_at", sortable: true},
+			{ text: "First Name", value: "first_name", sortable: false},
+            { text: "Last Name", value: "last_name", sortable: false},
+            { text: "Preferred Email", value: "preferred_email", sortable: false},
+            { text: "Preferred Phone", value: "preferred_phone", sortable: false},
+			{ text: "Date of Birth", value: "date_of_birth", sortable: false},
+            { text: "Status", value: "status_description", sortable: false},
+            { text: "Created", value: "created_at", sortable: false},
             { text: "", value: "showUrl", sortable: false},
 			{ title: '', key: 'data-table-expand' },
         ],
@@ -69,6 +70,7 @@ export default {
         itemsPerPage: 10,
 		expanded: [],
 		singleExpand: false,
+        count: null,
     }),
     components: {
         Notifications,
@@ -140,12 +142,12 @@ export default {
                 params: {
                     dateFrom: this.date,
                     dateTo: this.dateEnd,
+
+
                 }
             })
             .then((resp) => {
                 this.items = resp.data.data;
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))

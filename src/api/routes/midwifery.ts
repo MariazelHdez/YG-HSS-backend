@@ -95,7 +95,7 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
         var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD ') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD ') <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') <= '"+dateTo+"'";
         }
 
         if(!_.isEmpty(status_request)){
@@ -358,10 +358,6 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
             }
         }
 
-        /*if(!midwifery.preferred_name || midwifery.preferred_name == "") {
-            midwifery.preferred_name = midwifery.preferred_name;
-        }*/
-
         var communities = Object();
         var contact = Object();
 
@@ -387,6 +383,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         if(!_.isEmpty(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie)){
 
             var dataString = "";
+
             midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie = JSON.parse(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie.toString());
 
             _.forEach(midwifery.do_you_identify_with_one_or_more_of_these_groups_and_communitie.data, function(valueCommunity: any) {
@@ -484,11 +481,9 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
             midwifery.DATE_OF_BIRTH  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
         }
 
-        //midwifery.DATE_OF_BIRTH = data.date_of_birth;
         midwifery.PREFERRED_PHONE = data.preferred_phone;
         midwifery.PREFERRED_EMAIL = data.preferred_email;
 
-        //midwifery.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_ = data.when_was_the_first_day_of_your_last_period_;
         if(!_.isNull(data.when_was_the_first_day_of_your_last_period_)) {
             data.when_was_the_first_day_of_your_last_period_ = new Date(data.when_was_the_first_day_of_your_last_period_);
             let period: string =   data.when_was_the_first_day_of_your_last_period_.toISOString().split('T')[0];
@@ -551,7 +546,6 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.FAMILY_PHYSICIAN = await getMidwiferyOptions("family_physician", data.family_physician);
         midwifery.MAJOR_MEDICAL_CONDITIONS = await getMidwiferyOptions("major_medical_conditions", data.major_medical_conditions);
 
-        //midwifery.DUE_DATE = data.due_date;
         if(!_.isNull(data.due_date)) {
             data.due_date = new Date(data.due_date);
             let dueDate: string =   data.due_date.toISOString().split('T')[0];
@@ -897,7 +891,6 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     'MIDWIFERY_SERVICES.LAST_NAME',
                     'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
                     'MIDWIFERY_SERVICES.PREFERRED_PHONE',
-                    'MIDWIFERY_DUPLICATED_REQUESTS.ID',
                     'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID',
                     'MIDWIFERY_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
@@ -945,9 +938,10 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
 
             let url = "midwiferyWarnings/details/"+value.id;
 
+            delete value.id;
+
             midwifery.push({
                 midwifery_services_id: null,
-                id: null,
                 original_id: null,
                 duplicated_id: null,
                 first_name: 'Duplicated #'+(index+1),
@@ -1367,7 +1361,11 @@ async function getMultipleIdsByModel(model: any, names: any) {
 
     }
 
-    if(data.data.length && others !== "") {
+    if(_.isEmpty(data) && others !== ""){
+
+        data.data = [others];
+
+    }else if(data.data.length && others !== "") {
 
         data.data.push(others);
 
