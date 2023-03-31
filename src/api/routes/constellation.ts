@@ -966,7 +966,9 @@ constellationRouter.get("/duplicates/validateWarning/:duplicate_id",[param("dupl
         warning = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
             .where('id', duplicate_id)
             .select()
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
 
         if(!warning){
             flagExists = false;
@@ -1006,7 +1008,9 @@ constellationRouter.patch("/duplicates/primary", async (req: Request, res: Respo
             message = "Warning deleted successfully.";
             rejectWarning = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).del();
         }else{
-            var warningRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).first();
+            var warningRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).then((data:any) => {
+                return data[0];
+            });
             if(type == 'O'){
                 updateRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).update({status: "4"}).where("ID", warningRequest.duplicated_id);
             }else if(type == 'D'){
