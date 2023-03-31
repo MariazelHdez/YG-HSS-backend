@@ -1,11 +1,7 @@
 <template>
     <div class="constellation-service">
       <span class="title-service">Constellation Health Requests</span>
-      <ModuleAlert
-        v-show="flagAlert"
-        v-bind:alertMessage="alertMessage"
-        v-bind:alertType="alertType"
-      />
+      <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
       <Notifications ref="notifier"></Notifications>
        <v-row no-gutters>
         <v-col

@@ -1189,7 +1189,9 @@ midwiferyRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicat
         warning = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
             .where('ID', duplicate_id)
             .select()
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
 
         if(!warning){
             flagExists = false;

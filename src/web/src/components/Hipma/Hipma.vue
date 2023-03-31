@@ -2,7 +2,7 @@
 <template>
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
 
         <v-row>

@@ -186,7 +186,10 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
             .where('CONSTELLATION_HEALTH.ID', constellationHealth_id)
             .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.*`,
                     'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION')
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
+
 
         if(!constellationHealth || constellationHealth.status_description == "closed"){
             flagExists= false;
@@ -457,12 +460,14 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
 
             let familyMembers = await dataFamilyMembers(idConstellation.id, jsonFm);
             let familyMembersSaved = false;
+
             for (const familyMember of familyMembers) {
                 await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`).insert(familyMember).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
                 .then(() => {
                     familyMembersSaved = true; 
                 })
                 .catch((e) => {
+                   familyMembersSaved = false;
                     console.log(e);
                     res.send( {
                         status: 400,
