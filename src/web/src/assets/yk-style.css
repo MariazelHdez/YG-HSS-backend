@@ -202,6 +202,45 @@ a {
     .v-footer .v-card div.footer-details span{
         margin-left: 0%;
     }
+
+}
+
+/* Scroll styling */
+
+@media only screen and (min-width: 600px) {
+    .v-navigation-drawer__content {
+        height: 85%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb:active {
+    background-color: #999999;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-track {
+    background: #e1e1e1;
+    border-radius: 4px;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-track:hover,
+.v-navigation-drawer__content::-webkit-scrollbar-track:active {
+    background: #d4d4d4;
 }
 
 .theme--light.v-data-table tbody tr:nth-of-type(even) {

@@ -40,7 +40,7 @@ export const sections = [
             {
                 name: "Warnings",
                 url: "/constellationWarnings",
-                icon: "fa-regular fa-rectangle-list",
+                icon: "fas fa-exclamation-triangle",
                 permissions: [
                     "constellation_view"
                 ]
@@ -81,7 +81,7 @@ export const sections = [
             {
                 name: "Warnings",
                 url: "/hipmaWarnings",
-                icon: "fa-regular fa-rectangle-list",
+                icon: "fas fa-exclamation-triangle",
                 permissions: [
                     "hipma_view"
                 ]
@@ -122,7 +122,7 @@ export const sections = [
             {
                 name: "Warnings",
                 url: "/midwiferyWarnings",
-                icon: "fa-regular fa-rectangle-list",
+                icon: "fas fa-exclamation-triangle",
                 permissions: [
                     "midwifery_view"
                 ]
@@ -147,4 +147,4 @@ export const sections = [
     },
 ];
 export const environment = process.env.NODE_ENV;
-export const apiBaseUrl = process.env.NODE_ENV == "production" ? "" : "http://localhost:3000";
+export const apiBaseUrl = process.env.NODE_ENV == "production" ? "http://localhost:8080" : "http://localhost:3000";
