@@ -1363,7 +1363,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
 
         data.data = [others];
 
-    }else if(data.data.length && others !== "") {
+    }else if(!_.isEmpty(data) && others !== "") {
 
         data.data.push(others);
 

@@ -724,7 +724,6 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
             .whereRaw(sqlFilter)
             .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
-                    'HIPMA_DUPLICATED_REQUESTS.ID',
                     'HIPMA_DUPLICATED_REQUESTS.ORIGINAL_ID',
                     'HIPMA_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'HEALTH_INFORMATION.CONFIRMATION_NUMBER',
@@ -738,7 +737,7 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
                 for (let row of rows) {
                     arrayResult[row['original_id']] = row;
                 }
-    
+
                 return arrayResult;
             });
 
@@ -761,14 +760,16 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
         let index = 0;
         hipmaDuplicate.forEach(function (value: any) {
             let url = "hipmaWarnings/details/"+value.id;
+            delete value.id;
+
             hipma.push({
                 health_information_id: null,
                 id: null,
-                ORIGINAL_ID: null,
-                DUPLICATED_ID: null,
+                original_id: null,
+                duplicated_id: null,
                 confirmation_number: null,
-                HIPMA_REQUEST_TYPE_DESC: null,
-                APPLICANT_FULL_NAME: 'Duplicated #'+(index+1),
+                hipma_request_type_desc: null,
+                applicant_full_name: 'Duplicated #'+(index+1),
                 created_at: 'ACTIONS:',
                 date_of_birth: null,
                 showUrl: url,

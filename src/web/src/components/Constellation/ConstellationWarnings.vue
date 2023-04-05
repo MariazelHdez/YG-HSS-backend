@@ -16,6 +16,10 @@
             :search="search"
 			id="duplicateDatatable"
 			:item-class= "rowClass"
+            :footer-props="{
+                'items-per-page-options': [12, 24, 36]
+            }"
+            :items-per-page="12"
         >
 
             <template v-slot:[`item.showUrl`]="{ item }">
