@@ -46,8 +46,8 @@
         <v-col lg="1"> </v-col>
       </v-row>
       <v-row no-gutters>
-        <v-col>
-          <div id="constellationPanelInformation">
+        <v-col id="constellationPanelInformation">
+          
             <v-expansion-panels multiple v-model="panel">
               <v-expansion-panel class="mb-6">
                 <v-expansion-panel-header
@@ -247,7 +247,7 @@
             <ConstellationNoFamilyMembers v-else
               v-bind:panelModel="panelModel"
             />
-          </div>
+
         </v-col>
         <v-col lg="1"> </v-col>
       </v-row>
@@ -362,7 +362,7 @@ export default {
         this.fileName;
       setTimeout(function () {
         html2pdf(document.getElementById("constellationPanelInformation"), {
-          margin: 5,
+          margin: 10,
           filename: fileName,
           pagebreak: {
             mode: ["avoid-all", "css", "legacy"],

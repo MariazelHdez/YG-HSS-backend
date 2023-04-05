@@ -70,11 +70,8 @@
 
                             <tr>
                                 <td>Date range is unknown</td>
-                                <td v-if="hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
-
-                                <td v-if="hipmaDuplicated.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
+                                <td>{{ hipmaDuplicated.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
                             </tr>
 
                             <tr v-if="hipmaDuplicated.cp_health_info ||  hipma.cp_health_info">
@@ -91,11 +88,8 @@
 
                             <tr>
                                 <td>I affirm the information above to be true and accurate</td>
-                                <td v-if="hipma.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
-
-                                <td v-if="hipmaDuplicated.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
+                                <td>{{ hipmaDuplicated.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
                             </tr>
 
                         </tbody>
@@ -140,8 +134,7 @@
 
                             <tr>
                                 <td>Date range is unknown</td>
-                                <td v-if="hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
                             </tr>
 
                             <tr v-if="hipma.cp_health_info">
@@ -156,8 +149,7 @@
 
                             <tr>
                                 <td>I affirm the information above to be true and accurate</td>
-                                <td v-if="hipma.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
                             </tr>
 
                         </tbody>

@@ -112,7 +112,6 @@ midwiferyRouter.post("/", async (req: Request, res: Response) => {
                     'MIDWIFERY_SERVICES.PREFERRED_PHONE',
                     'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
                     'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
-                    'MIDWIFERY_SERVICES.DUE_DATE',
                     'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION as BIRTH_LOCATIONS',
                     'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
                     'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
@@ -295,6 +294,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
                     'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
                     'MIDWIFERY_SERVICES.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT',
                     'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION as preferred_contact',
+                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
                     db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
                     "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
                     "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
@@ -353,6 +353,7 @@ midwiferyRouter.get("/show/:midwifery_id",[param("midwifery_id").isInt().notEmpt
         if(!_.isNull(midwifery.preferred_language)) {
             if(languages.hasOwnProperty(midwifery.preferred_language)){
                 midwifery.language = languages[midwifery.preferred_language];
+                midwifery.language = midwifery.language.charAt(0).toUpperCase() + midwifery.language.slice(1);
             }else{
                 midwifery.language = midwifery.preferred_language;
             }
@@ -465,17 +466,11 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.FIRST_NAME = data.first_name;
         midwifery.LAST_NAME = data.last_name;
 
-        let legal_name = "";
-        if(!_.isUndefined(data.preferred_name)) {
-            legal_name = data.preferred_name;
-        }else{
-            legal_name = data.first_name+" "+data.last_name;
-        }
-
+        let legal_name = !_.isUndefined(data.preferred_name) && !_.isEmpty(data.preferred_name) ? data.preferred_name : data.first_name+" "+data.last_name;
         midwifery.PREFERRED_NAME = legal_name;
         midwifery.PRONOUNS = data.pronouns;
 
-        if(!_.isNull(data.date_of_birth)) {
+        if(!_.isNull(data.date_of_birth) && !_.isEmpty(data.date_of_birth)) {
             data.date_of_birth = new Date(data.date_of_birth);
             let result: string =   data.date_of_birth.toISOString().split('T')[0];
             midwifery.DATE_OF_BIRTH  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
@@ -484,7 +479,7 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.PREFERRED_PHONE = data.preferred_phone;
         midwifery.PREFERRED_EMAIL = data.preferred_email;
 
-        if(!_.isNull(data.when_was_the_first_day_of_your_last_period_)) {
+        if(!_.isNull(data.when_was_the_first_day_of_your_last_period_) &&  !_.isEmpty(data.when_was_the_first_day_of_your_last_period_)) {
             data.when_was_the_first_day_of_your_last_period_ = new Date(data.when_was_the_first_day_of_your_last_period_);
             let period: string =   data.when_was_the_first_day_of_your_last_period_.toISOString().split('T')[0];
             midwifery.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_  = db.raw("TO_DATE('"+period+"','YYYY-MM-DD') ");
@@ -546,7 +541,8 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         midwifery.FAMILY_PHYSICIAN = await getMidwiferyOptions("family_physician", data.family_physician);
         midwifery.MAJOR_MEDICAL_CONDITIONS = await getMidwiferyOptions("major_medical_conditions", data.major_medical_conditions);
 
-        if(!_.isNull(data.due_date)) {
+
+        if(!_.isNull(data.due_date) && !_.isEmpty(data.due_date)) {
             data.due_date = new Date(data.due_date);
             let dueDate: string =   data.due_date.toISOString().split('T')[0];
             midwifery.DUE_DATE  = db.raw("TO_DATE('"+dueDate+"','YYYY-MM-DD') ");
@@ -958,7 +954,6 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
             midwifery.push(value);
             index = index + 1;
         });
-        console.log(midwifery);
         res.send({data: midwifery});
 
     } catch(e) {
@@ -1194,7 +1189,9 @@ midwiferyRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicat
         warning = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
             .where('ID', duplicate_id)
             .select()
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
 
         if(!warning){
             flagExists = false;
@@ -1302,6 +1299,7 @@ async function getMultipleIdsByModel(model: any, names: any) {
     var data = Object();
 
     if(model == "MidwiferyGroupsCommunities") {
+
         groups = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_GROUPS_COMMUNITIES`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
@@ -1365,12 +1363,10 @@ async function getMultipleIdsByModel(model: any, names: any) {
 
         data.data = [others];
 
-    }else if(data.data.length && others !== "") {
+    }else if(!_.isEmpty(data) && others !== "") {
 
         data.data.push(others);
 
-    }else{
-        return null;
     }
 
     return JSON.stringify(data);
