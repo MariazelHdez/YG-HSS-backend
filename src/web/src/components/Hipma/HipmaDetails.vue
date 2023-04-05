@@ -109,7 +109,8 @@
 
 					<HipmaApplicant v-bind:hipma="itemsHipma" v-bind:panelModel="panelModel"/>
 
-					<HipmaAttachments v-bind:hipma="itemsHipma"
+					<HipmaAttachments
+						v-if="flagHipmaFiles"
 						v-bind:hipmaFiles="itemsHipmaFiles"
 						v-bind:panelModel="panelModel"
 					/>
@@ -137,6 +138,7 @@ export default {
 		loadingExport: false,
 		itemsHipma: [],
 		itemsHipmaFiles: [],
+		flagHipmaFiles: true,
 		dialog: false,
 		panelModel: [0],
 		fileName: "",
@@ -188,6 +190,11 @@ export default {
 			.then((resp) => {
 
 				this.itemsHipma = resp.data.hipma;
+
+				if(Object.keys(resp.data.hipmaFiles).length === 0){
+					this.flagHipmaFiles = false;
+				}
+
 				this.itemsHipmaFiles = resp.data.hipmaFiles;
 				this.fileName = resp.data.fileName;
 

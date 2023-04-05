@@ -3,19 +3,22 @@
     <div class="hipma-service">
         <p class="title-service mb-6">HIPMA Possible Duplicates</p>
 
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
 
         <v-data-table
             dense
             :items="items"
-            item-key="unique_id"
             :headers="headers"
             :options.sync="options"
             :loading="loading"
             :search="search"
 			id="duplicateDatatable"
 			:item-class= "rowClass"
+            :footer-props="{
+                'items-per-page-options': [12, 24, 36]
+            }"
+            :items-per-page="12"
         >
 
             <template v-slot:[`item.showUrl`]="{ item }" >

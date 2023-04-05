@@ -45,7 +45,7 @@
                           <tr>
                             <td>Is this their legal name?</td>
                             <td>
-                              {{ items.is_this_your_legal_name__family_member }}
+                              {{ items.is_this_your_legal_name_family_member }}
                             </td>
                           </tr>
 

@@ -142,7 +142,10 @@ hipmaRouter.get("/validateRecord/:hipma_id",[param("hipma_id").isInt().notEmpty(
         hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
             .where('HEALTH_INFORMATION.ID', hipma_id)
             .select(`${SCHEMA_HIPMA}.HEALTH_INFORMATION.*`)
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
+
 
         if(!hipma || hipma.status == 2){
             flagExists = false;
@@ -188,16 +191,17 @@ hipmaRouter.get("/show/:hipma_id",[param("hipma_id").isInt().notEmpty()], async 
                 `HEALTH_INFORMATION.PHONE_NUMBER_BEHALF`, `HEALTH_INFORMATION.FIRST_NAME`, `HEALTH_INFORMATION.LAST_NAME`,
                 db.raw(`TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'yyyy-mm-dd')  AS DATE_OF_BIRTH,
                         TO_CHAR(HEALTH_INFORMATION.DATE_FROM_, 'yyyy-mm-dd')  AS DATE_FROM_,
-                        TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'yyyy-mm-dd')  AS DATE_TO_`
+                        TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'yyyy-mm-dd')  AS DATE_TO_,
+                        CASE WHEN HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE = 1 THEN 'Yes' ELSE 'No' END AS DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE,
+                        CASE WHEN HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = 1 THEN 'Yes' ELSE 'No' END AS I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`
                     ),
                 `HEALTH_INFORMATION.ADDRESS`, `HEALTH_INFORMATION.CITY_OR_TOWN`,
                 `HEALTH_INFORMATION.POSTAL_CODE`, `HEALTH_INFORMATION.EMAIL_ADDRESS`, `HEALTH_INFORMATION.PHONE_NUMBER`,
-                `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_`, `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST`,
+                `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_`,
+                `HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_ACTIVITY_REQUEST`,
                 `HEALTH_INFORMATION.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_`,
                 `HEALTH_INFORMATION.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV`,
                 `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
-                `HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE`,
-                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`,
                 `HEALTH_INFORMATION.CREATED_AT`, `HEALTH_INFORMATION.UPDATED_AT`,
                 `HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
                 `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
@@ -311,7 +315,6 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         var files = Object();
 
         data = req.body;
-
         hipma.CONFIRMATION_NUMBER = getConfirmationNumber();
 
         if(_.isEmpty(data.what_type_of_request_do_you_want_to_make_)) {
@@ -324,11 +327,10 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         }else{
             hipma.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATI = +data.are_you_requesting_access_to_your_own_personal_health_informatio;
         }
-
         if(_.isEmpty(data.select_the_situation_that_applies_)) {
             hipma.SELECT_THE_SITUATION_THAT_APPLIES_ = null;
         }else{
-            hipma.SELECT_THE_SITUATION_THAT_APPLIES_ = +data.are_you_requesting_access_to_your_own_personal_health_informatio;
+            hipma.SELECT_THE_SITUATION_THAT_APPLIES_ = +data.select_the_situation_that_applies_;
         }
 
         hipma.FIRST_NAME_BEHALF = data.first_name_behalf;
@@ -591,8 +593,8 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                     `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
                     `HIPMA_COPY_HEALTH_INFORMATION.DESCRIPTION AS CP_HEALTH_INFO`,
                     `HIPMA_SITUATIONS.DESCRIPTION AS HIPMA_SITUATIONS_DESC`, `HIPMA_COPY_ACTIVITY_REQUEST.DESCRIPTION AS CP_ACT_REQ`,
-                    db.raw( `CASE WHEN HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE = 1 THEN 'YES' ELSE 'NO' END AS DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE,
-                            CASE WHEN HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = 1 THEN 'YES' ELSE 'NO' END AS I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ `
+                    db.raw( `CASE WHEN HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE = 1 THEN 'Yes' ELSE 'No' END AS DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE,
+                            CASE WHEN HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = 1 THEN 'Yes' ELSE 'No' END AS I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ `
                         )
                     )
                 .whereRaw(sqlFilter);
@@ -722,7 +724,6 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
             .whereRaw(sqlFilter)
             .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
-                    'HIPMA_DUPLICATED_REQUESTS.ID',
                     'HIPMA_DUPLICATED_REQUESTS.ORIGINAL_ID',
                     'HIPMA_DUPLICATED_REQUESTS.DUPLICATED_ID',
                     'HEALTH_INFORMATION.CONFIRMATION_NUMBER',
@@ -736,7 +737,7 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
                 for (let row of rows) {
                     arrayResult[row['original_id']] = row;
                 }
-    
+
                 return arrayResult;
             });
 
@@ -759,14 +760,16 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
         let index = 0;
         hipmaDuplicate.forEach(function (value: any) {
             let url = "hipmaWarnings/details/"+value.id;
+            delete value.id;
+
             hipma.push({
                 health_information_id: null,
                 id: null,
-                ORIGINAL_ID: null,
-                DUPLICATED_ID: null,
+                original_id: null,
+                duplicated_id: null,
                 confirmation_number: null,
-                HIPMA_REQUEST_TYPE_DESC: null,
-                APPLICANT_FULL_NAME: 'Duplicated #'+(index+1),
+                hipma_request_type_desc: null,
+                applicant_full_name: 'Duplicated #'+(index+1),
                 created_at: 'ACTIONS:',
                 date_of_birth: null,
                 showUrl: url,
@@ -830,7 +833,9 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
                 `HEALTH_INFORMATION.PHONE_NUMBER_BEHALF`, `HEALTH_INFORMATION.FIRST_NAME`, `HEALTH_INFORMATION.LAST_NAME`,
                 db.raw(`TO_CHAR(HEALTH_INFORMATION.DATE_OF_BIRTH, 'yyyy-mm-dd')  AS DATE_OF_BIRTH,
                         TO_CHAR(HEALTH_INFORMATION.DATE_FROM_, 'yyyy-mm-dd')  AS DATE_FROM_,
-                        TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'yyyy-mm-dd')  AS DATE_TO_`
+                        TO_CHAR(HEALTH_INFORMATION.DATE_TO_, 'yyyy-mm-dd')  AS DATE_TO_,
+                         CASE WHEN HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE = 1 THEN 'Yes' ELSE 'No' END AS DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE,
+                        CASE WHEN HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = 1 THEN 'Yes' ELSE 'No' END AS I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`
                     ),
                 `HEALTH_INFORMATION.ADDRESS`, `HEALTH_INFORMATION.CITY_OR_TOWN`,
                 `HEALTH_INFORMATION.POSTAL_CODE`, `HEALTH_INFORMATION.EMAIL_ADDRESS`, `HEALTH_INFORMATION.PHONE_NUMBER`,
@@ -838,8 +843,6 @@ hipmaRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id").isInt
                 `HEALTH_INFORMATION.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_`,
                 `HEALTH_INFORMATION.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV`,
                 `HEALTH_INFORMATION.PROVIDE_DETAILS_ABOUT_YOUR_REQUEST_`,
-                `HEALTH_INFORMATION.DATE_RANGE_IS_UNKNOWN_OR_I_NEED_HELP_IDENTIFYING_THE_DATE_RANGE`,
-                `HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_`,
                 `HEALTH_INFORMATION.CREATED_AT`, `HEALTH_INFORMATION.UPDATED_AT`,
                 `HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC`,
                 `HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION`,
@@ -1028,7 +1031,9 @@ hipmaRouter.get("/duplicates/validateWarning/:duplicate_id",[param("duplicate_id
         warning = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
             .where('ID', duplicate_id)
             .select()
-            .first();
+            .then((data:any) => {
+              return data[0];
+            });
 
         if(!warning){
             flagExists = false;
