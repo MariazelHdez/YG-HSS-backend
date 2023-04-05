@@ -589,15 +589,15 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         if(requests.length > 0){
-            sqlFilter += " AND MIDWIFERY_SERVICES.ID IN ("+requests+")";
+            sqlFilter += "AND MIDWIFERY_SERVICES.ID IN ($1)";
         }
 
         if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
+            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') >= $2  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') <= $3";
         }
 
         if(!_.isEmpty(status_request)){
-            sqlFilter += " AND midwifery_services.status IN ( "+status_request+")";
+            sqlFilter += " AND midwifery_services.status IN ($4)";
         }
 
 
@@ -646,7 +646,7 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
                     "TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
                     "TO_CHAR(MIDWIFERY_SERVICES.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT")
             )
-            .whereRaw(sqlFilter);
+            .whereRaw(sqlFilter, [requests, dateFrom, dateTo, status_request]);
 
 
         midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
