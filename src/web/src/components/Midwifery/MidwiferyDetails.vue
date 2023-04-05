@@ -180,8 +180,8 @@ export default {
 			});
 		},
 		enterBulkAction(value) {
-      this.actionSelected = value;
-    },
+			this.actionSelected = value;
+		},
 		changeStatus(){
 			//Sent it as an array to use the same function for both single and bulk status changes
 			var midwiferyId = [Number(this.$route.params.midwifery_id)];
