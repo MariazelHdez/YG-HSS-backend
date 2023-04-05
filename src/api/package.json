@@ -8,7 +8,7 @@
     "start:dev": "ts-node-dev index.ts",
     "build:api": "tsc",
     "dev": "nodemon ./index.ts",
-    "start": "node ./dist/index.ts"
+    "start": "node dist/index.ts"
   },
   "author": "Michael Johnson",
   "license": "ISC",
@@ -19,6 +19,7 @@
     "express": "^4.17.1",
     "express-jwt": "^8.3.0",
     "express-openid-connect": "^2.5.1",
+    "express-rate-limit": "^6.7.0",
     "express-session": "^1.17.1",
     "express-validator": "^6.14.2",
     "helmet": "^5.1.1",

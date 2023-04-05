@@ -1,22 +1,37 @@
-FROM node:14-alpine3.10
+FROM --platform=linux/amd64 oraclelinux:7-slim
 
-RUN mkdir /home/node/app && chown -R node:node /home/node/app
-RUN mkdir /home/node/web && chown -R node:node /home/node/web
+RUN mkdir -p /home/node/app
+RUN mkdir -p /home/node/web
+RUN mkdir -p /opt/oracle/instantclient_21_9
 
-COPY --chown=node:node src/web/package*.json /home/node/web/
-COPY --chown=node:node src/api/package*.json /home/node/app/
+COPY src/web/package*.json /home/node/web/
+COPY src/api/package*.json /home/node/app/
 
-USER node
+ADD instantclient_21_9/* /opt/oracle/instantclient_21_9
+RUN echo /opt/oracle/instantclient_21_9 > /etc/ld.so.conf.d/oracle-instantclient.conf && \
+    ldconfig
+
+RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash -
+RUN  yum -y install oracle-nodejs-release-el7 && \
+    yum -y install nodejs && \
+    rm -rf /var/cache/yum
+
+RUN yum install -y libaio wget unzip
+
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip && \
+    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
+    cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 
 WORKDIR /home/node/app
 RUN npm install && npm cache clean --force --loglevel=error
-COPY --chown=node:node src/api/.env* ./
+COPY src/api/.env* ./
 
 WORKDIR /home/node/web
-RUN npm install && npm cache clean --force --loglevel=error
 
-COPY --chown=node:node src/api /home/node/app/
-COPY --chown=node:node src/web /home/node/web/
+RUN npm install && npm cache clean --force --loglevel=error
+COPY src/api /home/node/app/
+COPY src/web /home/node/web/
 
 RUN npm run build:docker
 
