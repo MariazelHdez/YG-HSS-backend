@@ -52,6 +52,8 @@ const postProcessToLowerCase = (result: any, queryContext: any) => {
   }
 };
 
+const wrapIdentifierUpper = (value: any, origImpl: any, queryContext: any) => origImpl(value.toUpperCase());
+
 export const DB_CONFIG_CONSTELLATION = {
   client: 'oracledb',
   connection: {
@@ -67,7 +69,8 @@ export const DB_CONFIG_CONSTELLATION = {
         (HOST=${DB_HOST})(PORT=${DB_PORT}) ) )           
         (CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE}) ) )`
   },
-  postProcessResponse: postProcessToLowerCase
+  postProcessResponse: postProcessToLowerCase,
+  wrapIdentifier: wrapIdentifierUpper
 };
 
 export const DB_CONFIG_MIDWIFERY = {

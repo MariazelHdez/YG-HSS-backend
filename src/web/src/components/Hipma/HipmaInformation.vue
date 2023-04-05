@@ -70,32 +70,26 @@
 
                             <tr>
                                 <td>Date range is unknown</td>
-                                <td v-if="hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
-
-                                <td v-if="hipmaDuplicated.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
+                                <td>{{ hipmaDuplicated.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_health_info ||  hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
-                                <td>{{ hipmaDuplicated.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
+                                <td>{{ hipmaDuplicated.cp_health_info }}</td>
                             </tr>
 
-                            <tr>
+                            <tr v-if="hipmaDuplicated.cp_act_req ||  hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
-                                <td>{{ hipmaDuplicated.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
+                                <td>{{ hipmaDuplicated.cp_act_req }}</td>
                             </tr>
 
                             <tr>
                                 <td>I affirm the information above to be true and accurate</td>
-                                <td v-if="hipma.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
-
-                                <td v-if="hipmaDuplicated.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
+                                <td>{{ hipmaDuplicated.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
                             </tr>
 
                         </tbody>
@@ -140,24 +134,22 @@
 
                             <tr>
                                 <td>Date range is unknown</td>
-                                <td v-if="hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.date_range_is_unknown_or_i_need_help_identifying_the_date_range }}</td>
                             </tr>
 
-                            <tr v-if="hipma.CopyHealthInformation">
+                            <tr v-if="hipma.cp_health_info">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.CopyHealthInformation }}</td>
+                                <td>{{ hipma.cp_health_info }}</td>
                             </tr>
 
-                            <tr v-if="hipma.HipmaCopyActivityRequest">
+                            <tr v-if="hipma.cp_act_req">
                                 <td>How do you want to access the records?</td>
-                                <td>{{ hipma.HipmaCopyActivityRequest }}</td>
+                                <td>{{ hipma.cp_act_req }}</td>
                             </tr>
 
                             <tr>
                                 <td>I affirm the information above to be true and accurate</td>
-                                <td v-if="hipma.i_affirm_the_information_above_to_be_true_and_accurate_">Yes</td>
-                                <td v-else>No</td>
+                                <td>{{ hipma.i_affirm_the_information_above_to_be_true_and_accurate_ }}</td>
                             </tr>
 
                         </tbody>

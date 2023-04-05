@@ -24,10 +24,8 @@ import { setSubmissionsStatusData, setSubmissionsData } from "../../helper/index
 import { HIPMA_STATUS_URL, HIPMA_SUBMISSIONS_URL } from "../../urls";
 
 const labelColors = [
-  { label: "New/Unread", color: "#41b883" },
-  { label: "Closed", color: "#dd3e22" },
-  { label: "Declined", color: "#f3b228" },
-  { label: "Entered", color: "#1a1aff" }
+  { label: "Open", color: "#41b883" },
+  { label: "Closed", color: "#dd3e22" }
 ];
 
 const scData = ref({});

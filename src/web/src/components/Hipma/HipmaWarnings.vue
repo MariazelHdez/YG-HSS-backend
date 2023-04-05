@@ -3,8 +3,7 @@
     <div class="hipma-service">
         <p class="title-service mb-6">HIPMA Possible Duplicates</p>
 
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
-
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
 
         <v-data-table
@@ -16,9 +15,13 @@
             :search="search"
 			id="duplicateDatatable"
 			:item-class= "rowClass"
+            :footer-props="{
+                'items-per-page-options': [12, 24, 36]
+            }"
+            :items-per-page="12"
         >
 
-            <template v-slot:[`item.showUrl`]="{ item }">
+            <template v-slot:[`item.showUrl`]="{ item }" >
                 <v-icon color="white" @click="showDetails(item.showUrl)" v-if="item.showUrl">mdi-eye</v-icon>
             </template>
         </v-data-table>
@@ -36,6 +39,7 @@ export default {
     data: () => ({
         loading: false,
         date: null,
+        flagAlert: false,
         menu: false,
         dateEnd: null,
         menuEnd: false,
@@ -54,11 +58,11 @@ export default {
         loader: null,
         loadingApply: false,
         headers: [
-			{ text: "Applicant", value: "applicant_full_name", sortable: true},
-			{ text: "Date of Birth", value: "date_of_birth", sortable: true},
-            { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-            { text: "Request Type", value: "hipma_request_type_desc", sortable: true},
-            { text: "Created", value: "created_at", sortable: true},
+			{ text: "Applicant", value: "applicant_full_name", sortable: false},
+			{ text: "Date of Birth", value: "date_of_birth", sortable: false},
+            { text: "Confirmation Number", value: "confirmation_number", sortable: false},
+            { text: "Request Type", value: "hipma_request_type_desc", sortable: false},
+            { text: "Created", value: "created_at", sortable: false},
             { text: "", value: "showUrl", sortable: false},
 			{ title: '', key: 'data-table-expand' },
         ],
@@ -142,8 +146,6 @@ export default {
             })
             .then((resp) => {
                 this.items = resp.data.data;
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))
@@ -155,7 +157,6 @@ export default {
             this.$router.push({ path: route });
         },
         selectAll() {
-                //event.value - boolen value if needed
                 this.selected = this.selected.length === this.items.length
                 ? []
                 : this.items
