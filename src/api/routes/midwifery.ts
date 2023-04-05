@@ -2,13 +2,13 @@ import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
-//import moment from "moment";
 import knex from "knex";
-//import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
 import { groupBy } from "../utils/groupBy";
+
 var _ = require('lodash');
 
+const sanitizeHtml = require('sanitize-html');
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
@@ -86,9 +86,9 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [ param("act
 midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
-        let status_request = req.body.params.status;
+        var dateFrom = sanitizeHtml(req.body.params.dateFrom);
+        var dateTo = sanitizeHtml(req.body.params.dateTo);
+        let status_request = sanitizeHtml(req.body.params.status);
         var midwifery = Object();
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
