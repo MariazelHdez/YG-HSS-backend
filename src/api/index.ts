@@ -8,7 +8,7 @@ import { doHealthCheck } from "./utils/healthCheck";
 import { configureAuthentication } from "./routes/auth"
 
 const app = express();
-
+const sufixPath = '/index.html';
 // const routes: Record<string, Router> = {
 //   "/api/user": userRouter,
 //   "/api/constellation": constellationRouter,
@@ -63,15 +63,16 @@ app.use("/api/midwifery", midwiferyRouter);
 app.use("/api/hipma", hipmaRouter);
 app.use("/api/general", generalRouter);
 
-// set up rate limiter: maximum of five requests per minute
+// set up rate limiter: maximum of five thousand requests per minute
 var RateLimit = require('express-rate-limit');
 var limiter = RateLimit({
   windowMs: 1*60*1000, // 1 minute
   max: 5000
 });
 
+
 // apply rate limiter to all requests
-app.use(limiter);
+app.use('/api', limiter);
 /*if (config.NODE_ENV !== "production")
   baseWebPath = "/dist/web";
 */
@@ -80,7 +81,7 @@ app.use(express.static(path.join(__dirname, "web")));
 
 // if no other routes match, just send the front-end
 app.use((req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "web") + "/index.html")
+  res.sendFile(path.join(__dirname, "web") + sufixPath)
 })
 
 app.listen(config.API_PORT, () => {

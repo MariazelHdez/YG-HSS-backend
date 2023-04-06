@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 import knex from "knex";
@@ -11,6 +10,7 @@ var _ = require('lodash');
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
+
 export const constellationRouter = express.Router();
 
 /**
