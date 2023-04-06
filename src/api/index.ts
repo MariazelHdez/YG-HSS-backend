@@ -9,13 +9,13 @@ import { configureAuthentication } from "./routes/auth"
 
 const app = express();
 
-const routes: Record<string, Router> = {
-  "/api/user": userRouter,
-  "/api/constellation": constellationRouter,
-  "/api/midwifery": midwiferyRouter,
-  "/api/hipma": hipmaRouter,
-  "/api/general": generalRouter
-};
+// const routes: Record<string, Router> = {
+//   "/api/user": userRouter,
+//   "/api/constellation": constellationRouter,
+//   "/api/midwifery": midwiferyRouter,
+//   "/api/hipma": hipmaRouter,
+//   "/api/general": generalRouter
+// };
 
 const maxRequestBodySize = '10mb';
 app.use(express.json({limit: maxRequestBodySize})) // for parsing application/json
@@ -52,11 +52,16 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
 });
 
 // Adding routes.
-for (const url in routes) {
-  app.use(url, routes[url]);
-}
+// for (const url in routes) {
+//   app.use(url, routes[url]);
+// }
 
-let baseWebPath = "/";
+// let baseWebPath = "/";
+app.use("/api/user", userRouter);
+app.use("/api/constellation", constellationRouter);
+app.use("/api/midwifery", midwiferyRouter);
+app.use("/api/hipma", hipmaRouter);
+app.use("/api/general", generalRouter);
 
 // set up rate limiter: maximum of five requests per minute
 var RateLimit = require('express-rate-limit');
