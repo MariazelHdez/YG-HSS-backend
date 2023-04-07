@@ -5,6 +5,7 @@ import knex from "knex";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 
@@ -12,7 +13,10 @@ const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
 
 export const constellationRouter = express.Router();
-
+constellationRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+  }));
 /**
  * Obtain data to show in the index view
  *
