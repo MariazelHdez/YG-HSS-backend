@@ -77,8 +77,12 @@ var limiter = RateLimit({
 app.use(limiter);
 
 userRouter.use(limiter);
+
 constellationRouter.use(limiter);
+
 midwiferyRouter.use(limiter);
+constellationRouter.use('/duplicates', limiter);
+
 hipmaRouter.use(limiter);
 generalRouter.use(limiter);
 
