@@ -8,7 +8,6 @@ import { groupBy } from "../utils/groupBy";
 
 var _ = require('lodash');
 
-const sanitizeHtml = require('sanitize-html');
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
