@@ -5,13 +5,17 @@ import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatu
 import knex from "knex";
 import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 import { groupBy , helper } from "../utils";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
 const submissionStatusRepo = new SubmissionStatusRepository();
 const path = require('path');
 export const hipmaRouter = express.Router();
-
+hipmaRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 /**
  * Obtain data to show in the index view
  *
