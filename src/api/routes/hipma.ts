@@ -91,18 +91,12 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
     try {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        var hipma = Object();
-        var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }
-        
-        hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+
+        let query = db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATI', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_SITUATIONS`, 'HEALTH_INFORMATION.SELECT_THE_SITUATION_THAT_APPLIES_', '=', 'HIPMA_SITUATIONS.ID')
-            .whereRaw(sqlFilter)
             .select('HEALTH_INFORMATION.ID','HEALTH_INFORMATION.CONFIRMATION_NUMBER',
                     'HIPMA_REQUEST_TYPE.DESCRIPTION AS HIPMA_REQUEST_TYPE_DESC',
                     'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.DESCRIPTION AS ACCESS_PERSONAL_HEALTH_INFORMATION',
@@ -111,7 +105,15 @@ hipmaRouter.post("/", async (req: Request, res: Response) => {
                     db.raw("(HEALTH_INFORMATION.FIRST_NAME ||  ' '||  HEALTH_INFORMATION.LAST_NAME) AS APPLICANT_FULL_NAME, "+
                         "TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT")
             )
+            .where('HEALTH_INFORMATION.STATUS', '=', 1)
             .orderBy('HEALTH_INFORMATION.CREATED_AT', 'ASC');
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
+        }
+
+        const hipma = await query;
 
         hipma.forEach(function (value: any) {
             value.showUrl = "hipma/show/"+value.id;
@@ -560,7 +562,7 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        var hipma = Object();
+        /*var hipma = Object();
         var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
 
         if(requests.length > 0){
@@ -569,9 +571,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         
         if(dateFrom && dateTo ){
             sqlFilter += "  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }
+        }*/
 
-        hipma = await db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
+        let query = db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
                 .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
                 .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.ARE_YOU_REQUESTING_ACCESS_TO_YOUR_OWN_PERSONAL_HEALTH_INFORMATI', '=', 'HIPMA_REQUEST_ACCESS_PERSONAL_HEALTH_INFORMATION.ID')
                 .leftJoin(`${SCHEMA_HIPMA}.HIPMA_COPY_HEALTH_INFORMATION`, 'HEALTH_INFORMATION.GET_A_COPY_OF_YOUR_HEALTH_INFORMATION_', '=', 'HIPMA_COPY_HEALTH_INFORMATION.ID')
@@ -601,7 +603,19 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
                             CASE WHEN HEALTH_INFORMATION.I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ = 1 THEN 'Yes' ELSE 'No' END AS I_AFFIRM_THE_INFORMATION_ABOVE_TO_BE_TRUE_AND_ACCURATE_ `
                         )
                     )
-                .whereRaw(sqlFilter);
+                    .where('HEALTH_INFORMATION.STATUS', '=', 1);
+
+        if(requests.length > 0){
+            query.whereIn("HEALTH_INFORMATION.ID", requests);
+        }
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
+        }
+
+        const hipma = await query;
+
         var socialServices = Object();
         var hssSystems = Object();
 
@@ -711,22 +725,14 @@ hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
 
 hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
         var hipmaOriginal = Object();
         var hipmaDuplicate = Object();
         var hipma = Array();
 
-        var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
-
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(HIPMA_DUPLICATED_REQUESTS.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HIPMA_DUPLICATED_REQUESTS.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }
-
         hipmaOriginal = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
             .join(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`, 'HIPMA_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'HEALTH_INFORMATION.ID')
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
-            .whereRaw(sqlFilter)
+            .where('HEALTH_INFORMATION.STATUS', '=', 1)
             .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
                     'HIPMA_DUPLICATED_REQUESTS.ORIGINAL_ID',
                     'HIPMA_DUPLICATED_REQUESTS.DUPLICATED_ID',
@@ -748,7 +754,7 @@ hipmaRouter.post("/duplicates", async (req: Request, res: Response) => {
         hipmaDuplicate = await db(`${SCHEMA_HIPMA}.HIPMA_DUPLICATED_REQUESTS`)
             .join(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`, 'HIPMA_DUPLICATED_REQUESTS.DUPLICATED_ID', '=', 'HEALTH_INFORMATION.ID')
             .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
-            .whereRaw(sqlFilter)
+            .where('HEALTH_INFORMATION.STATUS', '=', 1)
             .select('HEALTH_INFORMATION.ID AS HEALTH_INFORMATION_ID',
                     'HIPMA_DUPLICATED_REQUESTS.ID',
                     'HIPMA_DUPLICATED_REQUESTS.ORIGINAL_ID',
