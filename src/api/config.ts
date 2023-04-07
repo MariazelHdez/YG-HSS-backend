@@ -6,13 +6,15 @@ switch (process.env.NODE_ENV) {
     path = `.env.test`;
     break;
   case "production":
-    path = `.env.production`;
+    path = `.env`;
     break;
   default:
     path = `.env.development`;
 }
 dotenv.config({ path: path });
 
+console.log("API NODE_ENV", process.env.NODE_ENV);
+// console.log("API ENV", process.env);
 
 export const API_PORT = parseInt(process.env.API_PORT || "3000");
 export const FRONTEND_URL = process.env.FRONTEND_URL || "";

@@ -5,13 +5,17 @@ import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatu
 import knex from "knex";
 import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 import { groupBy , helper } from "../utils";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
 const submissionStatusRepo = new SubmissionStatusRepository();
 const path = require('path');
 export const hipmaRouter = express.Router();
-
+hipmaRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 /**
  * Obtain data to show in the index view
  *
@@ -700,9 +704,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
  */
 hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
     try {
-
+        var sanitize = require("sanitize-filename");
         var fs = require("fs");
-        var file = req.body.params.file;
+        var file = sanitize(req.body.params.file);
         let pathPublicFront = path.join(__dirname, "../../");
         var filePath = pathPublicFront+"/web/public/"+file;
 

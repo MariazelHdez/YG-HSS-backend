@@ -1,18 +1,22 @@
 import express, { Request, Response } from "express";
-import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 import knex from "knex";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
-export const constellationRouter = express.Router();
 
+export const constellationRouter = express.Router();
+constellationRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+  }));
 /**
  * Obtain data to show in the index view
  *
@@ -86,32 +90,35 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
 constellationRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
+        var dateFrom = req.body.params.dateFrom //? new Date(req.body.params.dateFrom) : '';
+        var dateTo = req.body.params.dateTo //? new Date(req.body.params.dateTo) : '';
         let status_request = req.body.params.status;
-        var sqlFilter = "CONSTELLATION_HEALTH.STATUS <> '4'";
-         
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }
 
-        if(status_request){
-           sqlFilter += "  AND CONSTELLATION_HEALTH.STATUS IN ("+status_request+")";
-        }
-
-        var constellationHealth =  await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+        let query = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
             .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
             .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
                     'CONSTELLATION_HEALTH.ID',
                     'CONSTELLATION_HEALTH.FAMILY_PHYSICIAN',
                     db.raw(`CONSTELLATION_HEALTH.DIAGNOSIS AS DIAGNOSIS,
-                    TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
-                    TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`
+                        TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
+                        TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`
                     ),
                     'CONSTELLATION_STATUS.DESCRIPTION as STATUS',
                     'CONSTELLATION_HEALTH.ID as CONSTELLATION_HEALTH_ID')
-            .whereRaw(sqlFilter)
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
             .orderBy('CONSTELLATION_HEALTH.ID', 'ASC');
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
+        }
+
+        if (status_request) {
+            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
+        }
+
+        const constellationHealth = await query;
+
         var diagnosis = Object();
         diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();

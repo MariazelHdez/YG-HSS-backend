@@ -6,12 +6,17 @@ import knex from "knex";
 import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
 import { groupBy } from "../utils/groupBy";
 
+var RateLimit = require('express-rate-limit');
+
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
-
+midwiferyRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 
 const submissionStatusRepo = new SubmissionStatusRepository();
 
