@@ -79,9 +79,11 @@ app.use(limiter);
 userRouter.use(limiter);
 
 constellationRouter.use(limiter);
+constellationRouter.use('/api/duplicates', limiter);
 
 midwiferyRouter.use(limiter);
-constellationRouter.use('/duplicates', limiter);
+midwiferyRouter.use('/api/duplicates', limiter);
+
 
 hipmaRouter.use(limiter);
 generalRouter.use(limiter);
