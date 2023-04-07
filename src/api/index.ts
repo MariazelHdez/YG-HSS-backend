@@ -57,13 +57,15 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
 // }
 
 // let baseWebPath = "/";
+
+
 app.use("/api/user", userRouter);
 app.use("/api/constellation", constellationRouter);
 app.use("/api/midwifery", midwiferyRouter);
 app.use("/api/hipma", hipmaRouter);
 app.use("/api/general", generalRouter);
 
-// set up rate limiter: maximum of five thousand requests per minute
+// set up rate limiter: maximum of five requests per minute
 var RateLimit = require('express-rate-limit');
 var limiter = RateLimit({
   windowMs: 1*60*1000, // 1 minute
@@ -72,7 +74,14 @@ var limiter = RateLimit({
 
 
 // apply rate limiter to all requests
-app.use('/api', limiter);
+app.use(limiter);
+
+userRouter.use(limiter);
+constellationRouter.use(limiter);
+midwiferyRouter.use(limiter);
+hipmaRouter.use(limiter);
+generalRouter.use(limiter);
+
 /*if (config.NODE_ENV !== "production")
   baseWebPath = "/dist/web";
 */
