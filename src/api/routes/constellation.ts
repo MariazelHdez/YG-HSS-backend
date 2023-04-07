@@ -412,7 +412,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         if(!_.isEmpty(data.date_of_birth)){
             data.date_of_birth = new Date(data.date_of_birth);
             let result: string =   data.date_of_birth.toISOString().split('T')[0];
-            constellationHealth.date_of_birth  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
+            constellationHealth.date_of_birth  = db.raw("TO_DATE( ? ,'YYYY-MM-DD') ", result);
         }else{
             constellationHealth.date_of_birth = null;
         }
@@ -445,7 +445,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
 
         const diagnosisList = data.diagnosis;
         const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
-        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
+        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW( ? )`, diagnosisVal) : null;
 
         demographicsQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ VALUE: data.demographics_groups }).select();
         const demographic = demographicsQuery.length == 1 ? demographicsQuery[0] : undefined;
@@ -1083,7 +1083,7 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             if(!_.isEmpty( dataMember.date_of_birth_family_member)){
                 dataMember.date_of_birth_family_member = new Date(dataMember.date_of_birth_family_member);
                 let result: string =   dataMember.date_of_birth_family_member.toISOString().split('T')[0];
-                dataMember.date_of_birth_family_member  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
+                dataMember.date_of_birth_family_member  = db.raw("TO_DATE(?,'YYYY-MM-DD') ",result);
             }else{
                 dataMember.date_of_birth_family_member = null;
             }
@@ -1100,7 +1100,7 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             }
             const diagnosisList = dataMember.diagnosis_family_member;
             const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
-            dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
+            dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW(?)`, diagnosisVal) : null;
 
             if (dataMember.demographics_groups_family_member in demographics) {
                 dataMember.demographics_groups_family_member = demographics[dataMember.demographics_groups_family_member];
