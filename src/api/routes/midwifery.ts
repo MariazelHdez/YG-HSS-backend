@@ -86,43 +86,44 @@ midwiferyRouter.get("/submissions/status/:action_id/:action_value", [ param("act
 midwiferyRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = sanitizeHtml(req.body.params.dateFrom);
-        var dateTo = sanitizeHtml(req.body.params.dateTo);
-        let status_request = sanitizeHtml(req.body.params.status);
-        var midwifery = Object();
+        var dateFrom = req.body.params.dateFrom;
+        var dateTo = req.body.params.dateTo;
+        let status_request = req.body.params.status;
         var midwiferyStatus = Array();
         var midwiferyOptions = Object();
-        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') <= '"+dateTo+"'";
+        let query = db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+        .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+        .select('MIDWIFERY_SERVICES.ID',
+                'MIDWIFERY_SERVICES.CONFIRMATION_NUMBER',
+                'MIDWIFERY_SERVICES.PREFERRED_NAME',
+                'MIDWIFERY_SERVICES.PREFERRED_PHONE',
+                'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
+                'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
+                'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION as BIRTH_LOCATIONS',
+                'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
+                'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
+                'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
+                'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+                db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                        "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
+        )
+        .where('MIDWIFERY_SERVICES.STATUS', '<>', 4 )
+        .orderBy('MIDWIFERY_SERVICES.ID', 'ASC');
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
         }
 
-        if(!_.isEmpty(status_request)){
-            sqlFilter += "  AND MIDWIFERY_SERVICES.STATUS IN ("+status_request+")";
+        if (status_request) {
+            query.whereIn("MIDWIFERY_SERVICES.STATUS", status_request);
         }
 
-        midwifery = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
-            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', '=', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', '=', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
-            .select('MIDWIFERY_SERVICES.ID',
-                    'MIDWIFERY_SERVICES.CONFIRMATION_NUMBER',
-                    'MIDWIFERY_SERVICES.PREFERRED_NAME',
-                    'MIDWIFERY_SERVICES.PREFERRED_PHONE',
-                    'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
-                    'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
-                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION as BIRTH_LOCATIONS',
-                    'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
-                    'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
-                    'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
-                    'MIDWIFERY_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
-                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
-                    db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
-                            "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE")
-            )
-            .whereRaw(sqlFilter)
-            .orderBy('MIDWIFERY_SERVICES.ID', 'ASC');
+        const midwifery = await query;
 
         midwiferyStatus = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`).select().whereNot('DESCRIPTION', 'Closed')
             .then((rows: any) => {
@@ -584,70 +585,68 @@ midwiferyRouter.post("/export", async (req: Request, res: Response) => {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
         let status_request = req.body.params.status;
-        var midwifery = Object();
         var midwiferyOptions = Object();
-        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
+
+        let query = db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
+        .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
+        .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
+        .select('MIDWIFERY_SERVICES.ID',
+                'MIDWIFERY_SERVICES.CONFIRMATION_NUMBER',
+                'MIDWIFERY_SERVICES.STATUS',
+                'MIDWIFERY_SERVICES.FIRST_NAME',
+                'MIDWIFERY_SERVICES.LAST_NAME',
+                'MIDWIFERY_SERVICES.PREFERRED_NAME',
+                'MIDWIFERY_SERVICES.PRONOUNS',
+                'MIDWIFERY_SERVICES.YUKON_HEALTH_INSURANCE',
+                'MIDWIFERY_SERVICES.COMMUNITY_LOCATED',
+                'MIDWIFERY_SERVICES.PREFERRED_LANGUAGE',
+                'MIDWIFERY_SERVICES.NEED_INTERPRETATION',
+                'MIDWIFERY_SERVICES.PREFERRED_PHONE',
+                'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
+                'MIDWIFERY_SERVICES.OKAY_TO_LEAVE_MESSAGE',
+                'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED',
+                'MIDWIFERY_SERVICES.DATE_CONFIRMED',
+                'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
+                'MIDWIFERY_SERVICES.HOW_MANY_VAGINAL_BIRTHS',
+                'MIDWIFERY_SERVICES.HOW_MANY_C_SECTION_BIRTHS',
+                'MIDWIFERY_SERVICES.COMPLICATIONS_WITH_PREVIOUS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS',
+                'MIDWIFERY_SERVICES.MIDWIFE_BEFORE',
+                'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH',
+                'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS2',
+                'MIDWIFERY_SERVICES.HAVE_YOU_HAD_PRIMARY_HEALTH_CARE',
+                'MIDWIFERY_SERVICES.MENSTRUAL_CYCLE_LENGTH',
+                'MIDWIFERY_SERVICES.FAMILY_PHYSICIAN',
+                'MIDWIFERY_SERVICES.PHYSICIAN_S_NAME',
+                'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
+                'MIDWIFERY_SERVICES.PROVIDE_DETAILS3',
+                'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
+                'MIDWIFERY_SERVICES.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT',
+                'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
+                'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
+            db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
+                "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
+                "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE,"+
+                "TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                "TO_CHAR(MIDWIFERY_SERVICES.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT")
+            ).where('MIDWIFERY_SERVICES.STATUS', '<>', 4 );
 
         if(requests.length > 0){
-            sqlFilter += " AND MIDWIFERY_SERVICES.ID IN ("+requests+")";
+            query.whereIn("MIDWIFERY_SERVICES.ID", requests);
         }
 
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD') <= ?",
+            [dateFrom, dateTo]));
         }
 
-        if(!_.isEmpty(status_request)){
-            sqlFilter += " AND midwifery_services.status IN ( "+status_request+")";
+        if (status_request) {
+            query.whereIn("MIDWIFERY_SERVICES.STATUS", status_request);
         }
 
-
-        midwifery = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`)
-            .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_STATUS`, 'MIDWIFERY_SERVICES.STATUS', '=', 'MIDWIFERY_STATUS.ID')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_BIRTH_LOCATIONS`, 'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH', 'MIDWIFERY_BIRTH_LOCATIONS.ID')
-            .leftJoin(`${SCHEMA_MIDWIFERY}.MIDWIFERY_PREFERRED_CONTACT_TYPES`, 'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED', 'MIDWIFERY_PREFERRED_CONTACT_TYPES.ID')
-            .select('MIDWIFERY_SERVICES.ID',
-                    'MIDWIFERY_SERVICES.CONFIRMATION_NUMBER',
-                    'MIDWIFERY_SERVICES.STATUS',
-                    'MIDWIFERY_SERVICES.FIRST_NAME',
-                    'MIDWIFERY_SERVICES.LAST_NAME',
-                    'MIDWIFERY_SERVICES.PREFERRED_NAME',
-                    'MIDWIFERY_SERVICES.PRONOUNS',
-                    'MIDWIFERY_SERVICES.YUKON_HEALTH_INSURANCE',
-                    'MIDWIFERY_SERVICES.COMMUNITY_LOCATED',
-                    'MIDWIFERY_SERVICES.PREFERRED_LANGUAGE',
-                    'MIDWIFERY_SERVICES.NEED_INTERPRETATION',
-                    'MIDWIFERY_SERVICES.PREFERRED_PHONE',
-                    'MIDWIFERY_SERVICES.PREFERRED_EMAIL',
-                    'MIDWIFERY_SERVICES.OKAY_TO_LEAVE_MESSAGE',
-                    'MIDWIFERY_SERVICES.PREFER_TO_BE_CONTACTED',
-                    'MIDWIFERY_SERVICES.DATE_CONFIRMED',
-                    'MIDWIFERY_SERVICES.FIRST_PREGNANCY',
-                    'MIDWIFERY_SERVICES.HOW_MANY_VAGINAL_BIRTHS',
-                    'MIDWIFERY_SERVICES.HOW_MANY_C_SECTION_BIRTHS',
-                    'MIDWIFERY_SERVICES.COMPLICATIONS_WITH_PREVIOUS',
-                    'MIDWIFERY_SERVICES.PROVIDE_DETAILS',
-                    'MIDWIFERY_SERVICES.MIDWIFE_BEFORE',
-                    'MIDWIFERY_SERVICES.WHERE_TO_GIVE_BIRTH',
-                    'MIDWIFERY_SERVICES.MEDICAL_CONCERNS',
-                    'MIDWIFERY_SERVICES.PROVIDE_DETAILS2',
-                    'MIDWIFERY_SERVICES.HAVE_YOU_HAD_PRIMARY_HEALTH_CARE',
-                    'MIDWIFERY_SERVICES.MENSTRUAL_CYCLE_LENGTH',
-                    'MIDWIFERY_SERVICES.FAMILY_PHYSICIAN',
-                    'MIDWIFERY_SERVICES.PHYSICIAN_S_NAME',
-                    'MIDWIFERY_SERVICES.MAJOR_MEDICAL_CONDITIONS',
-                    'MIDWIFERY_SERVICES.PROVIDE_DETAILS3',
-                    'MIDWIFERY_SERVICES.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE',
-                    'MIDWIFERY_SERVICES.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT',
-                    'MIDWIFERY_BIRTH_LOCATIONS.DESCRIPTION AS BIRTH_LOCATIONS',
-                    'MIDWIFERY_PREFERRED_CONTACT_TYPES.DESCRIPTION AS PREFERRED_CONTACT',
-                db.raw("TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH, "+
-                    "TO_CHAR(MIDWIFERY_SERVICES.WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_, 'YYYY-MM-DD') AS WHEN_WAS_THE_FIRST_DAY_OF_YOUR_LAST_PERIOD_,"+
-                    "TO_CHAR(MIDWIFERY_SERVICES.DUE_DATE, 'YYYY-MM-DD') AS DUE_DATE,"+
-                    "TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
-                    "TO_CHAR(MIDWIFERY_SERVICES.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT")
-            )
-            .whereRaw(sqlFilter);
-
+        const midwifery = await query;
 
         midwiferyOptions = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_OPTIONS`).select().then((rows: any) => {
             let arrayResult = Object();
@@ -875,7 +874,6 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
         var midwiferyOriginal = Object();
         var midwiferyDuplicate = Object();
         var midwifery = Array();
-        var sqlFilter = "MIDWIFERY_SERVICES.STATUS <> 4";
 
         midwiferyOriginal = await db(`${SCHEMA_MIDWIFERY}.MIDWIFERY_DUPLICATED_REQUESTS`)
             .join(`${SCHEMA_MIDWIFERY}.MIDWIFERY_SERVICES`, 'MIDWIFERY_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'MIDWIFERY_SERVICES.ID')
@@ -895,7 +893,7 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
                         "TO_CHAR(midwifery_services.date_of_birth, 'YYYY-MM-DD') as date_of_birth")
             )
-            .whereRaw(sqlFilter)
+            .where('MIDWIFERY_SERVICES.STATUS', '<>', 4 )
             .orderBy("MIDWIFERY_SERVICES.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
 
@@ -925,7 +923,7 @@ midwiferyRouter.post("/duplicates", async (req: Request, res: Response) => {
                     db.raw("TO_CHAR(MIDWIFERY_SERVICES.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
                         "TO_CHAR(MIDWIFERY_SERVICES.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH")
             )
-            .whereRaw(sqlFilter)
+            .where('MIDWIFERY_SERVICES.STATUS', '<>', 4 )
             .orderBy("MIDWIFERY_SERVICES.CREATED_AT");
 
         let index = 0;
