@@ -690,9 +690,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
  */
 hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
     try {
-
+        var sanitize = require("sanitize-filename");
         var fs = require("fs");
-        var file = req.body.params.file;
+        var file = sanitize(req.body.params.file);
         let pathPublicFront = path.join(__dirname, "../../");
         var filePath = pathPublicFront+"/web/public/"+file;
 
