@@ -562,16 +562,6 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
         var requests = req.body.params.requests;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        /*var hipma = Object();
-        var sqlFilter = "HEALTH_INFORMATION.STATUS = '1'";
-
-        if(requests.length > 0){
-            sqlFilter += " AND HEALTH_INFORMATION.ID IN ("+requests+")";
-        }
-        
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(HEALTH_INFORMATION.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }*/
 
         let query = db(`${SCHEMA_HIPMA}.HEALTH_INFORMATION`)
                 .leftJoin(`${SCHEMA_HIPMA}.HIPMA_REQUEST_TYPE`, 'HEALTH_INFORMATION.WHAT_TYPE_OF_REQUEST_DO_YOU_WANT_TO_MAKE_', '=', 'HIPMA_REQUEST_TYPE.ID')
