@@ -247,13 +247,14 @@ export default {
       this.selected.forEach((e) => {
         idArray.push(e.constellation_health_id);
       });
+
       axios
         .post(CONSTELLATION_EXPORT_FILE_URL, {
 				params: {
 					requests: idArray,
 					status: this.actionSelected,
-					dateFrom: this.dateMin,
-					dateTo: this.dateMax
+					dateFrom: this.date,
+					dateTo: this.dateEnd
 				}
 			}).then((resp) => {
           const ws = utils.json_to_sheet(resp.data.dataConstellation);
