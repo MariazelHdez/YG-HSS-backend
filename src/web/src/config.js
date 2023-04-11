@@ -147,4 +147,4 @@ export const sections = [
     },
 ];
 export const environment = process.env.NODE_ENV;
-export const apiBaseUrl = process.env.NODE_ENV == "production" ? "" : "http://localhost:3000";
+export const apiBaseUrl = process.env.NODE_ENV == "production" ? "http://localhost:8080" : "http://localhost:3000";

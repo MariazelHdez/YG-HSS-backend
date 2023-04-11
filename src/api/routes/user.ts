@@ -3,10 +3,14 @@ import express, { Request, Response } from "express";
 import { EnsureAuthenticated } from "./auth"
 import { AppUser, Team } from "../models/user";
 import { param } from "express-validator";
-
+var RateLimit = require('express-rate-limit');
 const userRepo = new UserRepository();
 
 export const userRouter = express.Router();
+userRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 
 userRouter.get("/", EnsureAuthenticated, async (req: Request, res: Response) => {
     var appUser: AppUser;

@@ -1,18 +1,22 @@
 import express, { Request, Response } from "express";
-import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
 import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 import knex from "knex";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
 import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
-export const constellationRouter = express.Router();
 
+export const constellationRouter = express.Router();
+constellationRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+  }));
 /**
  * Obtain data to show in the index view
  *
@@ -86,32 +90,35 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
 constellationRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
+        var dateFrom = req.body.params.dateFrom //? new Date(req.body.params.dateFrom) : '';
+        var dateTo = req.body.params.dateTo //? new Date(req.body.params.dateTo) : '';
         let status_request = req.body.params.status;
-        var sqlFilter = "CONSTELLATION_HEALTH.STATUS <> '4'";
-         
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') >= '"+dateFrom+"'  AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'yyyy-mm-dd') <= '"+dateTo+"'";
-        }
 
-        if(status_request){
-           sqlFilter += "  AND CONSTELLATION_HEALTH.STATUS IN ("+status_request+")";
-        }
-
-        var constellationHealth =  await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+        let query = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
             .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
             .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
                     'CONSTELLATION_HEALTH.ID',
                     'CONSTELLATION_HEALTH.FAMILY_PHYSICIAN',
                     db.raw(`CONSTELLATION_HEALTH.DIAGNOSIS AS DIAGNOSIS,
-                    TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
-                    TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`
+                        TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
+                        TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`
                     ),
                     'CONSTELLATION_STATUS.DESCRIPTION as STATUS',
                     'CONSTELLATION_HEALTH.ID as CONSTELLATION_HEALTH_ID')
-            .whereRaw(sqlFilter)
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
             .orderBy('CONSTELLATION_HEALTH.ID', 'ASC');
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
+        }
+
+        if (status_request) {
+            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
+        }
+
+        const constellationHealth = await query;
+
         var diagnosis = Object();
         diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
@@ -405,7 +412,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         if(!_.isEmpty(data.date_of_birth)){
             data.date_of_birth = new Date(data.date_of_birth);
             let result: string =   data.date_of_birth.toISOString().split('T')[0];
-            constellationHealth.date_of_birth  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
+            constellationHealth.date_of_birth  = db.raw("TO_DATE( ? ,'YYYY-MM-DD') ", result);
         }else{
             constellationHealth.date_of_birth = null;
         }
@@ -438,7 +445,7 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
 
         const diagnosisList = data.diagnosis;
         const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
-        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
+        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW( ? )`, diagnosisVal) : null;
 
         demographicsQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ VALUE: data.demographics_groups }).select();
         const demographic = demographicsQuery.length == 1 ? demographicsQuery[0] : undefined;
@@ -507,13 +514,10 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
         var idSubmission: any[] = [];
-        var constellationHealth = Object();
-        var constellationFamily = Object();
 
-        let query = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+        let query  = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
             .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
-            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
             .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FIRST_NAME`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LAST_NAME`,
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.IS_THIS_YOUR_LEGAL_NAME_`,
@@ -538,7 +542,22 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
                     db.raw(`TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`),
                     `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ID`,
-                    );
+                )
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 );
+
+        if(requests.length > 0){
+            query.whereIn("CONSTELLATION_HEALTH.ID", requests);
+        }
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
+            [dateFrom, dateTo]));
+        }
+
+        if (status_request) {
+            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
+        }
+        const constellationHealth = await query;
 
         if(requests.length > 0){
             query.whereIn("CONSTELLATION_HEALTH.ID", requests);
@@ -619,21 +638,17 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
                 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.CURRENT_FAMILY_PHYSICIAN_FAMILY_MEMBER',
                 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.ACCESSING_HEALTH_CARE_FAMILY_MEMBER',
                 db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DIAGNOSIS_FAMILY_MEMBER) AS DIAGNOSIS_FAMILY_MEMBER`),
-                'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER'
-        );
-        //.whereRaw(sqlFilterFamily)
+                'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER');
 
         if(!_.isEmpty(idSubmission)){
-            queryFamily.whereIn("CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID", idSubmission);
-        }
-
-        constellationFamily = await queryFamily;
-
-        constellationHealth.flagFamilyMembers = false;
+            queryFamily.whereIn('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', idSubmission );
+        }   
+        const constellationFamily = await queryFamily;
+        let flagFamilyMembers = false;
 
         //If the client has family members, the same treatment of the corresponding data is given.
         if(constellationFamily.length){
-            constellationHealth.flagFamilyMembers = true;
+            flagFamilyMembers = true;
 
             constellationFamily.forEach(function (value: any, key: any) {
 
@@ -1082,7 +1097,7 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             if(!_.isEmpty( dataMember.date_of_birth_family_member)){
                 dataMember.date_of_birth_family_member = new Date(dataMember.date_of_birth_family_member);
                 let result: string =   dataMember.date_of_birth_family_member.toISOString().split('T')[0];
-                dataMember.date_of_birth_family_member  = db.raw("TO_DATE('"+result+"','YYYY-MM-DD') ");
+                dataMember.date_of_birth_family_member  = db.raw("TO_DATE(?,'YYYY-MM-DD') ",result);
             }else{
                 dataMember.date_of_birth_family_member = null;
             }
@@ -1099,7 +1114,7 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             }
             const diagnosisList = dataMember.diagnosis_family_member;
             const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
-            dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW('${diagnosisVal}')`) : null;
+            dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW(?)`, diagnosisVal) : null;
 
             if (dataMember.demographics_groups_family_member in demographics) {
                 dataMember.demographics_groups_family_member = demographics[dataMember.demographics_groups_family_member];

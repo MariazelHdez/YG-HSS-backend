@@ -6,13 +6,17 @@ import knex from "knex";
 import { DB_CONFIG_MIDWIFERY, SCHEMA_MIDWIFERY } from "../config";
 import { groupBy } from "../utils/groupBy";
 
+var RateLimit = require('express-rate-limit');
+
 var _ = require('lodash');
 
-const sanitizeHtml = require('sanitize-html');
 const db = knex(DB_CONFIG_MIDWIFERY)
 
 export const midwiferyRouter = express.Router();
-
+midwiferyRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 
 const submissionStatusRepo = new SubmissionStatusRepository();
 
@@ -525,10 +529,10 @@ midwiferyRouter.post("/store", async (req: Request, res: Response) => {
         }
 
         const groupValue = await getMultipleIdsByModel("MidwiferyGroupsCommunities", data.do_you_identify_with_one_or_more_of_these_groups_and_communities);
-        midwifery.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE = groupValue ? db.raw(`UTL_RAW.CAST_TO_RAW('${groupValue}')`) : null;
+        midwifery.DO_YOU_IDENTIFY_WITH_ONE_OR_MORE_OF_THESE_GROUPS_AND_COMMUNITIE = groupValue ? db.raw(`UTL_RAW.CAST_TO_RAW(?)`,groupValue) : null;
 
         const contactValue = await getMultipleIdsByModel("MidwiferyClinicContactTypes", data.how_did_you_find_out_about_the_midwifery_clinic_select_all_that_);
-        midwifery.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT = contactValue ? db.raw(`UTL_RAW.CAST_TO_RAW('${contactValue}')`) : null;
+        midwifery.HOW_DID_YOU_FIND_OUT_ABOUT_THE_MIDWIFERY_CLINIC_SELECT_ALL_THAT = contactValue ? db.raw(`UTL_RAW.CAST_TO_RAW(?)`,contactValue) : null;
 
         midwifery.YUKON_HEALTH_INSURANCE = await getMidwiferyOptions("yukon_health_insurance", data.yukon_health_insurance);
         midwifery.NEED_INTERPRETATION = await getMidwiferyOptions("need_interpretation", data.need_interpretation);

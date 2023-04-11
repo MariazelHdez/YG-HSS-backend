@@ -5,13 +5,17 @@ import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatu
 import knex from "knex";
 import { DB_CONFIG_HIPMA, SCHEMA_HIPMA } from "../config";
 import { groupBy , helper } from "../utils";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
 const db = knex(DB_CONFIG_HIPMA)
 const submissionStatusRepo = new SubmissionStatusRepository();
 const path = require('path');
 export const hipmaRouter = express.Router();
-
+hipmaRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 /**
  * Obtain data to show in the index view
  *
@@ -404,13 +408,13 @@ hipmaRouter.post("/store", async (req: Request, res: Response) => {
         if(_.isEmpty(data.name_of_health_and_social_services_program_area_optional_) && !_.isArray(data.name_of_health_and_social_services_program_area_optional_)) {
             hipma.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_ = null;
         }else{
-            hipma.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_ =  db.raw("utl_raw.cast_to_raw('"+ JSON.stringify(data.name_of_health_and_social_services_program_area_optional_)+ "') ");
+            hipma.NAME_OF_HEALTH_AND_SOCIAL_SERVICES_PROGRAM_AREA_OPTIONAL_ =  db.raw("utl_raw.cast_to_raw(?) ", JSON.stringify(data.name_of_health_and_social_services_program_area_optional_));
        
         }
         if(_.isEmpty(data.indicate_the_hss_system_s_you_would_like_a_record_of_user_activi) && !_.isArray(data.indicate_the_hss_system_s_you_would_like_a_record_of_user_activi)) {
             hipma.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV = null;
         }else{
-            hipma.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV = db.raw("utl_raw.cast_to_raw('"+ JSON.stringify(data.indicate_the_hss_system_s_you_would_like_a_record_of_user_activi)+ "') ");//await getDataByModel("HipmaHssSystems", data.indicate_the_hss_system_s_you_would_like_a_record_of_user_activi, "multi")
+            hipma.INDICATE_THE_HSS_SYSTEM_S_YOU_WOULD_LIKE_A_RECORD_OF_USER_ACTIV = db.raw("utl_raw.cast_to_raw(?)", JSON.stringify(data.indicate_the_hss_system_s_you_would_like_a_record_of_user_activi));
         }
         if(_.isEmpty(data.date_from_)) {
             hipma.DATE_FROM_ = null;
@@ -690,9 +694,9 @@ hipmaRouter.post("/export", async (req: Request, res: Response) => {
  */
 hipmaRouter.post("/deleteFile", async (req: Request, res: Response) => {
     try {
-
+        var sanitize = require("sanitize-filename");
         var fs = require("fs");
-        var file = req.body.params.file;
+        var file = sanitize(req.body.params.file);
         let pathPublicFront = path.join(__dirname, "../../");
         var filePath = pathPublicFront+"/web/public/"+file;
 
