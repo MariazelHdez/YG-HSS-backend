@@ -559,21 +559,6 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
         }
         const constellationHealth = await query;
 
-        if(requests.length > 0){
-            query.whereIn("CONSTELLATION_HEALTH.ID", requests);
-        }
-
-        if(dateFrom && dateTo) {
-            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
-            [dateFrom, dateTo]));
-        }
-
-        if (status_request) {
-            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
-        }
-
-        constellationHealth = await query;
-
         var diagnosis = Object();
         diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
