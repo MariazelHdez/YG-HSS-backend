@@ -179,13 +179,13 @@ FROM
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -193,13 +193,13 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM HIPMA.health_information ch
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner     
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -207,13 +207,13 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM MIDWIFERY.midwifery_services ch
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 ;
 --------------------------------------------------------
 --  DDL for View SUBMISSIONS_STATUS_MONTH_V
@@ -226,14 +226,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     cs.description AS status,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN CONSTELLATION_HEALTH.constellation_status cs ON cs.id = ch.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = cs.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, cs.description
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, cs.description
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -241,14 +241,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     st.description AS status,
-    to_char(ms.created_at, 'yyyymm') AS monthid
+    to_char(ms.created_at, 'yyyy-mm') AS monthid
    FROM MIDWIFERY.midwifery_services ms
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN MIDWIFERY.midwifery_status st ON st.id = ms.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = st.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ms.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
+  GROUP BY tab.owner, (to_char(ms.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -256,14 +256,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     st.description AS status,
-    to_char(hi.created_at, 'yyyymm') AS monthid
+    to_char(hi.created_at, 'yyyy-mm') AS monthid
    FROM HIPMA.health_information hi
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN HIPMA.hipma_status st ON st.id = hi.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = st.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(hi.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
+  GROUP BY tab.owner, (to_char(hi.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
 ;
 --------------------------------------------------------
 --  DDL for View SUBMISSIONS_STATUS_WEEK_V
@@ -325,42 +325,42 @@ UNION
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM HIPMA.health_information ch
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM MIDWIFERY.midwifery_services ch
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 ;
 --------------------------------------------------------
 --  DDL for View USER_PERMISSIONS_V
