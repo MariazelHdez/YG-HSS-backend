@@ -1,21 +1,22 @@
 import express, { Request, Response } from "express";
-import { EnsureAuthenticated } from "./auth"
 import { body, param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
-//import moment from "moment";
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
 import knex from "knex";
-//import { ReturnValidationErrors } from "../../middleware";
 import { DB_CONFIG_CONSTELLATION, SCHEMA_CONSTELLATION } from "../config";
-import { groupBy } from "../utils/groupBy";
+import { groupBy, helper } from "../utils";
 import { checkPermissions } from "../middleware/permissions";
+var RateLimit = require('express-rate-limit');
 var _ = require('lodash');
 
-//let { RequireServerAuth, RequireAdmin } = require("../auth")
 
 const db = knex(DB_CONFIG_CONSTELLATION)
 const submissionStatusRepo = new SubmissionStatusRepository();
-export const constellationRouter = express.Router();
 
+export const constellationRouter = express.Router();
+constellationRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+  }));
 /**
  * Obtain data to show in the index view
  *
@@ -36,7 +37,6 @@ constellationRouter.get("/submissions/:action_id/:action_value", [
         const result = await submissionStatusRepo.getModuleSubmissions(SCHEMA_CONSTELLATION, actionId, actionVal, permissions);
         const groupedId = groupBy(result, i => i.id);
         const labels = groupBy(result, i => i.date_code);
-                        
         res.send(
             {
                 data: groupedId,
@@ -90,33 +90,37 @@ constellationRouter.get("/submissions/status/:action_id/:action_value", [
 constellationRouter.post("/", async (req: Request, res: Response) => {
 
     try {
-        var dateFrom = req.body.params.dateFrom;
-        var dateTo = req.body.params.dateTo;
+        var dateFrom = req.body.params.dateFrom //? new Date(req.body.params.dateFrom) : '';
+        var dateTo = req.body.params.dateTo //? new Date(req.body.params.dateTo) : '';
         let status_request = req.body.params.status;
-        var sqlFilter = "constellation_health.status <> '4'";
-         
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
+
+        let query = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
+            .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
+                    'CONSTELLATION_HEALTH.ID',
+                    'CONSTELLATION_HEALTH.FAMILY_PHYSICIAN',
+                    db.raw(`CONSTELLATION_HEALTH.DIAGNOSIS AS DIAGNOSIS,
+                        TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
+                        TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`
+                    ),
+                    'CONSTELLATION_STATUS.DESCRIPTION as STATUS',
+                    'CONSTELLATION_HEALTH.ID as CONSTELLATION_HEALTH_ID')
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
+            .orderBy('CONSTELLATION_HEALTH.ID', 'ASC');
+
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
+                [dateFrom, dateTo]));
         }
 
-        if(status_request){
-           sqlFilter += "  AND constellation_health.status IN ("+status_request+")";
+        if (status_request) {
+            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
         }
 
-        var constellationHealth =  await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-            .select('constellation_health.your_legal_name',
-                    'constellation_health.date_of_birth',
-                    'constellation_health.id',
-                    'constellation_health.family_physician',
-                    'constellation_health.diagnosis',
-                    'constellation_health.created_at',
-                    'constellation_status.description as status',
-                    'constellation_health.id as constellation_health_id')
-            .whereRaw(sqlFilter)
-            .orderBy('constellation_health.id', 'asc');
+        const constellationHealth = await query;
+
         var diagnosis = Object();
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -125,16 +129,11 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
 
             return arrayResult;
         });
-
         constellationHealth.forEach(function (value: any) {
 
-            if(value.date_of_birth == 0) {
+            if(value.date_of_birth === null) {
                 value.date_of_birth =  "N/A";
-            }else{
-                value.date_of_birth =  value.date_of_birth.toLocaleDateString("en-CA");
             }
-
-            value.created_at =  value.created_at.toLocaleString("en-CA");
 
             if(value.language_prefer_to_receive_services){
                 value.language_prefer_to_receive_services = value.preferred_language;
@@ -142,8 +141,10 @@ constellationRouter.post("/", async (req: Request, res: Response) => {
                 value.language_prefer_to_receive_services = value.language_preferred;
             }
 
-            var dataString = "";
-
+            let dataString = "";
+            if(!_.isEmpty(value.diagnosis)){
+                value.diagnosis = JSON.parse(value.diagnosis.toString());
+            }
             _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
 
                 if(valueDiagnosis in diagnosis){
@@ -187,12 +188,15 @@ constellationRouter.get("/validateRecord/:constellationHealth_id",[param("conste
         var message= "";
         var type= "error";
 
-        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-            .where('constellation_health.id', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
-                    'constellation_status.description as status_description')
-            .first();
+        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
+            .where('CONSTELLATION_HEALTH.ID', constellationHealth_id)
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.*`,
+                    'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION')
+            .then((data:any) => {
+                return data[0];
+            });
+
 
         if(!constellationHealth || constellationHealth.status_description == "closed"){
             flagExists= false;
@@ -221,33 +225,82 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
         var constellationHealth = Object();
         var constellationFamily = Object();
 
-        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-            .where('constellation_health.id', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_language.description as language_prefer_description`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_demographics.description as demographic_description`)
+        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .where('CONSTELLATION_HEALTH.ID', constellationHealth_id)
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.STATUS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FIRST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LAST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.IS_THIS_YOUR_LEGAL_NAME_`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YOUR_LEGAL_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PRONOUNS`,
+                    db.raw(`JSON_SERIALIZE(CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS,
+                    TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH,
+                    TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT,
+                    TO_CHAR(CONSTELLATION_HEALTH.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS UPDATED_AT`
+                    ),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HAVE_YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HEALTH_CARE_CARD`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PROVINCE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.POSTAL_CODE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PREFER_TO_BE_CONTACTED`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PHONE_NUMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.EMAIL_ADDRESS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LEAVE_PHONE_MESSAGE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PREFERRED_LANGUAGE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INTERPRETATION_SUPPORT`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CURRENT_FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ACCESSING_HEALTH_CARE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`)
             .first();
 
-        constellationFamily = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-            .select('constellation_health_family_members.*',
-                    'constellation_health_language.description as language_prefer_description_family_member',
-                    'constellation_health_demographics.description as demographic_description_family_member')
-            .where('constellation_health_family_members.constellation_health_id', constellationHealth_id);
+        constellationFamily = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.FIRST_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.LAST_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.IS_THIS_YOUR_LEGAL_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.YOUR_LEGAL_NAME_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PRONOUNS_FAMILY_MEMBER`,
+                    db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DIAGNOSIS_FAMILY_MEMBER) AS DIAGNOSIS_FAMILY_MEMBER,
+                    TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.DATE_OF_BIRTH_FAMILY_MEMBER, 'YYYY-MM-DD')  AS DATE_OF_BIRTH_FAMILY_MEMBER,
+                    TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT,
+                    TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS UPDATED_AT`
+                    ),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.HAVE_YHCIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.HEALTH_CARE_CARD_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PROVINCE_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.YHCIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.RELATIONSHIP_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.PREFERRED_LANGUAGE_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.INTERPRETATION_SUPPORT_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.FAMILY_PHYSICIAN_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.CURRENT_FAMILY_PHYSICIAN_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.ACCESSING_HEALTH_CARE_FAMILY_MEMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER`,
+                    'CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION_FAMILY_MEMBER',
+                    'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER')
+            .where('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', constellationHealth_id);
 
-        if(constellationHealth.date_of_birth == 0) {
+        if(constellationHealth.date_of_birth === null) {
             constellationHealth.date_of_birth =  "N/A";
-        }else{
-            constellationHealth.date_of_birth =  constellationHealth.date_of_birth.toLocaleDateString("en-CA");
         }
 
         let dataString = "";
         var diagnosis = Object();
 
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -257,7 +310,8 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
             return arrayResult;
         });
 
-        _.forEach(constellationHealth.diagnosis, function(valueDiagnosis: any, key: any) {
+        const diagnosisList = helper.getJsonDataList(constellationHealth.diagnosis);
+        _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
             if(valueDiagnosis in diagnosis){
                 dataString += diagnosis[valueDiagnosis]+",";
             }else{
@@ -279,13 +333,14 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
 
             constellationFamily.forEach(function (value: any, key: any) {
 
-                if(value.date_of_birth_family_member == 0) {
+                if(value.date_of_birth_family_member === null) {
                     value.date_of_birth_family_member =  "N/A";
                 }
 
                 let dataString = "";
+                const diagnosisFmList = helper.getJsonDataList(value.diagnosis_family_member);
 
-                _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+                _.forEach(diagnosisFmList, function(valueDiagnosisFm: any, key: any) {
 
                     if(valueDiagnosisFm in diagnosis){
                         dataString += diagnosis[valueDiagnosisFm]+",";
@@ -332,16 +387,18 @@ constellationRouter.get("/show/:constellationHealth_id", checkPermissions("const
 constellationRouter.post("/store", async (req: Request, res: Response) => {
 
     try {
-        var data = Object();
-        var constellationHealth = Object();
-        var demographics = Object();
-        var languages = Object();
+        let data = Object();
+        const constellationHealth = Object();
+        let demographicsQuery = Object();
+        let languagesQuery = Object();
         let constellationSaved = Object();
 
         data = req.body;
         constellationHealth.first_name = data.first_name;
         constellationHealth.last_name = data.last_name;
         constellationHealth.is_this_your_legal_name_ = data.is_this_your_legal_name_;
+
+        const dob = new Date(data.date_of_birth);
 
         let legal_name = "";
         if(!_.isUndefined(data.your_legal_name) &&  !_.isEmpty(data.your_legal_name )){
@@ -352,12 +409,19 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
 
         constellationHealth.your_legal_name = legal_name;
         constellationHealth.pronouns = data.pronouns;
-        constellationHealth.date_of_birth = data.date_of_birth;
+        if(!_.isEmpty(data.date_of_birth)){
+            data.date_of_birth = new Date(data.date_of_birth);
+            let result: string =   data.date_of_birth.toISOString().split('T')[0];
+            constellationHealth.date_of_birth  = db.raw("TO_DATE( ? ,'YYYY-MM-DD') ", result);
+        }else{
+            constellationHealth.date_of_birth = null;
+        }
+      
+
         constellationHealth.yhcip = data.yhcip;
         constellationHealth.postal_code = data.postal_code;
         constellationHealth.phone_number = data.phone_number;
         constellationHealth.email_address = data.email_address;
-        constellationHealth.language_prefer_to_receive_services = data.language_prefer_to_receive_services;
         constellationHealth.current_family_physician = data.current_family_physician;
         constellationHealth.accessing_health_care = data.accessing_health_care;
         constellationHealth.leave_phone_message = data.leave_phone_message;
@@ -368,38 +432,56 @@ constellationRouter.post("/store", async (req: Request, res: Response) => {
         constellationHealth.health_care_card = data.health_care_card;
         constellationHealth.province = data.province;
 
-        languages = await db(`${SCHEMA_CONSTELLATION}.constellation_health_language`).where({ value: data.language_prefer_to_receive_services }).select().first();
+        languagesQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).where({ VALUE: data.language_prefer_to_receive_services }).select();
+        const language = languagesQuery.length == 1 ? languagesQuery[0] : undefined;
 
-        if(languages){
-            constellationHealth.language_prefer_to_receive_services = languages.id;
+        if (language){
+            constellationHealth.language_prefer_to_receive_services = language.id;
         }
 
         if(data.language_prefer_to_receive_services !== ''){
             constellationHealth.preferred_language = data.other_language;
         }
 
-        constellationHealth.diagnosis = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", data.diagnosis);
+        const diagnosisList = data.diagnosis;
+        const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
+        constellationHealth.diagnosis = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW( ? )`, diagnosisVal) : null;
 
-        demographics = await db(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`).where({ value: data.demographics_groups }).select().first();
+        demographicsQuery = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).where({ VALUE: data.demographics_groups }).select();
+        const demographic = demographicsQuery.length == 1 ? demographicsQuery[0] : undefined;
 
-        if(demographics){
-            constellationHealth.demographics_groups = demographics.id;
+        if (demographic) {
+            constellationHealth.demographics_groups = demographic.id;
         }
 
         constellationHealth.include_family_members = data.include_family_members;
 
-        constellationSaved = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).insert(constellationHealth).into(`${SCHEMA_CONSTELLATION}.constellation_health`).returning('id');
+        constellationSaved = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).insert(constellationHealth).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).returning('ID');
 
         if(!_.isEmpty(data.family_members_json) && data.family_members_json !== "[]"){
-            var idConstellation = constellationSaved.find((obj: any) => {return obj.id;})
+            const idConstellation = constellationSaved.find((obj: any) => {return obj.id;})
 
-            var replaceString = data.family_members_json.replace("}]","}");
-            var stringWithoutBrackets = replaceString.replace("[{","{");
-            var stringSeparation = stringWithoutBrackets.replace("},{","}*SEPARATION*{");
-            var arrayJson = stringSeparation.split("*SEPARATION*");
+            const replaceString = data.family_members_json;
+            const jsonFixed = replaceString.replace(/\'/gm, '"');
+            const jsonFm = JSON.parse(jsonFixed);
 
-            var familyMembers = await dataFamilyMembers(idConstellation.id, arrayJson);
-            var familyMembersSaved = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`).insert(familyMembers).into(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`);
+            let familyMembers = await dataFamilyMembers(idConstellation.id, jsonFm);
+            let familyMembersSaved = false;
+
+            for (const familyMember of familyMembers) {
+                await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`).insert(familyMember).into(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+                .then(() => {
+                    familyMembersSaved = true; 
+                })
+                .catch((e) => {
+                   familyMembersSaved = false;
+                    console.log(e);
+                    res.send( {
+                        status: 400,
+                        message: 'Request could not be processed'
+                    });
+                });
+            }
 
             if(constellationSaved && familyMembersSaved){
                 res.json({ status:200, message: 'Request saved' });
@@ -431,100 +513,54 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
         let status_request = req.body.params.status;
         var dateFrom = req.body.params.dateFrom;
         var dateTo = req.body.params.dateTo;
-        var constellationHealth = Object();
-        var constellationFamily = Object();
-        var sqlFilter = "constellation_health.status <> '4'";
-        
-        if(!_.isEmpty(requests)){
-            sqlFilter += " AND constellation_health.id IN ("+requests+")";
-        }
-        if(dateFrom && dateTo ){
-            sqlFilter += "  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) >= '"+dateFrom+"'  AND to_char(constellation_health.created_at, 'yyyy-mm-dd'::text) <= '"+dateTo+"'";
-        }
-        if(status_request){
-           sqlFilter += "  AND constellation_health.status IN ("+status_request+")";
-        }
-        constellationHealth = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-            .whereRaw(sqlFilter)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.first_name`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.last_name`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.is_this_your_legal_name_`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.your_legal_name`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.pronouns`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.date_of_birth`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.have_yhcip`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.health_care_card`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.yhcip`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.postal_code`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.prefer_to_be_contacted`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.phone_number`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.email_address`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.leave_phone_message`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_language.description as language_prefer_description`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.interpretation_support`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.family_physician`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.current_family_physician`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.accessing_health_care`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.diagnosis`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_demographics.description as demographic_description`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.include_family_members`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health.created_at`,
-                    );
+        var idSubmission: any[] = [];
 
-        constellationHealth.forEach(function (value: any) {
+        let query  = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .select(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FIRST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LAST_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.IS_THIS_YOUR_LEGAL_NAME_`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YOUR_LEGAL_NAME`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PRONOUNS`,
+                    db.raw(`TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH`),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HAVE_YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.HEALTH_CARE_CARD`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.YHCIP`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.POSTAL_CODE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PREFER_TO_BE_CONTACTED`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.PHONE_NUMBER`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.EMAIL_ADDRESS`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.LEAVE_PHONE_MESSAGE`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INTERPRETATION_SUPPORT`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.CURRENT_FAMILY_PHYSICIAN`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ACCESSING_HEALTH_CARE`,
+                    db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.DIAGNOSIS) AS DIAGNOSIS`),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.INCLUDE_FAMILY_MEMBERS`,
+                    db.raw(`TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS CREATED_AT`),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.ID`,
+                )
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 );
 
-            if(value.date_of_birth == 0) {
-                value.date_of_birth =  "N/A";
-            }else{
-                value.date_of_birth =  value.date_of_birth.toLocaleDateString("en-CA");
-            }
-                value.created_at =  value.created_at.toLocaleString("en-CA");
-            
-            if(value.language_prefer_to_receive_services){
-                value.language_prefer_to_receive_services = value.preferred_language;
-            }else{
-                value.language_prefer_to_receive_services = value.language_preferred;
-            }
-            
-            var dataString = "";
-            
-            if(dataString.substr(-1) == ","){
-                dataString = dataString.slice(0, -1);
-            }
-            
-            value.diagnosis = dataString.replace(/,/g, ', ');
-        });
+        if(requests.length > 0){
+            query.whereIn("CONSTELLATION_HEALTH.ID", requests);
+        }
 
-    constellationFamily = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
-        .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health`,'constellation_health_family_members.constellation_health_id','constellation_health.id')
-        .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-        .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-        .select('constellation_health.first_name as familyMemberof' ,
-                'constellation_health_family_members.first_name_family_member',
-                'constellation_health_family_members.last_name_family_member',
-                'constellation_health_family_members.your_legal_name_family_member',
-                'constellation_health_family_members.pronouns_family_member',
-                'constellation_health_family_members.date_of_birth_family_member',
-                'constellation_health_family_members.have_yhcip_family_member',
-                'constellation_health_family_members.health_care_card_family_member',
-                'constellation_health_family_members.province_family_member',
-                'constellation_health_family_members.yhcip_family_member',
-                'constellation_health_family_members.relationship_family_member',
-                'constellation_health_language.description as language_prefer_description_family_member',
-                'constellation_health_family_members.preferred_language_family_member',
-                'constellation_health_family_members.interpretation_support_family_member',
-                'constellation_health_family_members.family_physician_family_member',
-                'constellation_health_family_members.current_family_physician_family_member',
-                'constellation_health_family_members.accessing_health_care_family_member',
-                'constellation_health_family_members.diagnosis_family_member',
-                'constellation_health_demographics.description as demographic_description_family_member')
-        .whereIn('constellation_health_family_members.constellation_health_id', requests);
+        if(dateFrom && dateTo) {
+            query.where(db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') >=  ? AND TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD') <= ?",
+            [dateFrom, dateTo]));
+        }
+
+        if (status_request) {
+            query.whereIn("CONSTELLATION_HEALTH.STATUS", status_request);
+        }
+        const constellationHealth = await query;
 
         var diagnosis = Object();
-
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -533,11 +569,71 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
 
             return arrayResult;
         });
-        constellationHealth.flagFamilyMembers = false;
+
+        constellationHealth.forEach(function (value: any) {
+            idSubmission.push(value.id); 
+            if(value.date_of_birth === null) {
+                value.date_of_birth =  "N/A";
+            }
+            if(value.language_prefer_to_receive_services){
+                value.language_prefer_to_receive_services = value.preferred_language;
+            }else{
+                value.language_prefer_to_receive_services = value.language_preferred;
+            }
+            
+            var dataString = "";
+            const diagnosisList = helper.getJsonDataList(value.diagnosis);
+
+            _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
+
+                if(valueDiagnosis in diagnosis){
+                    dataString += diagnosis[valueDiagnosis]+",";
+                }else{
+                    dataString += valueDiagnosis+",";
+                }
+            });
+
+            if(dataString.substr(-1) == ","){
+                dataString = dataString.slice(0, -1);
+            }
+            
+            value.diagnosis = dataString.replace(/,/g, ', ');
+            delete value.id;
+        });
+
+    let queryFamily = db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+        .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`,'CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID','CONSTELLATION_HEALTH.ID')
+        .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+        .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+        .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME AS FAMILYMEMBEROF' ,
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.FIRST_NAME_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LAST_NAME_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.YOUR_LEGAL_NAME_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.PRONOUNS_FAMILY_MEMBER',
+                db.raw(`TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.DATE_OF_BIRTH_FAMILY_MEMBER, 'YYYY-MM-DD')  AS DATE_OF_BIRTH_FAMILY_MEMBER`),
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.HAVE_YHCIP_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.HEALTH_CARE_CARD_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.PROVINCE_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.YHCIP_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.RELATIONSHIP_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.PREFERRED_LANGUAGE_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.INTERPRETATION_SUPPORT_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.FAMILY_PHYSICIAN_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.CURRENT_FAMILY_PHYSICIAN_FAMILY_MEMBER',
+                'CONSTELLATION_HEALTH_FAMILY_MEMBERS.ACCESSING_HEALTH_CARE_FAMILY_MEMBER',
+                db.raw(`JSON_SERIALIZE(${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS.DIAGNOSIS_FAMILY_MEMBER) AS DIAGNOSIS_FAMILY_MEMBER`),
+                'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER');
+
+        if(!_.isEmpty(idSubmission)){
+            queryFamily.whereIn('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', idSubmission );
+        }   
+        const constellationFamily = await queryFamily;
+        let flagFamilyMembers = false;
 
         //If the client has family members, the same treatment of the corresponding data is given.
         if(constellationFamily.length){
-            constellationHealth.flagFamilyMembers = true;
+            flagFamilyMembers = true;
 
             constellationFamily.forEach(function (value: any, key: any) {
 
@@ -551,9 +647,8 @@ constellationRouter.post("/export/", async (req: Request, res: Response) => {
                 }
 
                 let dataString = "";
-
-                _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
-
+                const diagnosisList = helper.getJsonDataList(value.diagnosis_family_member);
+                _.forEach(diagnosisList, function(valueDiagnosisFm: any, key: any) {
                     if(valueDiagnosisFm in diagnosis){
                         dataString += diagnosis[valueDiagnosisFm]+",";
                     }else{
@@ -592,7 +687,7 @@ constellationRouter.patch("/changeStatus", async (req: Request, res: Response) =
     try {
         var constellation_id = req.body.params.requests;
         var status_id = req.body.params.requestStatus;
-        var updateStatus = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).update({status: status_id}).whereIn("id", constellation_id);
+        var updateStatus = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).update({status: status_id}).whereIn("ID", constellation_id);
         if(updateStatus) {
             let type = "success";
             let message = "Status changed successfully.";
@@ -616,39 +711,40 @@ constellationRouter.post("/duplicates", async (req: Request, res: Response) => {
         var constellationOriginal = Object();
         var constellationDuplicate = Object();
         var constellation = Array();
-        var sqlFilter = "constellation_health.status <> '4'";
 
-        constellationOriginal =  await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
-            .join(`${SCHEMA_CONSTELLATION}.constellation_health`, 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
-            .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-            .select('constellation_health.your_legal_name',
-                    'constellation_health.id',
-                    'constellation_status.description as status_description',
-                    'constellation_health.id as constellation_health_id',
-                    db.raw("to_char(constellation_health.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                        "to_char(constellation_health.date_of_birth, 'YYYY-MM-DD') as date_of_birth"))
-            .whereRaw(sqlFilter)
-            .orderBy("constellation_health.created_at").then((rows: any) => {
+        constellationOriginal =  await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
+            .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
+            .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
+                    'CONSTELLATION_HEALTH.ID',
+                    'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                    'CONSTELLATION_HEALTH.ID AS CONSTELLATION_HEALTH_ID',
+                    db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                    "(CONSTELLATION_DUPLICATED_REQUESTS.ID|| '-'|| CONSTELLATION_HEALTH.ID) AS UNIQUE_ID, "+    
+                    "TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH"))
+            .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
+            .orderBy("CONSTELLATION_HEALTH.CREATED_AT").then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
-                    arrayResult[row['constellation_health_original_id']] = row;
+                    arrayResult[row['original_id']] = row;
                 }
 
                 return arrayResult;
             });
 
-        constellationDuplicate = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
-        .join(`${SCHEMA_CONSTELLATION}.constellation_health`, 'constellation_duplicated_requests.constellation_health_original_id', '=', 'constellation_health.id')
-        .join(`${SCHEMA_CONSTELLATION}.constellation_status`, 'constellation_health.status', '=', 'constellation_status.id')
-        .select('constellation_health.your_legal_name',
-                'constellation_duplicated_requests.id',
-                'constellation_status.description as status_description',
-                'constellation_health.id as constellation_health_id',
-                db.raw("to_char(constellation_health.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,"+
-                    "to_char(constellation_health.date_of_birth, 'YYYY-MM-DD') as date_of_birth"))
-        .whereRaw(sqlFilter)
-        .orderBy("constellation_health.created_at");
+        constellationDuplicate = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
+        .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`, 'CONSTELLATION_DUPLICATED_REQUESTS.ORIGINAL_ID', '=', 'CONSTELLATION_HEALTH.ID')
+        .join(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`, 'CONSTELLATION_HEALTH.STATUS', '=', 'CONSTELLATION_STATUS.ID')
+        .select('CONSTELLATION_HEALTH.YOUR_LEGAL_NAME',
+                'CONSTELLATION_DUPLICATED_REQUESTS.ID',
+                'CONSTELLATION_STATUS.DESCRIPTION AS STATUS_DESCRIPTION',
+                'CONSTELLATION_HEALTH.ID AS CONSTELLATION_HEALTH_ID',
+                db.raw("TO_CHAR(CONSTELLATION_HEALTH.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,"+
+                    "(CONSTELLATION_DUPLICATED_REQUESTS.ID|| '-'|| CONSTELLATION_HEALTH.ID) AS UNIQUE_ID, "+
+                    "TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD') AS DATE_OF_BIRTH"))
+        .where('CONSTELLATION_HEALTH.STATUS', '<>', 4 )
+        .orderBy("CONSTELLATION_HEALTH.CREATED_AT");
 
         let index = 0;
 
@@ -703,48 +799,50 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
         var constellationFamilyOriginal = Object();
         var constellationFamilyDuplicated = Object();
 
-        var duplicateEntry = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
+        var duplicateEntry = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
         .where("id", duplicate_id).then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
-                arrayResult.original = row['constellation_health_original_id'];
-                arrayResult.duplicated = row['constellation_health_duplicated_id'];
+                arrayResult.original = row['original_id'];
+                arrayResult.duplicated = row['duplicated_id'];
             }
 
             return arrayResult;
         });
 
-        constellationEntries = await db(`${SCHEMA_CONSTELLATION}.constellation_health`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health.language_prefer_to_receive_services', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health.demographics_groups', 'constellation_health_demographics.id')
-            //.where('constellation_health.id', constellationHealth_id)
-            .select(`${SCHEMA_CONSTELLATION}.constellation_health.*`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_language.description as language_prefer_description`,
-                    `${SCHEMA_CONSTELLATION}.constellation_health_demographics.description as demographic_description`)
-            .whereIn("constellation_health.id", [duplicateEntry.original, duplicateEntry.duplicated])
-            .whereNot('constellation_health.status', '4');
+        constellationEntries = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH.LANGUAGE_PREFER_TO_RECEIVE_SERVICES', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH.DEMOGRAPHICS_GROUPS', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .select(db.raw("TO_CHAR(CONSTELLATION_HEALTH.DATE_OF_BIRTH, 'YYYY-MM-DD')  AS DATE_OF_BIRTH" ),
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH.*`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION`,
+                    `${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION`)
+            .whereIn("CONSTELLATION_HEALTH.ID", [duplicateEntry.original, duplicateEntry.duplicated])
+            .whereNot('CONSTELLATION_HEALTH.STATUS', '4');
 
-        constellationFamilyOriginal = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-            .select('constellation_health_family_members.*',
-                    'constellation_health_language.description as language_prefer_description_family_member',
-                    'constellation_health_demographics.description as demographic_description_family_member')
-            .where('constellation_health_family_members.constellation_health_id', duplicateEntry.original);
+        constellationFamilyOriginal = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .select(db.raw("TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.DATE_OF_BIRTH_FAMILY_MEMBER, 'YYYY-MM-DD')  AS DATE_OF_BIRTH_FAMILY_MEMBER" ),
+                    'CONSTELLATION_HEALTH_FAMILY_MEMBERS.*',
+                    'CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION_FAMILY_MEMBER',
+                    'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER')
+            .where('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', duplicateEntry.original);
 
-        constellationFamilyDuplicated = await db(`${SCHEMA_CONSTELLATION}.constellation_health_family_members`)
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_language`, 'constellation_health_family_members.language_prefer_to_receive_services_family_member', 'constellation_health_language.id')
-            .leftJoin(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`, 'constellation_health_family_members.demographics_groups_family_member', 'constellation_health_demographics.id')
-            .select('constellation_health_family_members.*',
-                    'constellation_health_language.description as language_prefer_description_family_member',
-                    'constellation_health_demographics.description as demographic_description_family_member')
-            .where('constellation_health_family_members.constellation_health_id', duplicateEntry.duplicated);
+        constellationFamilyDuplicated = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_FAMILY_MEMBERS`)
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.LANGUAGE_PREFER_TO_RECEIVE_SERVICES_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_LANGUAGE.ID')
+            .leftJoin(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`, 'CONSTELLATION_HEALTH_FAMILY_MEMBERS.DEMOGRAPHICS_GROUPS_FAMILY_MEMBER', 'CONSTELLATION_HEALTH_DEMOGRAPHICS.ID')
+            .select(db.raw("TO_CHAR(CONSTELLATION_HEALTH_FAMILY_MEMBERS.DATE_OF_BIRTH_FAMILY_MEMBER, 'YYYY-MM-DD')  AS DATE_OF_BIRTH_FAMILY_MEMBER" ),
+                    'CONSTELLATION_HEALTH_FAMILY_MEMBERS.*',
+                    'CONSTELLATION_HEALTH_LANGUAGE.DESCRIPTION AS LANGUAGE_PREFER_DESCRIPTION_FAMILY_MEMBER',
+                    'CONSTELLATION_HEALTH_DEMOGRAPHICS.DESCRIPTION AS DEMOGRAPHIC_DESCRIPTION_FAMILY_MEMBER')
+            .where('CONSTELLATION_HEALTH_FAMILY_MEMBERS.CONSTELLATION_HEALTH_ID', duplicateEntry.duplicated);
 
         let dataString = "";
         var diagnosis = Object();
 
-        diagnosis = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
+        diagnosis = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -756,8 +854,8 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
 
         if(constellationEntries){
             constellationEntries.forEach(function (value: any) {
-
-                _.forEach(value.diagnosis, function(valueDiagnosis: any, key: any) {
+                const diagnosisList = helper.getJsonDataList(value.diagnosis);
+                _.forEach(diagnosisList, function(valueDiagnosis: any, key: any) {
                     if(valueDiagnosis in diagnosis){
                         dataString += diagnosis[valueDiagnosis]+",";
                     }else{
@@ -786,8 +884,9 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
                             }
     
                             let dataString = "";
-    
-                            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+                            const diagnosisList = helper.getJsonDataList(value.diagnosis_family_member);
+
+                            _.forEach(diagnosisList, function(valueDiagnosisFm: any, key: any) {
     
                                 if(valueDiagnosisFm in diagnosis){
                                     dataString += diagnosis[valueDiagnosisFm]+",";
@@ -818,8 +917,8 @@ constellationRouter.get("/duplicates/details/:duplicate_id",[param("duplicate_id
                             }
 
                             let dataString = "";
-
-                            _.forEach(value.diagnosis_family_member, function(valueDiagnosisFm: any, key: any) {
+                            const diagnosisList = helper.getJsonDataList(value.diagnosis_family_member);
+                            _.forEach(diagnosisList, function(valueDiagnosisFm: any, key: any) {
 
                                 if(valueDiagnosisFm in diagnosis){
                                     dataString += diagnosis[valueDiagnosisFm]+",";
@@ -870,10 +969,12 @@ constellationRouter.get("/duplicates/validateWarning/:duplicate_id",[param("dupl
         var message = "";
         var type = "error";
 
-        warning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`)
+        warning = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`)
             .where('id', duplicate_id)
             .select()
-            .first();
+            .then((data:any) => {
+                return data[0];
+            });
 
         if(!warning){
             flagExists = false;
@@ -911,18 +1012,19 @@ constellationRouter.patch("/duplicates/primary", async (req: Request, res: Respo
 
         if(!request){
             message = "Warning deleted successfully.";
-            rejectWarning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).del();
+            rejectWarning = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).del();
         }else{
-            var warningRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).first();
-
+            var warningRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).then((data:any) => {
+                return data[0];
+            });
             if(type == 'O'){
-                updateRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).update({status: "4"}).where("id", warningRequest.constellation_health_duplicated_id);
+                updateRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).update({status: "4"}).where("ID", warningRequest.duplicated_id);
             }else if(type == 'D'){
-                updateRequest = await db(`${SCHEMA_CONSTELLATION}.constellation_health`).update({status: "4"}).where("id", warningRequest.constellation_health_original_id);
+                updateRequest = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH`).update({status: "4"}).where("ID", warningRequest.original_id);
             }
 
             if(updateRequest){
-                rejectWarning = await db(`${SCHEMA_CONSTELLATION}.constellation_duplicated_requests`).where("id", warning).del();
+                rejectWarning = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_DUPLICATED_REQUESTS`).where("id", warning).del();
             }
 
         }
@@ -951,12 +1053,10 @@ constellationRouter.patch("/duplicates/primary", async (req: Request, res: Respo
 async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any){
 
     var familyMembersInsert = Array();
-    var i = 0;
-    var dataMember = Object();
     var languages = Object();
     var demographics = Object();
 
-    languages = await db(`${SCHEMA_CONSTELLATION}.constellation_health_language`).select().then((rows: any) => {
+    languages = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_LANGUAGE`).select().then((rows: any) => {
                 let arrayResult = Object();
 
                 for (let row of rows) {
@@ -966,7 +1066,7 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
                 return arrayResult;
     });
 
-    demographics = await db(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`).select().then((rows: any) => {
+    demographics = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).select().then((rows: any) => {
             let arrayResult = Object();
 
             for (let row of rows) {
@@ -976,59 +1076,49 @@ async function dataFamilyMembers(idConstellationHealth:number, arrayMembers:any)
             return arrayResult;
     });
 
-    for (let index = 0; index < arrayMembers.length; index++) {
+    if (Array.isArray(arrayMembers)) {
+        for (const dataMember of arrayMembers) {
+            dataMember.constellation_health_id = +idConstellationHealth;
+            if(!_.isEmpty( dataMember.date_of_birth_family_member)){
+                dataMember.date_of_birth_family_member = new Date(dataMember.date_of_birth_family_member);
+                let result: string =   dataMember.date_of_birth_family_member.toISOString().split('T')[0];
+                dataMember.date_of_birth_family_member  = db.raw("TO_DATE(?,'YYYY-MM-DD') ",result);
+            }else{
+                dataMember.date_of_birth_family_member = null;
+            }
+            if(_.isEmpty(dataMember.your_legal_name_family_member)){
+                dataMember.your_legal_name_family_member = dataMember.first_name_family_member + " " + dataMember.last_name_family_member;
+            }
+            if (dataMember.language_prefer_to_receive_services_family_member in languages) {
+                dataMember.language_prefer_to_receive_services_family_member = languages[dataMember.language_prefer_to_receive_services_family_member];
+            } else {
+                dataMember.language_prefer_to_receive_services_family_member = null;
+            }
+            if( !_.isEmpty(dataMember.other_language_family_member)){
+                dataMember.preferred_language_family_member = dataMember.other_language_family_member;
+            }
+            const diagnosisList = dataMember.diagnosis_family_member;
+            const diagnosisVal = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", diagnosisList);
+            dataMember.diagnosis_family_member = diagnosisVal ? db.raw(`UTL_RAW.CAST_TO_RAW(?)`, diagnosisVal) : null;
 
-        dataMember = (0, eval)('(' + arrayMembers[index] + ')');
-        let constellationFamilyMembers = Object();
+            if (dataMember.demographics_groups_family_member in demographics) {
+                dataMember.demographics_groups_family_member = demographics[dataMember.demographics_groups_family_member];
+            }
 
-        constellationFamilyMembers.constellation_health_id = idConstellationHealth;
-        constellationFamilyMembers.first_name_family_member = dataMember['first_name_family_member'];
-        constellationFamilyMembers.last_name_family_member = dataMember['last_name_family_member'];
-        constellationFamilyMembers.is_this_your_legal_name__family_member = dataMember['is_this_your_legal_name_family_member'];
+            // Remove unused properties to prepare for the insert.
+            delete dataMember.personal_info_text_family_member;
+            delete dataMember.other_language_family_member;
+            delete dataMember.demographics_text_family_member;
 
-        let legal_name = dataMember['your_legal_name_family_member'];
-        
-        
-        if(!_.isEmpty(legal_name)){
-            legal_name = dataMember['first_name_family_member']+" "+dataMember['last_name_family_member'];
+            familyMembersInsert.push(dataMember);
         }
-
-        constellationFamilyMembers.your_legal_name_family_member = legal_name;
-        constellationFamilyMembers.pronouns_family_member = dataMember['pronouns_family_member'];
-        constellationFamilyMembers.date_of_birth_family_member = dataMember['date_of_birth_family_member'];
-        constellationFamilyMembers.yhcip_family_member = dataMember['yhcip_family_member'];
-        constellationFamilyMembers.relationship_family_member = dataMember['relationship_family_member'];
-        constellationFamilyMembers.current_family_physician_family_member = dataMember['current_family_physician_family_member'];
-        constellationFamilyMembers.accessing_health_care_family_member = dataMember['accessing_health_care_family_member'];
-        constellationFamilyMembers.interpretation_support_family_member = dataMember['interpretation_support_family_member'];
-        constellationFamilyMembers.family_physician_family_member = dataMember['family_physician_family_member'];
-        constellationFamilyMembers.have_yhcip_family_member = dataMember['have_yhcip_family_member'];
-        constellationFamilyMembers.health_care_card_family_member = dataMember['health_care_card_family_member'];
-        constellationFamilyMembers.province_family_member = dataMember['province_family_member'];
-
-        if(dataMember['language_prefer_to_receive_services_family_member'] in languages){
-            constellationFamilyMembers.language_prefer_to_receive_services_family_member = languages[dataMember['language_prefer_to_receive_services_family_member']];
-        }else{
-            constellationFamilyMembers.language_prefer_to_receive_services_family_member = null;
-        }
-
-        constellationFamilyMembers.preferred_language_family_member = dataMember['other_language_family_member'];
-
-        constellationFamilyMembers.diagnosis_family_member = await getMultipleIdsByModel("ConstellationHealthDiagnosisHistory", dataMember['diagnosis_family_member']);//'{1,6,"custom diagnosis"}';
-
-        if(dataMember['demographics_groups_family_member'] in demographics){
-            constellationFamilyMembers.demographics_groups_family_member = demographics[dataMember['demographics_groups_family_member']];
-        }
-
-        familyMembersInsert.push(constellationFamilyMembers);
     }
-
     return familyMembersInsert;
 }
 
 async function getAllStatus(){
   var constellationStatus = Array();
-  constellationStatus = await db(`${SCHEMA_CONSTELLATION}.constellation_status`).select().then((rows: any) => {
+  constellationStatus = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_STATUS`).select().then((rows: any) => {
     let arrayResult = Array();
     for (let row of rows) {
         arrayResult.push({text: row['description'], value: row['id']});
@@ -1046,35 +1136,26 @@ async function getAllStatus(){
  */
 async function getMultipleIdsByModel(model: string, names: any) {
     var others = "";
-    var auxNames = names;
-    var data = Object();
-    var diagnosisHistory = Object();
-    var demographics = Object();
+    var data: any[] = [];
+    var catalog = Object();
 
-    if(model == "ConstellationHealthDiagnosisHistory") {
-        diagnosisHistory = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`).select().then((rows: any) => {
-                                    let arrayResult = Object();
-                                    for (let row of rows) {
-                                        arrayResult[row['value']] = row['description'];
-                                    }
-
-                                    return arrayResult;
-                                });
-
-        names.forEach(function (value: any, key: any) {
-            if(!diagnosisHistory.hasOwnProperty(value)){
-                others = names[key];
-                names.splice(key, 1);
-            }
-        });
-
-        data = await db(`${SCHEMA_CONSTELLATION}.constellation_health_diagnosis_history`)
+    if(model == "ConstellationHealthDiagnosisHistory") {      
+        if (Array.isArray(names) && names.length > 0) {
+            catalog = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DIAGNOSIS_HISTORY`)
                         .select()
-                        .whereIn('value', names);
+                        .whereIn('VALUE', names);
+            names.forEach(function (value: any, key: any) {
+                if(!_.find(catalog, { 'value':value })){
+                    others = names[key];
+                    names.splice(key, 1);
+                }else{
+                    data.push(_.find(catalog, { 'value':value }));
+                }
+            });
 
-    }else if(model == "ConstellationHealthDemographics") {
-
-        demographics = await db(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`).select().then((rows: any) => {
+        }
+    } else if (model == "ConstellationHealthDemographics") {
+        catalog = await db(`${SCHEMA_CONSTELLATION}.CONSTELLATION_HEALTH_DEMOGRAPHICS`).select().then((rows: any) => {
                             let arrayResult = Object();
                             for (let row of rows) {
                                 arrayResult[row['value']] = row['description'];
@@ -1084,18 +1165,15 @@ async function getMultipleIdsByModel(model: string, names: any) {
                         });
 
         names.forEach(function (value: any, key: any) {
-            if(!demographics.hasOwnProperty(value)){
+            if(!catalog.hasOwnProperty(value)){
                 others = names[key];
                 names.splice(key, 1);
             }
         });
 
-        data =  await db(`${SCHEMA_CONSTELLATION}.constellation_health_demographics`)
-                        .select()
-                        .whereIn('value', names);
     }
 
-    if(data.length){
+    if(data.length){  
         var modelValues = "";
         var max = data.length;
         var count = 1;
@@ -1112,15 +1190,13 @@ async function getMultipleIdsByModel(model: string, names: any) {
                 count++;
             });
         }
-
         if(others !== "") {
-            return "{"+modelValues+","+others+"}";
+            return "["+modelValues+',"'+others+'"]';
         }else{
-            return "{"+modelValues+"}";
+            return "["+modelValues+"]";
         }
-
-    }else if(!data.length && auxNames.length > 0){
-        return "{"+auxNames[0]+"}";
+    }else if(!data.length && others.length > 0){
+        return '["'+others+'"]';
     }else{
         return null;
     }

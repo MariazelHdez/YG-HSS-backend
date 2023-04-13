@@ -2,7 +2,9 @@
 <template>
     <div class="midwifery-service">
         <span class="title-service">Midwifery Requests</span>
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+
         <Notifications ref="notifier"></Notifications>
         <v-row>
             <v-col
@@ -235,8 +237,6 @@ export default {
                 this.itemsUnfiltered = resp.data.data;
                 this.itemsBulk = resp.data.dataStatus;
                 this.statusFilter = resp.data.dataStatus.filter((element) => element.value != 4);
-                //this.pagination.totalLength = resp.data.meta.count;
-                //this.totalLength = resp.data.meta.count;
                 this.loading = false;
             })
             .catch((err) => console.error(err))

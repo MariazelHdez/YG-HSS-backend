@@ -1,14 +1,19 @@
-import { UserPermissionRepository } from './../repository/UserPermissionRepository';
+import { UserPermissionRepository } from './../repository/oracle/UserPermissionRepository';
 import { Express, NextFunction, Request, Response } from "express"
 import * as ExpressSession from "express-session";
 import { AuthUser } from "../models/auth";
 import { AUTH_REDIRECT, FRONTEND_URL } from "../config";
 import axios from 'axios';
+var RateLimit = require('express-rate-limit');
 
 const {auth} = require('express-openid-connect')
 const userRepo = new UserPermissionRepository();
 
 export function configureAuthentication(app: Express) {
+  app.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+  }));
   app.use(ExpressSession.default({
       secret: 'supersecret',
       resave: true,

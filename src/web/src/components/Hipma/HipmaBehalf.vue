@@ -25,8 +25,8 @@
 						<tbody v-if="hipmaDuplicated">
 							<tr>
 								<td>Situation</td>
-								<td>{{ hipma.HipmaSituations }}</td>
-								<td>{{ hipmaDuplicated.HipmaSituations }}</td>
+								<td>{{ hipma.hipma_situations_desc }}</td>
+								<td>{{ hipmaDuplicated.hipma_situations_desc }}</td>
 							</tr>
 							<tr>
 								<td>First Name Behalf</td>
@@ -81,7 +81,7 @@
                         <tbody v-else >
 							<tr>
 								<td>Situation</td>
-								<td>{{ hipma.HipmaSituations }}</td>
+								<td>{{ hipma.hipma_situations_desc }}</td>
 							</tr>
 							<tr>
 								<td>First Name Behalf</td>

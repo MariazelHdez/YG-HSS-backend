@@ -1,14 +1,17 @@
-import { AuditRepository } from './../repository/AuditRepository';
+import { AuditRepository } from './../repository/oracle/AuditRepository';
 import { groupBy } from '../utils/groupBy';
 import express, { Request, Response } from "express";
 import { param } from "express-validator";
-import { SubmissionStatusRepository } from "../repository/SubmissionStatusRepository";
-
+import { SubmissionStatusRepository } from "../repository/oracle/SubmissionStatusRepository";
+var RateLimit = require('express-rate-limit');
 const submissionStatusRepo = new SubmissionStatusRepository();
 const auditRepo = new AuditRepository();
 
 export const generalRouter = express.Router();
-
+generalRouter.use(RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5000
+}));
 /**
  * Obtain data to show in the index view
  *

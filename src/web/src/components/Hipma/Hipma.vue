@@ -2,7 +2,7 @@
 <template>
     <div class="hipma-service">
         <span class="title-service">HIPMA Requests</span>
-        <ModuleAlert v-show="flagAlert" v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
+        <ModuleAlert v-bind:alertMessage="alertMessage"  v-bind:alertType="alertType"/>
         <Notifications ref="notifier"></Notifications>
 
         <v-row>
@@ -104,8 +104,6 @@
             </v-col>
         </v-row>
 
-        <!-- <v-text-field v-model="search" label="Search"></v-text-field> -->
-
         <v-data-table
             dense
             :items="items"
@@ -129,7 +127,6 @@
 <script>
 const axios = require("axios");
 import Notifications from "../Notifications.vue";
-
 import ModuleAlert from '../General/ModuleAlert.vue';
 import { HIPMA_URL } from "../../urls.js";
 import { HIPMA_CHANGE_STATUS_URL } from "../../urls.js";
@@ -144,7 +141,7 @@ export default {
     menuEnd: false,
     items: [],
     alertMessage: "",
-    alertType: "",
+    alertType: null,
     search: "",
     options: {},
     flagAlert: false,
@@ -159,9 +156,9 @@ export default {
     loadingApply: false,
     headers: [
         { text: "Confirmation Number", value: "confirmation_number", sortable: true},
-        { text: "Request Type", value: "HipmaRequestType", sortable: true},
-        { text: "Request Access to personal information", value: "AccessPersonalHealthInformation", sortable: true},
-        { text: "Applicant", value: "applicantfullname", sortable: true},
+        { text: "Request Type", value: "hipma_request_type_desc", sortable: true},
+        { text: "Request Access to personal information", value: "access_personal_health_information", sortable: true},
+        { text: "Applicant", value: "applicant_full_name", sortable: true},
         { text: "Created", value: "created_at", sortable: true},
         { text: "", value: "showUrl", sortable: false},
     ],
