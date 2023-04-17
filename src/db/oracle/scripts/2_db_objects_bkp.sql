@@ -1,132 +1,4 @@
---------------------------------------------------------
---  File created - Monday-March-20-2023   
---------------------------------------------------------
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75827";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75829";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75831";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75835";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75839";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75841";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75843";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75847";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75851";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75853";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75855";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75859";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_75861";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_76201";
-DROP SEQUENCE "CONSTELLATION_HEALTH"."ISEQ$$_77090";
-DROP SEQUENCE "GENERAL"."ISEQ$$_75922";
-DROP SEQUENCE "GENERAL"."ISEQ$$_75926";
-DROP SEQUENCE "GENERAL"."ISEQ$$_75928";
-DROP SEQUENCE "GENERAL"."ISEQ$$_75930";
-DROP SEQUENCE "GENERAL"."ISEQ$$_76701";
-DROP SEQUENCE "GENERAL"."ISEQ$$_76706";
-DROP SEQUENCE "GENERAL"."ISEQ$$_76710";
-DROP SEQUENCE "GENERAL"."ISEQ$$_76716";
-DROP SEQUENCE "GENERAL"."ISEQ$$_76722";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75877";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75885";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75887";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75889";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75893";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75895";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75897";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75899";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75901";
-DROP SEQUENCE "HIPMA"."ISEQ$$_75903";
-DROP SEQUENCE "HIPMA"."ISEQ$$_76581";
-DROP SEQUENCE "HIPMA"."ISEQ$$_77100";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75863";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75865";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75867";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75869";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75871";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75873";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75875";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_75920";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_76010";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_76593";
-DROP SEQUENCE "MIDWIFERY"."ISEQ$$_77103";
-DROP VIEW "CONSTELLATION_HEALTH"."STATUS_V";
-DROP VIEW "GENERAL"."AUDIT_TIMELINE_V";
-DROP VIEW "GENERAL"."SUBMISSIONS_MONTH_V";
-DROP VIEW "GENERAL"."SUBMISSIONS_STATUS_MONTH_V";
-DROP VIEW "GENERAL"."SUBMISSIONS_STATUS_WEEK_V";
-DROP VIEW "GENERAL"."SUBMISSIONS_WEEK_V";
-DROP VIEW "GENERAL"."USER_PERMISSIONS_V";
-DROP VIEW "HIPMA"."STATUS_V";
-DROP VIEW "MIDWIFERY"."STATUS_V";
-DROP INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_DUPLICATED_REQUESTS_PK";
-DROP INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_PK";
-DROP INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_REV_PK";
-DROP INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_REV_STATUS_INDEX";
-DROP INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_STATUS_INDEX";
-DROP INDEX "CONSTELLATION_HEALTH"."SYS_IL0000075847C00024$$";
-DROP INDEX "CONSTELLATION_HEALTH"."SYS_IL0000075855C00020$$";
-DROP INDEX "CONSTELLATION_HEALTH"."SYS_IL0000076201C00025$$";
-DROP INDEX "GENERAL"."CONFIG_PK";
-DROP INDEX "GENERAL"."EVENTS_PK";
-DROP INDEX "GENERAL"."PERMISSION_DATA_INDEX1";
-DROP INDEX "GENERAL"."PERMISSION_DATA_INDEX2";
-DROP INDEX "GENERAL"."PERMISSION_DATA_INDEX3";
-DROP INDEX "GENERAL"."PERMISSION_DATA_PK";
-DROP INDEX "GENERAL"."ROLES_DATA_INDEX1";
-DROP INDEX "GENERAL"."ROLES_DATA_PK";
-DROP INDEX "GENERAL"."ROLE_PERMISSIONS_INDEX1";
-DROP INDEX "GENERAL"."ROLE_PERMISSIONS_INDEX2";
-DROP INDEX "GENERAL"."ROLE_PERMISSIONS_PK";
-DROP INDEX "GENERAL"."SYS_IL0000075922C00009$$";
-DROP INDEX "GENERAL"."USER_DATA_INDEX1";
-DROP INDEX "GENERAL"."USER_DATA_INDEX2";
-DROP INDEX "GENERAL"."USER_DATA_PK";
-DROP INDEX "GENERAL"."USER_ROLES_INDEX1";
-DROP INDEX "GENERAL"."USER_ROLES_INDEX2";
-DROP INDEX "GENERAL"."USER_ROLES_INDEX3";
-DROP INDEX "GENERAL"."USER_ROLES_PK";
-DROP INDEX "HIPMA"."HIPMA_DUPLICATED_REQUESTS_PK";
-DROP INDEX "HIPMA"."SYS_IL0000075877C00025$$";
-DROP INDEX "HIPMA"."SYS_IL0000075877C00026$$";
-DROP INDEX "HIPMA"."SYS_IL0000075877C00027$$";
-DROP INDEX "HIPMA"."SYS_IL0000075889C00007$$";
-DROP INDEX "HIPMA"."SYS_IL0000076581C00026$$";
-DROP INDEX "HIPMA"."SYS_IL0000076581C00027$$";
-DROP INDEX "HIPMA"."SYS_IL0000076581C00028$$";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_DUPLICATED_REQUESTS_PK";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_CONFIRMATION_NUMBER";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_CREATED";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_DOB";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_FIRST_NAME";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_LAST_NAME";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_PK";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_CONFIRMATION_NUMBER";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_CREATED";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_DOB";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_FIRST_NAME";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_LAST_NAME";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_PK";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_STATUS";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_REV_UPDATED";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_STATUS";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_SERVICES_UPDATED";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_STATUS_DESCRIPTION";
-DROP INDEX "MIDWIFERY"."MIDWIFERY_STATUS_PK";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076010C00024$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076010C00028$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076010C00034$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076010C00035$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076010C00036$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076593C00025$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076593C00029$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076593C00035$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076593C00036$$";
-DROP INDEX "MIDWIFERY"."SYS_IL0000076593C00037$$";
-DROP TRIGGER "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_LOG_SUBMISSIONS";
-DROP TRIGGER "HIPMA"."HEALTH_INFORMATION_LOG_SUBMISSIONS";
-DROP TRIGGER "MIDWIFERY"."MIDWIFERY_SERVICES_LOG_SUBMISSIONS";
-DROP FUNCTION "GENERAL"."GETTRANSFORMVALUE";
-DROP FUNCTION "GENERAL"."GETVALUEFORRULENAME";
-DROP FUNCTION "GENERAL"."GETVALUEFORRULESTATUS";
+
 --------------------------------------------------------
 --  DDL for View STATUS_V
 --------------------------------------------------------
@@ -179,13 +51,13 @@ FROM
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -193,13 +65,13 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM HIPMA.health_information ch
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner     
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -207,13 +79,13 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     to_char(ch.created_at, 'WW') AS date_code,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM MIDWIFERY.midwifery_services ch
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), (to_char(ch.created_at, 'WW')), cd.val_str1, cc.val_str1, cp.val_str1
 ;
 --------------------------------------------------------
 --  DDL for View SUBMISSIONS_STATUS_MONTH_V
@@ -226,14 +98,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     cs.description AS status,
-    to_char(ch.created_at, 'yyyymm') AS monthid
+    to_char(ch.created_at, 'yyyy-mm') AS monthid
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN CONSTELLATION_HEALTH.constellation_status cs ON cs.id = ch.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = cs.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, cs.description
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, cs.description
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -241,14 +113,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     st.description AS status,
-    to_char(ms.created_at, 'yyyymm') AS monthid
+    to_char(ms.created_at, 'yyyy-mm') AS monthid
    FROM MIDWIFERY.midwifery_services ms
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN MIDWIFERY.midwifery_status st ON st.id = ms.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = st.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(ms.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
+  GROUP BY tab.owner, (to_char(ms.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
@@ -256,14 +128,14 @@ UNION
     cp.val_str1 AS permissions,
     count(1) AS submissions,
     st.description AS status,
-    to_char(hi.created_at, 'yyyymm') AS monthid
+    to_char(hi.created_at, 'yyyy-mm') AS monthid
    FROM HIPMA.health_information hi
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN HIPMA.hipma_status st ON st.id = hi.status
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'STATUS_CHART_COLOR' AND cc.name = tab.owner AND cc.val_int1 = st.id
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
-  GROUP BY tab.owner, (to_char(hi.created_at, 'yyyymm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
+  GROUP BY tab.owner, (to_char(hi.created_at, 'yyyy-mm')), cd.val_str1, cc.val_str1, cp.val_str1, st.description
 ;
 --------------------------------------------------------
 --  DDL for View SUBMISSIONS_STATUS_WEEK_V
@@ -325,42 +197,42 @@ UNION
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM CONSTELLATION_HEALTH.constellation_health ch
      LEFT JOIN all_tables tab ON tab.table_name = 'CONSTELLATION_HEALTH'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM HIPMA.health_information ch
      LEFT JOIN all_tables tab ON tab.table_name = 'HEALTH_INFORMATION'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 UNION
  SELECT tab.owner AS id,
     cd.val_str1 AS department,
     cc.val_str1 AS color,
     cp.val_str1 AS permissions,
     count(1) AS submissions,
-    to_char(ch.created_at, 'yyyymmdd') AS date_code
+    to_char(ch.created_at, 'yyyy-mm-dd') AS date_code
    FROM MIDWIFERY.midwifery_services ch
      LEFT JOIN all_tables tab ON tab.table_name = 'MIDWIFERY_SERVICES'
      LEFT JOIN GENERAL.config cd ON cd.type = 'SCHEMA_TITLE' AND cd.name = tab.owner
      LEFT JOIN GENERAL.config cc ON cc.type = 'SCHEMA_CHART_COLOR' AND cc.name = tab.owner
      LEFT JOIN GENERAL.config cp ON cp.type = 'SCHEMA_PERMISSION_VIEW' AND cp.name = tab.owner
   WHERE ch.created_at > (CURRENT_DATE - interval '7' DAY)
-  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyymmdd')), cd.val_str1, cc.val_str1, cp.val_str1
+  GROUP BY tab.owner, (to_char(ch.created_at, 'yyyy-mm-dd')), cd.val_str1, cc.val_str1, cp.val_str1
 ;
 --------------------------------------------------------
 --  DDL for View USER_PERMISSIONS_V
@@ -430,24 +302,7 @@ FROM
 
   CREATE INDEX "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_STATUS_INDEX" ON "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH" ("STATUS") 
   ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075847C00024$$
---------------------------------------------------------
 
-  CREATE UNIQUE INDEX "CONSTELLATION_HEALTH"."SYS_IL0000075847C00024$$" ON "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075855C00020$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "CONSTELLATION_HEALTH"."SYS_IL0000075855C00020$$" ON "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_FAMILY_MEMBERS" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076201C00025$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "CONSTELLATION_HEALTH"."SYS_IL0000076201C00025$$" ON "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_REV" (
-  ;
 --------------------------------------------------------
 --  DDL for Index CONFIG_PK
 --------------------------------------------------------
@@ -514,12 +369,7 @@ FROM
 
   CREATE UNIQUE INDEX "GENERAL"."ROLE_PERMISSIONS_PK" ON "GENERAL"."ROLE_PERMISSIONS" ("ID") 
   ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075922C00009$$
---------------------------------------------------------
 
-  CREATE UNIQUE INDEX "GENERAL"."SYS_IL0000075922C00009$$" ON "GENERAL"."EVENTS" (
-  ;
 --------------------------------------------------------
 --  DDL for Index USER_DATA_INDEX1
 --------------------------------------------------------
@@ -568,48 +418,7 @@ FROM
 
   CREATE UNIQUE INDEX "HIPMA"."HIPMA_DUPLICATED_REQUESTS_PK" ON "HIPMA"."HIPMA_DUPLICATED_REQUESTS" ("ID") 
   ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075877C00025$$
---------------------------------------------------------
 
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000075877C00025$$" ON "HIPMA"."HEALTH_INFORMATION" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075877C00026$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000075877C00026$$" ON "HIPMA"."HEALTH_INFORMATION" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075877C00027$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000075877C00027$$" ON "HIPMA"."HEALTH_INFORMATION" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000075889C00007$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000075889C00007$$" ON "HIPMA"."HIPMA_FILES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076581C00026$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000076581C00026$$" ON "HIPMA"."HEALTH_INFORMATION_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076581C00027$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000076581C00027$$" ON "HIPMA"."HEALTH_INFORMATION_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076581C00028$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "HIPMA"."SYS_IL0000076581C00028$$" ON "HIPMA"."HEALTH_INFORMATION_REV" (
-  ;
 --------------------------------------------------------
 --  DDL for Index MIDWIFERY_DUPLICATED_REQUESTS_PK
 --------------------------------------------------------
@@ -724,66 +533,7 @@ FROM
 
   CREATE UNIQUE INDEX "MIDWIFERY"."MIDWIFERY_STATUS_PK" ON "MIDWIFERY"."MIDWIFERY_STATUS" ("ID") 
   ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076010C00024$$
---------------------------------------------------------
 
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076010C00024$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076010C00028$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076010C00028$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076010C00034$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076010C00034$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076010C00035$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076010C00035$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076010C00036$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076010C00036$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076593C00025$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076593C00025$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076593C00029$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076593C00029$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076593C00035$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076593C00035$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076593C00036$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076593C00036$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES_REV" (
-  ;
---------------------------------------------------------
---  DDL for Index SYS_IL0000076593C00037$$
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "MIDWIFERY"."SYS_IL0000076593C00037$$" ON "MIDWIFERY"."MIDWIFERY_SERVICES_REV" (
-  ;
 --------------------------------------------------------
 --  DDL for Trigger CONSTELLATION_HEALTH_LOG_SUBMISSIONS
 --------------------------------------------------------
@@ -834,6 +584,35 @@ END;
 /
 ALTER TRIGGER "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_LOG_SUBMISSIONS" ENABLE;
 --------------------------------------------------------
+--  CONSTELLATION_HEALTH_DUPLICATED_REQUESTS
+--------------------------------------------------------
+
+CREATE OR REPLACE TRIGGER "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_DUPLICATED_REQUESTS"
+AFTER INSERT ON CONSTELLATION_HEALTH.CONSTELLATION_HEALTH
+FOR EACH ROW
+DECLARE
+  exist_record NUMBER;
+  oldest_request NUMBER;
+BEGIN
+	SELECT COUNT(*)
+	INTO exist_record
+	FROM CONSTELLATION_HEALTH.CONSTELLATION_HEALTH
+	WHERE  STATUS  <> 4  AND YOUR_LEGAL_NAME  = :NEW.YOUR_LEGAL_NAME AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH ;
+	IF exist_record > 0 THEN
+		SELECT ID
+		INTO oldest_request
+		FROM CONSTELLATION_HEALTH.CONSTELLATION_HEALTH
+		WHERE STATUS <> 4  AND YOUR_LEGAL_NAME = :NEW.YOUR_LEGAL_NAME  AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH AND  ROWNUM <= 1
+		ORDER BY CREATED_AT ;
+
+		INSERT INTO CONSTELLATION_HEALTH.CONSTELLATION_DUPLICATED_REQUESTS  (ORIGINAL_ID , DUPLICATED_ID) VALUES (oldest_request, :NEW.ID);
+
+    END IF;
+
+END;
+/
+ALTER TRIGGER "CONSTELLATION_HEALTH"."CONSTELLATION_HEALTH_DUPLICATED_REQUESTS" ENABLE;
+--------------------------------------------------------
 --  DDL for Trigger HEALTH_INFORMATION_LOG_SUBMISSIONS
 --------------------------------------------------------
 
@@ -882,6 +661,36 @@ BEGIN
 END;
 /
 ALTER TRIGGER "HIPMA"."HEALTH_INFORMATION_LOG_SUBMISSIONS" ENABLE;
+--------------------------------------------------------
+--  Trigger HEALTH_INFORMATION_DUPLICATED_REQUESTS
+--------------------------------------------------------
+
+CREATE OR REPLACE EDITIONABLE TRIGGER "HIPMA"."HEALTH_INFORMATION_DUPLICATED_REQUESTS"
+AFTER INSERT ON HIPMA.HEALTH_INFORMATION
+FOR EACH ROW
+DECLARE
+exist_record NUMBER;
+oldest_request NUMBER;
+
+BEGIN
+	SELECT COUNT(*)
+	INTO exist_record
+	FROM HIPMA.HEALTH_INFORMATION
+	WHERE  status = 1 AND FIRST_NAME = :NEW.FIRST_NAME  AND LAST_NAME  = :NEW.LAST_NAME AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH;
+	IF exist_record > 0 THEN
+		SELECT health_information.id
+		INTO oldest_request
+		FROM HIPMA.health_information
+		WHERE STATUS = 1 AND FIRST_NAME = :NEW.FIRST_NAME AND LAST_NAME  = :NEW.LAST_NAME AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH AND  ROWNUM <= 1
+		ORDER BY CREATED_AT ;
+
+		INSERT INTO HIPMA.HIPMA_DUPLICATED_REQUESTS (ORIGINAL_ID , DUPLICATED_ID) VALUES (oldest_request, :NEW.ID);
+
+  END IF;
+
+END;
+/
+ALTER TRIGGER "HIPMA"."HEALTH_INFORMATION_DUPLICATED_REQUESTS" ENABLE;
 --------------------------------------------------------
 --  DDL for Trigger MIDWIFERY_SERVICES_LOG_SUBMISSIONS
 --------------------------------------------------------
@@ -932,23 +741,68 @@ END;
 /
 ALTER TRIGGER "MIDWIFERY"."MIDWIFERY_SERVICES_LOG_SUBMISSIONS" ENABLE;
 --------------------------------------------------------
+--  Trigger MIDWIFERY_SERVICES_DUPLICATED_REQUESTS
+--------------------------------------------------------
+
+CREATE OR REPLACE EDITIONABLE TRIGGER "MIDWIFERY"."MIDWIFERY_SERVICES_DUPLICATED_REQUESTS"
+AFTER INSERT ON MIDWIFERY.MIDWIFERY_SERVICES
+FOR EACH ROW
+DECLARE 
+exist_record NUMBER;
+oldest_request NUMBER;
+BEGIN
+  
+SELECT COUNT(*) 
+  INTO exist_record  
+  FROM MIDWIFERY.MIDWIFERY_SERVICES
+  WHERE  status = 1 AND FIRST_NAME = :NEW.FIRST_NAME  AND LAST_NAME  = :NEW.LAST_NAME AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH;
+  IF exist_record > 0 THEN
+    SELECT MIDWIFERY_SERVICES.id 
+    INTO oldest_request
+    FROM MIDWIFERY.MIDWIFERY_SERVICES 
+    WHERE STATUS = 1 AND FIRST_NAME = :NEW.FIRST_NAME AND LAST_NAME  = :NEW.LAST_NAME AND DATE_OF_BIRTH  = :NEW.DATE_OF_BIRTH AND  ROWNUM <= 1
+    ORDER BY CREATED_AT ;
+
+    INSERT INTO MIDWIFERY.MIDWIFERY_DUPLICATED_REQUESTS (ORIGINAL_ID , DUPLICATED_ID) VALUES (oldest_request, :NEW.ID);
+
+  END IF;
+
+END;
+/
+ALTER TRIGGER "MIDWIFERY"."MIDWIFERY_SERVICES_DUPLICATED_REQUESTS" ENABLE;
+--------------------------------------------------------
 --  DDL for Function GETTRANSFORMVALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE EDITIONABLE FUNCTION "GENERAL"."GETTRANSFORMVALUE" (p_table_schema IN NVARCHAR2, p_table_name IN NVARCHAR2, p_entity_id IN NUMBER, p_rev_id IN NUMBER, p_title IN NVARCHAR2, p_function_name IN NVARCHAR2, p_column_key IN NVARCHAR2) RETURN NVARCHAR2 AS 
-    v_message NVARCHAR2(4000) := p_title;
-    v_result NVARCHAR2(4000) := '';
+CREATE OR REPLACE FUNCTION "GENERAL"."GETTRANSFORMVALUE" (
+		p_table_schema IN NVARCHAR2,
+		p_table_name IN NVARCHAR2,
+		p_entity_id IN NUMBER,
+		p_rev_id IN NUMBER,
+		p_title IN NVARCHAR2,
+		p_function_name IN NVARCHAR2,
+		p_column_key IN NVARCHAR2 
+	) RETURN NVARCHAR2 AS v_message NVARCHAR2 (3000);
+v_result NVARCHAR2(3000) := '';
 BEGIN
-    IF p_function_name IS NOT NULL
-    THEN
-        EXECUTE IMMEDIATE 'CALL '||p_function_name||' INTO :FUNCRES' USING p_entity_id, p_rev_id, p_table_name, p_table_schema, OUT v_result;
-        IF v_result IS NULL
-        THEN
-            v_message := NULL;
-        END IF;
-        v_message := REPLACE(v_message, '%s', v_result);
-    END IF;
-    RETURN v_message;
+		v_message := p_title;
+	IF
+		p_function_name IS NOT NULL THEN
+			EXECUTE IMMEDIATE 'CALL ' || p_function_name || ' INTO :FUNCRES' USING p_entity_id,
+			p_rev_id,
+			p_table_name,
+			p_table_schema,
+			OUT v_result;
+		IF
+			v_result IS NULL THEN
+				v_message := NULL;
+
+		END IF;
+		v_message := REPLACE ( v_message, '%s', v_result );
+
+	END IF;
+	RETURN v_message;
+
 END GETTRANSFORMVALUE;
 
 /
@@ -956,7 +810,7 @@ END GETTRANSFORMVALUE;
 --  DDL for Function GETVALUEFORRULENAME
 --------------------------------------------------------
 
-  CREATE OR REPLACE EDITIONABLE FUNCTION "GENERAL"."GETVALUEFORRULENAME" 
+CREATE OR REPLACE FUNCTION "GENERAL"."GETVALUEFORRULENAME" 
 (
   P_ENTITY_ID IN NUMBER 
 , P_REV_ID IN NUMBER
@@ -981,9 +835,9 @@ BEGIN
             AND ev.rev_id = re.rev_id
             AND ev.table_name = :3
             AND re.rev_id = :4';
-  
+
     EXECUTE IMMEDIATE v_sql_stmt INTO v_result USING P_TABLE_NAME, P_ENTITY_ID, P_TABLE_NAME, P_REV_ID;
-    
+
     RETURN v_result;
 END GETVALUEFORRULENAME;
 
@@ -992,9 +846,9 @@ END GETVALUEFORRULENAME;
 --  DDL for Function GETVALUEFORRULESTATUS
 --------------------------------------------------------
 
-  CREATE OR REPLACE EDITIONABLE FUNCTION "GENERAL"."GETVALUEFORRULESTATUS" 
+CREATE OR REPLACE FUNCTION "GENERAL"."GETVALUEFORRULESTATUS" 
 (
-  P_ENTITY_ID IN NUMBER 
+  P_ENTITY_ID IN NUMBER
 , P_REV_ID IN NUMBER
 , P_TABLE_NAME IN NVARCHAR2
 , P_TABLE_SCHEMA IN NVARCHAR2
@@ -1019,7 +873,7 @@ BEGIN
             AND re.rev_id = :4
         JOIN '||P_TABLE_SCHEMA||'.STATUS_V st
             ON co.STATUS = st.ID';
-  
+
     EXECUTE IMMEDIATE v_sql_stmt INTO v_result USING P_TABLE_NAME, P_ENTITY_ID, P_TABLE_NAME, P_REV_ID;
 
     RETURN v_result;
