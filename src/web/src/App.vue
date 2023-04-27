@@ -3,52 +3,63 @@
     <v-navigation-drawer
       v-bind:app="hasSidebar"
       permanent
-      clipped
+      order="number"
       color="#fff"
       id="menu-services"
       :mini-variant.sync="mini"
       v-bind:class="{ 'd-none': !hasSidebar }"
     >
-    <v-list-item>
-      <v-icon v-if="mini" >mdi-chevron-right</v-icon>
-      
-      <v-list-item-title> Services</v-list-item-title>
+      <v-list-item>
+        <v-icon v-if="mini">mdi-chevron-right</v-icon>
 
-      <v-btn
-        icon
-        @click.stop="mini = !mini"
-      >
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-    </v-list-item>
+        <v-list-item-title> Services</v-list-item-title>
+
+        <v-btn icon @click.stop="mini = !mini">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+      </v-list-item>
       <v-divider></v-divider>
-      <v-list dense nav style="" class="mt-1 pb-0 pt-1"
-        v-for='(section) in sections' :key="section.header">
-          <div class="section-container" v-if="checkPermissions(section.permissions)">
-            <v-subheader  v-if="!mini">{{ section.header }}</v-subheader>
-            <img v-if="mini && section.icon" :src="section.icon" height="36px" width="36px" />
-            <v-list-item-group
-              v-for="detail in section.data"
-              v-bind:key="detail.name"
-              color= "white"
-              class="mb-0"
-            >
-              <v-list-item
+      <v-list
+        density="default"
+        nav
+        style=""
+        class="mt-1 pb-0 pt-1"
+        v-for="section in sections"
+        :key="section.header"
+      >
+        <div
+          class="section-container"
+          v-if="checkPermissions(section.permissions)"
+        >
+          <v-list-subheader v-if="!mini">{{ section.header }}</v-list-subheader>
+          <img
+            v-if="mini && section.icon"
+            :src="section.icon"
+            height="36px"
+            width="36px"
+          />
+          <v-list-item
+            v-for="detail in section.data"
+            v-bind:key="detail.name"
+            color="white"
+            class="mb-0"
+          >
+            <v-list-item
               link
               nav
               v-bind:title="detail.name"
               v-bind:to="detail.url"
               v-if="checkPermissions(detail.permissions)"
-              >
-                <v-list-item-icon>
+            >
+              <v-list-item icon>
                 <v-icon>{{ detail.icon }}</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>{{ detail.name }}</v-list-item-title>
-                </v-list-item-content>
               </v-list-item>
-            </v-list-item-group>
-          </div>
+              <v-list-item>
+                <v-list-item-title>{{ detail.name }}</v-list-item-title>
+              </v-list-item>
+            </v-list-item>
+          </v-list-item>
+        </div>
       </v-list>
     </v-navigation-drawer>
 
@@ -93,18 +104,18 @@
             </v-btn>
           </template>
 
-          <v-list dense style="min-width: 200px">
+          <v-list density="default" style="min-width: 200px">
             <v-list-item to="/profile">
-              <v-list-item-icon>
+              <v-list-item icon>
                 <v-icon>mdi-account</v-icon>
-              </v-list-item-icon>
+              </v-list-item>
               <v-list-item-title>My profile</v-list-item-title>
             </v-list-item>
             <v-divider />
             <v-list-item @click="signOut">
-              <v-list-item-icon>
+              <v-list-item icon>
                 <v-icon>mdi-exit-run</v-icon>
-              </v-list-item-icon>
+              </v-list-item>
               <v-list-item-title>Sign out</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -128,27 +139,24 @@
       </v-container>
     </v-main>
 
-      <v-footer
-        flat
-        style="z-index: 10"
-        padless
-        height="70"
-      >
-        <v-card
-          class="flex"
-          flat
-          tile
-        >
-          <v-card-title  id="footer-bg">
-            <img src="/logo-white.svg" style="margin: -8px 155px 0 0" height="44"/>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-text class="white--text text-center footer-details">
-            <span>© Copyright {{ new Date().getFullYear() }} <a href="/">Government of Yukon</a></span>
-          </v-card-text>
-        </v-card>
-      </v-footer>
-
+    <v-footer flat style="z-index: 10" padless height="70">
+      <v-card class="flex" flat tile>
+        <v-card-title id="footer-bg">
+          <img
+            src="/logo-white.svg"
+            style="margin: -8px 155px 0 0"
+            height="44"
+          />
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="white--text text-center footer-details">
+          <span
+            >© Copyright {{ new Date().getFullYear() }}
+            <a href="/">Government of Yukon</a></span
+          >
+        </v-card-text>
+      </v-card>
+    </v-footer>
   </v-app>
 </template>
 
@@ -163,13 +171,13 @@ export default {
   name: "App",
   components: {},
   computed: {
-    ...mapState("isAuthenticated"),
+    ...mapState({ isAuthenticated: (state) => state.isAuthenticated }),
     username() {
       return store.getters.fullName;
     },
     isAuthenticated() {
       return store.getters.isAuthenticated;
-    }
+    },
   },
   data: () => ({
     dialog: false,
@@ -187,7 +195,7 @@ export default {
     hasSidebarClosable: config.hasSidebarClosable,
     componentKey: 0,
   }),
-  created: async function() {
+  created: async function () {
     await store.dispatch("checkAuthentication");
     //this.username = store.getters.fullName
     this.dbUser = store.getters.dbUser;
@@ -195,25 +203,25 @@ export default {
     else this.hasSidebar = config.hasSidebar;
   },
   watch: {
-    isAuthenticated: function(val) {
+    isAuthenticated: function (val) {
       if (!val) this.hasSidebar = false;
       else this.hasSidebar = config.hasSidebar;
     },
-    '$route'() {
+    $route() {
       this.forceRerender();
-    }
+    },
   },
   methods: {
-    nav: function(location) {
+    nav: function (location) {
       router.push(location);
     },
-    toggleHeader: function() {
+    toggleHeader: function () {
       this.headerShow = !this.headerShow;
     },
-    toggleMenu: function() {
+    toggleMenu: function () {
       this.menuShow = !this.menuShow;
     },
-    signOut: function() {
+    signOut: function () {
       store.dispatch("signOut");
       router.push("/");
     },
@@ -224,11 +232,13 @@ export default {
       const userPermissions = this.dbUser?.permissions;
       if (userPermissions) {
         return permissions.every((x) => {
-            return userPermissions.find((p) => p.permission_name === x) !== undefined;
-        });   
+          return (
+            userPermissions.find((p) => p.permission_name === x) !== undefined
+          );
+        });
       }
       return false;
-    }
-  }
+    },
+  },
 };
 </script>

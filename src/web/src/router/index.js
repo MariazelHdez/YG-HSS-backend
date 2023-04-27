@@ -1,6 +1,5 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
 // import Home from "../components/Home.vue";
+import { createRouter, createWebHistory } from "vue-router";
 import NotFound from "../views/NotFound.vue";
 import Login from "../components/Login";
 import LoginComplete from "../components/LoginComplete";
@@ -8,7 +7,7 @@ import Profile from "../components/Profile";
 import store from "../store";
 import Constellation from "../components/Constellation/Constellation";
 import ConstellationDetails from "../components/Constellation/ConstellationDetails";
-import ConstellationExport from "../components/Constellation/ConstellationExport"
+import ConstellationExport from "../components/Constellation/ConstellationExport";
 import ConstellationAnalytics from "../components/Constellation/ConstellationAnalytics";
 import ConstellationWarnings from "../components/Constellation/ConstellationWarnings";
 import ConstellationWarningsDetails from "../components/Constellation/ConstellationWarningsDetails";
@@ -27,40 +26,37 @@ import MidwiferyWarningsDetails from "../components/Midwifery/MidwiferyWarningsD
 
 import Dashboard from "../components/Dashboard.vue";
 
-Vue.use(VueRouter);
-
 const routes = [
   {
     path: "/",
     name: "Dashboard",
     component: Dashboard,
     meta: {
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
   {
     path: "/sign-in",
     name: "Login",
-    component: Login
+    component: Login,
   },
   {
     path: "/login-complete",
     name: "LoginComplete",
-    component: LoginComplete
+    component: LoginComplete,
   },
   {
     path: "/profile",
     name: "Profile",
     component: Profile,
     meta: {
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
   {
-    path: "*",
+    path: "/:catchAll(.*)",
     name: "Not Found",
-    component: NotFound
-
+    component: NotFound,
   },
   {
     path: "/constellation",
@@ -68,10 +64,8 @@ const routes = [
     component: Constellation,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "constellation_view"
-      ]
-    }
+      permissions: ["constellation_view"],
+    },
   },
   {
     path: "/constellation/show/:constellationHealth_id",
@@ -79,10 +73,8 @@ const routes = [
     component: ConstellationDetails,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "constellation_view"
-      ]
-    }
+      permissions: ["constellation_view"],
+    },
   },
   {
     path: "/constellationExport",
@@ -90,10 +82,8 @@ const routes = [
     component: ConstellationExport,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "constellation_view"
-      ]
-    }
+      permissions: ["constellation_view"],
+    },
   },
   {
     path: "/constellationAnalytics",
@@ -101,10 +91,8 @@ const routes = [
     component: ConstellationAnalytics,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "constellation_view"
-      ]
-    }
+      permissions: ["constellation_view"],
+    },
   },
   {
     path: "/hipma",
@@ -112,10 +100,8 @@ const routes = [
     component: Hipma,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/hipma/show/:hipma_id",
@@ -123,10 +109,8 @@ const routes = [
     component: HipmaDetails,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/hipmaExport",
@@ -134,10 +118,8 @@ const routes = [
     component: HipmaExport,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/hipmaAnalytics",
@@ -145,10 +127,8 @@ const routes = [
     component: HipmaAnalytics,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/midwifery",
@@ -156,10 +136,8 @@ const routes = [
     component: Midwifery,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/midwifery/show/:midwifery_id",
@@ -167,10 +145,8 @@ const routes = [
     component: MidwiferyDetails,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/midwiferyExport",
@@ -178,10 +154,8 @@ const routes = [
     component: MidwiferyExport,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/midwiferyAnalytics",
@@ -189,10 +163,8 @@ const routes = [
     component: MidwiferyAnalytics,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/hipmaWarnings",
@@ -200,10 +172,8 @@ const routes = [
     component: HipmaWarnings,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/hipmaWarnings/details/:duplicate_id",
@@ -211,10 +181,8 @@ const routes = [
     component: HipmaWarningsDetails,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "hipma_view"
-      ]
-    }
+      permissions: ["hipma_view"],
+    },
   },
   {
     path: "/midwiferyWarnings",
@@ -222,10 +190,8 @@ const routes = [
     component: MidwiferyWarnings,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/midwiferyWarnings/details/:duplicate_id",
@@ -233,33 +199,31 @@ const routes = [
     component: MidwiferyWarningsDetails,
     meta: {
       requiresAuth: true,
-      permissions: [
-        "midwifery_view"
-      ]
-    }
+      permissions: ["midwifery_view"],
+    },
   },
   {
     path: "/constellationWarnings",
     name: "Constellation Warnings",
     component: ConstellationWarnings,
     meta: {
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
   {
     path: "/constellationWarnings/details/:duplicate_id",
     name: "Constellation Warnings Details",
     component: ConstellationWarningsDetails,
     meta: {
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
 ];
 
-const router = new VueRouter({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(),
   base: process.env.BASE_URL,
-  routes
+  routes,
 });
 
 router.beforeEach(async (to, from, next) => {
@@ -276,7 +240,7 @@ router.beforeEach(async (to, from, next) => {
 
   // Validate authentication
   if (requiresAuth && !isAuthenticated) {
-    console.log("You aren't authenticatd, redirecting to sign-in")
+    console.log("You aren't authenticatd, redirecting to sign-in");
     next("/sign-in");
     return;
   }
@@ -288,7 +252,7 @@ router.beforeEach(async (to, from, next) => {
       return userPermissions.find((p) => p.permission_name === x) !== undefined;
     });
   }
-  
+
   if (!validate) {
     next("/");
     return;
